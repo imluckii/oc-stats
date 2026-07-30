@@ -93,14 +93,12 @@ jobs:
           if ($help -match "--db") { throw "Removed --db flag still advertised" }
 
           # A removed flag must be rejected (nonzero exit), not silently accepted.
-          # Wrap in try/catch because ErrorActionPreference=Stop turns the native
-          # command's nonzero exit (argparse writes to stderr) into a terminating
-          # error before we can read $LASTEXITCODE.
-          $rejected = $false
-          try {
-            & .\smoke\Scripts\oc-usage.exe --db x 2>$null
-            if ($LASTEXITCODE -ne 0) { $rejected = $true }
-          } catch {
-            $rejected = $true
-          }
-          if (-not $rejected) { throw "--db should have been rejected" }
+          # Relax ErrorActionPreference for this one deliberately-failing call,
+          # since a native command's nonzero exit (argparse writes the rejection
+          # to stderr) otherwise aborts the whole step.
+          $prev = $ErrorActionPreference
+          $ErrorActionPreference = "Continue"
+          & .\smoke\Scripts\oc-usage.exe --db x 2>$null
+          $rc = $LASTEXITCODE
+          $ErrorActionPreference = $prev
+          if ($rc -eq 0) { throw "--db should have been rejected" }
