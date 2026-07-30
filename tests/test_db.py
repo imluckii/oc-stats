@@ -80,13 +80,13 @@ def test_default_db_dir_uses_macos_application_support(monkeypatch):
     monkeypatch.setattr(
         db.os.path,
         "expanduser",
-        lambda path: (
-            "/Users/test/Library/Application Support"
-            if path == "~/Library/Application Support"
-            else path
-        ),
+        lambda path: {
+            "~/.local/share": "/Users/test/.local/share",
+            "~/Library/Application Support": "/Users/test/Library/Application Support",
+        }[path],
     )
     assert db.default_db_dirs() == (
+        posixpath.join("/Users/test/.local/share", "opencode"),
         posixpath.join("/Users/test/Library/Application Support", "opencode"),
     )
 
@@ -176,6 +176,35 @@ def test_find_db_discovers_synthetic_database_in_windows_xdg_root(monkeypatch, t
     assert find_db(None) == str(db_path)
 
 
+def test_find_db_discovers_synthetic_database_in_macos_xdg_root(monkeypatch, tmp_path):
+    monkeypatch.setattr(db.os, "name", "posix")
+    monkeypatch.setattr(db.os, "path", posixpath)
+    monkeypatch.setattr(db.sys, "platform", "darwin")
+    xdg_dir = tmp_path / "xdg-data" / "opencode"
+    xdg_dir.mkdir(parents=True)
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "xdg-data"))
+    db_path = xdg_dir / "opencode-next.db"
+    build_v2_db(db_path, [("p", "m", "", 1, 0, 0, 2, 0, 0.0, T0)])
+
+    assert find_db(None) == str(db_path)
+
+
+def test_find_db_uses_windows_native_compatibility_after_xdg(monkeypatch, tmp_path):
+    monkeypatch.setattr(db.os, "path", posixpath)
+    monkeypatch.setattr(db.sys, "platform", "win32")
+    profile = tmp_path / "profile"
+    local = tmp_path / "localappdata"
+    monkeypatch.setenv("USERPROFILE", str(profile))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "missing-xdg"))
+    monkeypatch.setenv("LOCALAPPDATA", str(local))
+    native_dir = local / "opencode"
+    native_dir.mkdir(parents=True)
+    db_path = native_dir / "opencode-dev.db"
+    build_v2_db(db_path, [("p", "m", "", 1, 0, 0, 2, 0, 0.0, T0)])
+
+    assert find_db(None) == str(db_path)
+
+
 def test_find_db_prefers_v2_across_default_directory_candidates(tmp_path, monkeypatch):
     first = tmp_path / "primary"
     second = tmp_path / "fallback"
@@ -185,6 +214,40 @@ def test_find_db_prefers_v2_across_default_directory_candidates(tmp_path, monkey
     (second / "opencode-next.db").write_text("")
     monkeypatch.setattr(db, "default_db_dirs", lambda: (str(first), str(second)))
     assert find_db(None) == str(second / "opencode-next.db")
+
+
+@pytest.mark.parametrize("filename", db.CHANNEL_DB_CANDIDATES)
+def test_find_db_discovers_every_supported_channel_filename(tmp_path, monkeypatch, filename):
+    monkeypatch.setattr(db, "DEFAULT_DB_DIR", str(tmp_path))
+    (tmp_path / filename).write_text("")
+    assert find_db(None) == str(tmp_path / filename)
+
+
+def test_find_db_opencode_db_absolute_and_relative(monkeypatch, tmp_path):
+    xdg = tmp_path / "xdg"
+    (xdg / "opencode").mkdir(parents=True)
+    absolute = tmp_path / "absolute.db"
+    monkeypatch.setenv("XDG_DATA_HOME", str(xdg))
+    monkeypatch.setenv("OPENCODE_DB", str(absolute))
+    assert find_db(None) == str(absolute)
+
+    monkeypatch.setenv("OPENCODE_DB", "opencode-local.db")
+    assert find_db(None) == str(xdg / "opencode" / "opencode-local.db")
+
+
+def test_cli_db_argument_overrides_opencode_db(monkeypatch, tmp_path):
+    cli_path = tmp_path / "cli.db"
+    monkeypatch.setenv("OPENCODE_DB", str(tmp_path / "env.db"))
+    assert find_db(str(cli_path)) == str(cli_path)
+
+
+def test_find_db_does_not_merge_channel_files(tmp_path, monkeypatch):
+    monkeypatch.setattr(db, "DEFAULT_DB_DIR", str(tmp_path))
+    (tmp_path / "opencode-next.db").write_text("next")
+    (tmp_path / "opencode.db").write_text("stable")
+    selected = find_db(None)
+    assert selected == str(tmp_path / "opencode-next.db")
+    assert selected not in {str(tmp_path / "opencode.db")}
 
 
 # ── schema detection (row-based, not table-based) ─────────────────────────────

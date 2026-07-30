@@ -1,8 +1,9 @@
-"""oc-usage — all-time OpenCode token usage from the local session database.
+"""oc-usage — all-time OpenCode token usage from local or server history.
 
 A standalone CLI that reads assistant turns from OpenCode's SQLite database
-(both the v1 ``message`` and v2 ``session_message`` schemas) and reports token
-usage broken down by provider, model, and variant, with cost when it is tracked.
+(both the v1 ``message`` and v2 ``session_message`` schemas) or one V2 HTTP
+server and reports token usage broken down by provider, model, and variant,
+with cost when it is tracked.
 """
 
 from __future__ import annotations

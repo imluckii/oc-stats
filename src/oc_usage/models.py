@@ -32,6 +32,20 @@ UNKNOWN = "(unknown)"
 ModelKey = tuple[str, str, str]
 
 
+@dataclass(frozen=True)
+class SourceMetadata:
+    """Safe metadata identifying the one source used for a report.
+
+    ``value`` is intentionally optional.  Local database reports only expose
+    their source *type* so a JSON report does not unexpectedly disclose a
+    user's home directory.  Remote reports may include the server URL, which
+    is validated and never contains URL userinfo or a password.
+    """
+
+    type: str
+    value: str | None = None
+
+
 def component_total(
     input: int,
     cache_read: int,
@@ -107,9 +121,10 @@ class Report:
     by_model: dict[ModelKey, Bucket]
     span: tuple[datetime, datetime] | None
     cost_tracked: bool
+    source: SourceMetadata | None = None
 
 
-def aggregate(rows: Iterable[UsageRow]) -> Report:
+def aggregate(rows: Iterable[UsageRow], *, source: SourceMetadata | None = None) -> Report:
     """Sum rows into totals, per-provider, and per-model buckets."""
     totals = Bucket()
     by_provider: dict[str, Bucket] = {}
@@ -138,16 +153,18 @@ def aggregate(rows: Iterable[UsageRow]) -> Report:
         by_model=by_model,
         span=span,
         cost_tracked=any_cost,
+        source=source,
     )
 
 
 # Pre-built empty report for the "no data" path so callers/renderers can rely on
 # a stable shape even before aggregation runs.
-def empty_report() -> Report:
+def empty_report(source: SourceMetadata | None = None) -> Report:
     return Report(
         totals=Bucket(),
         by_provider={},
         by_model={},
         span=None,
         cost_tracked=False,
+        source=source,
     )

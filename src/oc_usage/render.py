@@ -201,6 +201,7 @@ def _make_table(
 
 def _build_header(report: Report, fmt_num, *, ascii: bool = False) -> Panel:
     bits = [
+        f"[dim]Source: {_source_label(report)}[/]",
         f"[bold]{fmt_num(report.totals.turns)}[/] turns",
         f"[bold]{len(report.by_provider)}[/] providers",
         f"[bold]{len(report.by_model)}[/] models",
@@ -222,6 +223,16 @@ def _build_header(report: Report, fmt_num, *, ascii: bool = False) -> Panel:
         box=box.ASCII if ascii else box.DOUBLE_EDGE,
         padding=(0, 1),
     )
+
+
+def _source_label(report: Report) -> str:
+    if report.source is None:
+        return "unknown"
+    if report.source.type == "local_database":
+        return "local database"
+    if report.source.type == "server":
+        return "server"
+    return report.source.type.replace("_", " ")
 
 
 def _build_totals(report: Report, fmt_num, *, ascii: bool = False) -> Table.grid:  # type: ignore[valid-type]
@@ -460,6 +471,11 @@ def render_json(report: Report) -> str:
             for k, v in sorted(report.by_model.items(), key=lambda kv: kv[1].total, reverse=True)
         ],
     }
+    if report.source:
+        source: dict[str, str] = {"type": report.source.type}
+        if report.source.value:
+            source["url"] = report.source.value
+        payload["source"] = source
     if report.span:
         lo, hi = report.span
         payload["span"] = {"from": _iso(lo), "to": _iso(hi)}

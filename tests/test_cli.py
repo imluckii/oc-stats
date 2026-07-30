@@ -70,6 +70,13 @@ def test_missing_db_exits_1(tmp_path, capsys):
     assert "database not found" in err
 
 
+def test_memory_db_exits_with_post_process_explanation(capsys):
+    rc = main(["--db", ":memory:"])
+    err = capsys.readouterr().err
+    assert rc == 1
+    assert "cannot be read after process exit" in err
+
+
 def test_empty_db_exits_1(empty_db, capsys):
     rc = main(["--db", empty_db])
     err = capsys.readouterr().err
@@ -96,6 +103,27 @@ def test_help_prints_usage(capsys):
     assert "OpenCode token usage" in out
     assert "--db" in out
     assert "--json" in out
+    assert "--server" in out
+    assert "--password-stdin" in out
+
+
+def test_db_and_server_are_mutually_exclusive():
+    with pytest.raises(SystemExit) as exc:
+        main(["--db", "a.db", "--server", "http://127.0.0.1:4096"])
+    assert exc.value.code == 2
+
+
+def test_password_options_require_server(v2_db, capsys):
+    rc = main(["--db", v2_db, "--password-env", "NO_SECRET"])
+    err = capsys.readouterr().err
+    assert rc == 2
+    assert "require --server" in err
+
+
+def test_local_json_identifies_local_source(v2_db, capsys):
+    assert main(["--db", v2_db, "--json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert data["source"] == {"type": "local_database"}
 
 
 def test_plain_flag_produces_no_ansi(v2_db, capsys):

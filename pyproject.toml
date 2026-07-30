@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "oc-usage"
 version = "0.1.0"
-description = "All-time OpenCode token usage, straight from the local session database. Supports OpenCode v1 and v2 SQLite schemas."
+description = "All-time OpenCode token usage from local v1/v2 databases or one OpenCode V2 server."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"

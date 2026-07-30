@@ -9,12 +9,21 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from collections.abc import Callable
 
 from oc_usage import __version__
 from oc_usage.db import DatabaseNotFoundError, NoUsageDataError, find_db, load_rows
-from oc_usage.models import aggregate
+from oc_usage.models import SourceMetadata, aggregate
+from oc_usage.remote import (
+    RemoteAuthError,
+    RemoteClient,
+    RemoteConnectionError,
+    RemoteError,
+    RemoteNoUsageDataError,
+    RemoteSchemaError,
+)
 from oc_usage.render import (
     fmt_compact,
     fmt_full,
@@ -32,8 +41,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(
         prog=PROG,
         description=(
-            "All-time OpenCode token usage from the local session database. "
-            "Reads assistant turns (OpenCode v1 and v2 schemas) and reports "
+            "All-time OpenCode token usage from a local session database or "
+            "one OpenCode V2 HTTP server. Reads assistant turns and reports "
             "tokens by provider, model, and variant, with cost when tracked."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -44,14 +53,38 @@ def build_parser() -> argparse.ArgumentParser:
             "  oc-usage --json          # machine-readable JSON\n"
             "  oc-usage --db ~/.local/share/opencode/opencode.db   # v1 database\n"
             "  oc-usage --db ~/.local/share/opencode/opencode-next.db  # v2 database\n"
+            "  oc-usage --server http://127.0.0.1:4096 --password-stdin\n"
             "\n"
             "In OpenCode's shell mode:  !oc-usage\n"
         ),
     )
-    ap.add_argument(
+    sources = ap.add_mutually_exclusive_group()
+    sources.add_argument(
         "--db",
         metavar="PATH",
-        help="path to an opencode .db file (auto-detected by default; v2 preferred)",
+        help="path to one opencode .db file (highest source precedence; never merged)",
+    )
+    sources.add_argument(
+        "--server",
+        metavar="URL",
+        help="read one OpenCode V2 HTTP server (mutually exclusive with --db)",
+    )
+    ap.add_argument(
+        "--username",
+        default="opencode",
+        metavar="NAME",
+        help="HTTP Basic username for --server (default: opencode)",
+    )
+    password = ap.add_mutually_exclusive_group()
+    password.add_argument(
+        "--password-env",
+        metavar="NAME",
+        help="read the HTTP Basic password from environment variable NAME",
+    )
+    password.add_argument(
+        "--password-stdin",
+        action="store_true",
+        help="read the HTTP Basic password from one line of stdin",
     )
     ap.add_argument("--full", action="store_true", help="show full integers (no K/M rounding)")
     ap.add_argument("--no-color", action="store_true", help="disable ANSI colors")
@@ -93,24 +126,43 @@ def main(argv: list[str] | None = None) -> int:
 
     fmt_num: FormatFn = fmt_full if args.full else fmt_compact
 
-    db = find_db(args.db)
-    try:
-        rows = list(load_rows(db))
-    except DatabaseNotFoundError:
-        _err(f"database not found: {db}")
-        return 1
-    except NoUsageDataError:
-        _err(f"no assistant messages found in {db}")
-        return 1
-    except Exception as exc:  # noqa: BLE001 — surface a clean message, not a traceback
-        _err(f"could not read {db}: {exc}")
-        return 1
+    if not args.server and (args.password_env or args.password_stdin):
+        _err("--password-env and --password-stdin require --server")
+        return 2
 
-    if not rows:
-        _err(f"no assistant messages found in {db}")
-        return 1
+    if args.server:
+        try:
+            password_value = _read_password(args)
+            client = RemoteClient(args.server, username=args.username, password=password_value)
+            rows = list(client.rows())
+        except RemoteNoUsageDataError as exc:
+            _err(str(exc))
+            return 1
+        except (RemoteAuthError, RemoteConnectionError, RemoteSchemaError, RemoteError) as exc:
+            _err(str(exc))
+            return 1
+        report = aggregate(rows, source=SourceMetadata("server", client.server.value))
+    else:
+        db = find_db(args.db)
+        if db == ":memory:":
+            _err("database path :memory: cannot be read after process exit; provide a file path")
+            return 1
+        try:
+            rows = list(load_rows(db))
+        except DatabaseNotFoundError:
+            _err(f"database not found: {db}")
+            return 1
+        except NoUsageDataError:
+            _err(f"no assistant messages found in {db}")
+            return 1
+        except Exception as exc:  # noqa: BLE001 — surface a clean message, not a traceback
+            _err(f"could not read {db}: {exc}")
+            return 1
 
-    report = aggregate(rows)
+        if not rows:
+            _err(f"no assistant messages found in {db}")
+            return 1
+        report = aggregate(rows, source=SourceMetadata("local_database"))
 
     if args.json:
         print(render_json(report))
@@ -128,6 +180,23 @@ def main(argv: list[str] | None = None) -> int:
         console = make_console(no_color=no_color)
         render_rich(report, fmt_num=fmt_num, console=console, ascii=True)
     return 0
+
+
+def _read_password(args: argparse.Namespace) -> str | None:
+    """Read a server password without ever including it in diagnostics."""
+    if args.password_env:
+        value = os.environ.get(args.password_env)
+        if value is None:
+            raise RemoteError(f"password environment variable not set: {args.password_env}")
+        return value
+    if args.password_stdin:
+        value = sys.stdin.readline()
+        if value.endswith("\n"):
+            value = value[:-1]
+        if value.endswith("\r"):
+            value = value[:-1]
+        return value
+    return None
 
 
 if __name__ == "__main__":

@@ -33,39 +33,60 @@ from typing import Any
 
 from oc_usage.models import UNKNOWN, UsageRow
 
-DEFAULT_DB_CANDIDATES = ("opencode-next.db", "opencode.db")
+CHANNEL_DB_CANDIDATES = (
+    "opencode-next.db",
+    "opencode.db",
+    "opencode-dev.db",
+    "opencode-local.db",
+)
+# Public compatibility name retained for callers that used the original
+# two-entry tuple.  It now covers every supported OpenCode channel.
+DEFAULT_DB_CANDIDATES = CHANNEL_DB_CANDIDATES
+
+
+def _xdg_data_root() -> str:
+    """Resolve the current xdg-basedir data root on the host platform."""
+    configured = os.environ.get("XDG_DATA_HOME")
+    if configured:
+        return configured
+    if os.name == "nt" or sys.platform.startswith("win"):
+        profile = os.environ.get("USERPROFILE")
+        if profile:
+            return os.path.join(profile, ".local", "share")
+    return os.path.expanduser("~/.local/share")
 
 
 def default_db_dirs() -> tuple[str, ...]:
     """Return platform-appropriate directories in discovery priority order.
 
-    OpenCode follows the platform's conventional per-user data directory. On
-    Unix, ``XDG_DATA_HOME`` takes precedence over the standard
-    ``~/.local/share`` fallback; macOS and Windows use their native application
-    support directories. The tuple leaves room for additional fallbacks while
-    keeping discovery deterministic.
+    OpenCode core uses xdg-basedir on Linux, macOS, and Windows: the current
+    directory is ``${XDG_DATA_HOME:-~/.local/share}/opencode``. Older native
+    macOS/Windows locations remain compatibility fallbacks, after the current
+    XDG location, and the tuple is always deterministic.
     """
+    # OpenCode core uses xdg-basedir on every desktop platform.  Keep this
+    # current directory first even on macOS and Windows; the native locations
+    # below are compatibility fallbacks for older installations.
     if os.name == "nt" or sys.platform.startswith("win"):
         # OpenCode/xdg-basedir has used both the XDG-style and native Windows
-        # locations over time. Keep all of them in a stable order: a configured
-        # XDG root is most specific, followed by the user's XDG-style home,
-        # LOCALAPPDATA, and the conventional Windows fallback.
+        # locations over time.  A configured XDG root wins, followed by the
+        # xdg-basedir home fallback, LOCALAPPDATA, and the conventional native
+        # fallback.  Deduplication matters when those roots are the same.
         user_profile = os.environ.get("USERPROFILE")
         home_data = (
             os.path.join(user_profile, ".local", "share")
             if user_profile
             else os.path.expanduser("~/.local/share")
         )
+        xdg_root = os.environ.get("XDG_DATA_HOME") or home_data
         home_local_app_data = (
             os.path.join(user_profile, "AppData", "Local")
             if user_profile
             else os.path.expanduser("~/AppData/Local")
         )
-        roots = []
-        xdg_data_home = os.environ.get("XDG_DATA_HOME")
-        if xdg_data_home:
-            roots.append(xdg_data_home)
-        roots.append(home_data)
+        roots = [xdg_root]
+        if home_data not in roots:
+            roots.append(home_data)
         local_app_data = os.environ.get("LOCALAPPDATA")
         if local_app_data:
             roots.append(local_app_data)
@@ -81,12 +102,47 @@ def default_db_dirs() -> tuple[str, ...]:
                 continue
             seen.add(key)
             unique_roots.append(root)
-        return tuple(os.path.join(root, "opencode") for root in unique_roots)
+        directories = [os.path.join(root, "opencode") for root in unique_roots]
+        return tuple(_append_compatibility_dirs(directories))
+
+    xdg_root = _xdg_data_root()
+    directories = [os.path.join(xdg_root, "opencode")]
     if sys.platform == "darwin":
-        data_root = os.path.expanduser("~/Library/Application Support")
-    else:
-        data_root = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
-    return (os.path.join(data_root, "opencode"),)
+        directories.append(
+            os.path.join(os.path.expanduser("~/Library/Application Support"), "opencode")
+        )
+    return tuple(_dedupe_dirs(directories))
+
+
+def _dedupe_dirs(directories: list[str]) -> list[str]:
+    """Return directories in order, removing spelling-equivalent duplicates."""
+    unique: list[str] = []
+    seen: set[str] = set()
+    for directory in directories:
+        if not directory:
+            continue
+        key = os.path.normcase(os.path.normpath(directory))
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(directory)
+    return unique
+
+
+def _append_compatibility_dirs(directories: list[str]) -> list[str]:
+    """Append native Windows locations after the current XDG locations."""
+    user_profile = os.environ.get("USERPROFILE")
+    home_native = (
+        os.path.join(user_profile, "AppData", "Local", "opencode")
+        if user_profile
+        else os.path.join(os.path.expanduser("~/AppData/Local"), "opencode")
+    )
+    local_app_data = os.environ.get("LOCALAPPDATA")
+    compatibility = []
+    if local_app_data:
+        compatibility.append(os.path.join(local_app_data, "opencode"))
+    compatibility.append(home_native)
+    return _dedupe_dirs(directories + compatibility)
 
 
 # Kept as a public compatibility alias for callers/tests that used the old
@@ -113,26 +169,54 @@ class NoUsageDataError(RuntimeError):
 def find_db(arg: str | None) -> str:
     """Resolve the database path to read.
 
-    An explicit ``--db`` argument always wins. Otherwise we prefer the v2
-    ``opencode-next.db`` when present and fall back to the legacy
-    ``opencode.db``. If neither exists we return the (non-existent) v2 path so
-    the caller can emit a clear "not found" error.
+    An explicit ``--db`` argument always wins, followed by ``OPENCODE_DB``.
+    Otherwise filenames are considered in channel order (v2 next, stable v1,
+    dev, local) across directories in deterministic priority order. If none
+    exists we return the (non-existent) first candidate path so the caller can
+    emit a clear "not found" error.
     """
     if arg:
-        return os.path.expanduser(arg)
+        return _expand_db_path(arg, explicit=True)
+    configured = os.environ.get("OPENCODE_DB")
+    if configured:
+        return _expand_db_path(configured, explicit=False)
     # Honor the legacy constant when a caller explicitly overrides it, while
     # otherwise resolving the platform/environment at call time.
     directories = (
         (DEFAULT_DB_DIR,) if DEFAULT_DB_DIR != _INITIAL_DEFAULT_DB_DIR else default_db_dirs()
     )
-    # Check the preferred filename across all candidate directories before
-    # falling back to v1. We read exactly one path and never merge databases.
+    # Check one filename at a time across directories.  This makes precedence
+    # deterministic (channel preference before directory preference) while
+    # still selecting exactly one path; we never merge databases.
     for name in DEFAULT_DB_CANDIDATES:
         for directory in directories:
             candidate = os.path.join(directory, name)
             if os.path.exists(candidate):
                 return candidate
     return os.path.join(directories[0], DEFAULT_DB_CANDIDATES[0])
+
+
+def _is_windows() -> bool:
+    return os.name == "nt" or sys.platform.startswith("win")
+
+
+def _expand_db_path(value: str, *, explicit: bool) -> str:
+    """Expand ``--db`` or ``OPENCODE_DB`` according to OpenCode's data root.
+
+    ``OPENCODE_DB`` is special: a relative value is relative to the current
+    XDG OpenCode data directory, not the process working directory.  CLI paths
+    retain normal command-line semantics and are relative to the working
+    directory.  ``:memory:`` is returned unchanged so the caller can provide a
+    useful post-process-exit error rather than opening a transient database.
+    """
+    if value == ":memory:":
+        return value
+    expanded = os.path.expanduser(value)
+    is_absolute = ntpath.isabs(expanded) if _is_windows() else os.path.isabs(expanded)
+    if not explicit and not is_absolute:
+        current_root = _xdg_data_root()
+        expanded = os.path.join(current_root, "opencode", expanded)
+    return expanded
 
 
 # ── schema detection ─────────────────────────────────────────────────────────
