@@ -19,17 +19,17 @@ pytest -q
 
 ## Guidelines
 
-- **Keep schema logic in `src/oc_usage/db.py`.** If you add or change how a
-  schema is parsed, add/adjust a synthetic fixture in `tests/helpers.py` and a
-  test in `tests/test_db.py`.
+- **Keep the service transport in `src/oc_usage/service.py`.** It is the only
+  thing that talks to OpenCode (via the `api` command) — never open databases or
+  raw sockets. If you change how a response is parsed, add/adjust a synthetic
+  fixture in `tests/helpers.py` and a test in `tests/test_service.py`.
 - **Never estimate cost or tokens.** Every number must trace back to a recorded
   field. If a field is missing, treat it as `0` and document it.
-- **One database per run.** Do not add a mode that silently sums multiple
-  databases — migration can duplicate history. If you add such a mode, it must
-  warn loudly about double-counting.
+- **Fail loudly, never silently report zero.** An incompatible API, invalid JSON,
+  or a missing executable must raise, not produce an empty report.
 - **No real session data in tests or docs.** Fixtures and README samples must be
-  synthetic.
+  synthetic, and message **content** must never appear in reports.
 - Use [Conventional Commits](https://www.conventionalcommits.org/) with a scope,
-  e.g. `feat(cli): ...`, `fix(db): ...`, `docs(readme): ...`.
+  e.g. `feat(cli): ...`, `fix(service): ...`, `docs(readme): ...`.
 
 By contributing, you agree your changes are licensed under the MIT License.
