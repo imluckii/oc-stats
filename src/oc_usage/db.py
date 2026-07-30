@@ -25,15 +25,38 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
+import sys
 from collections.abc import Iterator
 from typing import Any
 
 from oc_usage.models import UNKNOWN, UsageRow
 
-DEFAULT_DB_DIR = os.path.expanduser("~/.local/share/opencode")
-# Default discovery prefers the active v2 database when both exist. A v1
-# database can be selected explicitly with ``--db`` (see README).
 DEFAULT_DB_CANDIDATES = ("opencode-next.db", "opencode.db")
+
+
+def default_db_dirs() -> tuple[str, ...]:
+    """Return platform-appropriate directories in discovery priority order.
+
+    OpenCode follows the platform's conventional per-user data directory. On
+    Unix, ``XDG_DATA_HOME`` takes precedence over the standard
+    ``~/.local/share`` fallback; macOS and Windows use their native application
+    support directories. The tuple leaves room for additional fallbacks while
+    keeping discovery deterministic.
+    """
+    if os.name == "nt" or sys.platform.startswith("win"):
+        data_root = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~/AppData/Local")
+    elif sys.platform == "darwin":
+        data_root = os.path.expanduser("~/Library/Application Support")
+    else:
+        data_root = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
+    return (os.path.join(data_root, "opencode"),)
+
+
+# Kept as a public compatibility alias for callers/tests that used the old
+# Linux-only constant. ``find_db`` recalculates the default so environment and
+# platform changes made after import are still respected.
+DEFAULT_DB_DIR = default_db_dirs()[0]
+_INITIAL_DEFAULT_DB_DIR = DEFAULT_DB_DIR
 
 V2 = "v2"
 V1 = "v1"
@@ -60,11 +83,19 @@ def find_db(arg: str | None) -> str:
     """
     if arg:
         return os.path.expanduser(arg)
+    # Honor the legacy constant when a caller explicitly overrides it, while
+    # otherwise resolving the platform/environment at call time.
+    directories = (
+        (DEFAULT_DB_DIR,) if DEFAULT_DB_DIR != _INITIAL_DEFAULT_DB_DIR else default_db_dirs()
+    )
+    # Check the preferred filename across all candidate directories before
+    # falling back to v1. We read exactly one path and never merge databases.
     for name in DEFAULT_DB_CANDIDATES:
-        candidate = os.path.join(DEFAULT_DB_DIR, name)
-        if os.path.exists(candidate):
-            return candidate
-    return os.path.join(DEFAULT_DB_DIR, DEFAULT_DB_CANDIDATES[0])
+        for directory in directories:
+            candidate = os.path.join(directory, name)
+            if os.path.exists(candidate):
+                return candidate
+    return os.path.join(directories[0], DEFAULT_DB_CANDIDATES[0])
 
 
 # ── schema detection ─────────────────────────────────────────────────────────
@@ -93,6 +124,30 @@ def _count_where(con: sqlite3.Connection, table: str, where: str) -> int:
     return int(row[0]) if row else 0
 
 
+def _has_v1_assistant_rows(con: sqlite3.Connection) -> bool:
+    """Return whether ``message`` contains a valid assistant JSON object.
+
+    Do not use ``json_extract`` here: SQLite raises ``malformed JSON`` for an
+    invalid row, which would hide otherwise valid v1 rows from detection.
+    Parsing in Python also gives loading and detection identical malformed-row
+    behavior.
+    """
+    try:
+        cur = con.execute("SELECT data FROM message")
+    except sqlite3.DatabaseError:
+        return False
+    for (raw,) in cur:
+        if not isinstance(raw, str):
+            continue
+        try:
+            data = json.loads(raw)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if isinstance(data, dict) and data.get("role") == "assistant":
+            return True
+    return False
+
+
 def detect_schema(con: sqlite3.Connection) -> str | None:
     """Detect which schema actually carries assistant rows.
 
@@ -106,11 +161,9 @@ def detect_schema(con: sqlite3.Connection) -> str | None:
         and _count_where(con, "session_message", "type = 'assistant'") > 0
     ):
         return V2
-    # v1 next: message rows whose JSON role is 'assistant'.
-    if (
-        _table_exists(con, "message")
-        and _count_where(con, "message", "json_extract(data, '$.role') = 'assistant'") > 0
-    ):
+    # v1 next: parse the JSON in Python so one malformed row cannot abort the
+    # query and hide valid assistant rows later in the table.
+    if _table_exists(con, "message") and _has_v1_assistant_rows(con):
         return V1
     return None
 
@@ -201,7 +254,9 @@ def _select_query(schema: str) -> tuple[str, str]:
     """Return (table, where-clause) used to stream assistant rows for a schema."""
     if schema == V2:
         return "session_message", "type = 'assistant'"
-    return "message", "json_extract(data, '$.role') = 'assistant'"
+    # v1 JSON is filtered after parsing in Python. SQLite's json_extract raises
+    # on malformed data, which must be skipped rather than aborting the load.
+    return "message", "1"
 
 
 def load_rows(db_path: str) -> Iterator[UsageRow]:
@@ -229,6 +284,8 @@ def load_rows(db_path: str) -> Iterator[UsageRow]:
             except (json.JSONDecodeError, ValueError):
                 continue
             if not isinstance(data, dict):
+                continue
+            if schema == V1 and data.get("role") != "assistant":
                 continue
             yield _row_from_data(data, schema)
     finally:

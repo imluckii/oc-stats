@@ -34,8 +34,8 @@ if TYPE_CHECKING:
     from rich.console import RenderableType
 
 # Width used when stdout is not a TTY. Comfortably fits the per-model table
-# (longest model name + 7 numeric columns) so nothing is truncated.
-NON_TTY_WIDTH = 140
+# (longest model name + 8 numeric columns) so nothing is truncated.
+NON_TTY_WIDTH = 165
 
 # Distinct colors cycled across providers for visual grouping.
 PROVIDER_COLORS = [
@@ -233,7 +233,8 @@ def _build_providers(report: Report, colors: dict[str, str], fmt_num, has_cost: 
         ("Provider", "left", ""),
         ("Turns", "right", ""),
         ("Input", "right", ""),
-        ("Cache", "right", "green"),
+        ("Cache Read", "right", "green"),
+        ("Cache Write", "right", "green"),
         ("Output", "right", ""),
         ("Reasoning", "right", ""),
         ("Total", "right", "bold"),
@@ -250,6 +251,7 @@ def _build_providers(report: Report, colors: dict[str, str], fmt_num, has_cost: 
             Text(fmt_num(bucket.turns), justify="right"),
             Text(fmt_num(bucket.input), justify="right"),
             Text(fmt_num(bucket.cache_read), justify="right", style="green"),
+            Text(fmt_num(bucket.cache_write), justify="right", style="green"),
             Text(fmt_num(bucket.output), justify="right"),
             Text(fmt_num(bucket.reasoning), justify="right"),
             Text(fmt_num(bucket.total), justify="right", style="bold"),
@@ -281,7 +283,8 @@ def _build_models(
             ("Variant", "left", ""),
             ("Turns", "right", ""),
             ("Input", "right", ""),
-            ("Cache", "right", "green"),
+            ("Cache Read", "right", "green"),
+            ("Cache Write", "right", "green"),
             ("Output", "right", ""),
             ("Reasoning", "right", ""),
             ("Total", "right", ""),
@@ -296,6 +299,7 @@ def _build_models(
                 Text(fmt_num(bucket.turns), justify="right"),
                 Text(fmt_num(bucket.input), justify="right"),
                 Text(fmt_num(bucket.cache_read), justify="right", style="green"),
+                Text(fmt_num(bucket.cache_write), justify="right", style="green"),
                 Text(fmt_num(bucket.output), justify="right"),
                 Text(fmt_num(bucket.reasoning), justify="right"),
                 Text(fmt_num(bucket.total), justify="right", style="bold white"),

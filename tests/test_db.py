@@ -16,7 +16,7 @@ from oc_usage.db import (
     find_db,
     load_rows,
 )
-from tests.helpers import T0, build_v1_db, build_v2_db
+from tests.helpers import T0, build_v1_db, build_v2_db, create_both_tables, insert_v1
 
 
 def _connect(path):
@@ -48,6 +48,54 @@ def test_find_db_falls_back_to_v1(tmp_path, monkeypatch):
 def test_find_db_returns_v2_path_when_nothing_exists(tmp_path, monkeypatch):
     monkeypatch.setattr(db, "DEFAULT_DB_DIR", str(tmp_path))
     assert find_db(None).endswith("opencode-next.db")
+
+
+def test_default_db_dir_respects_xdg_data_home(monkeypatch):
+    monkeypatch.setattr(db.sys, "platform", "linux")
+    monkeypatch.setenv("XDG_DATA_HOME", "/tmp/xdg-data")
+    assert db.default_db_dirs() == ("/tmp/xdg-data/opencode",)
+
+
+def test_default_db_dir_uses_unix_home_fallback(monkeypatch):
+    monkeypatch.setattr(db.sys, "platform", "linux")
+    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
+    monkeypatch.setattr(
+        db.os.path,
+        "expanduser",
+        lambda path: "/home/test/.local/share" if path == "~/.local/share" else path,
+    )
+    assert db.default_db_dirs() == ("/home/test/.local/share/opencode",)
+
+
+def test_default_db_dir_uses_macos_application_support(monkeypatch):
+    monkeypatch.setattr(db.sys, "platform", "darwin")
+    monkeypatch.setattr(
+        db.os.path,
+        "expanduser",
+        lambda path: (
+            "/Users/test/Library/Application Support"
+            if path == "~/Library/Application Support"
+            else path
+        ),
+    )
+    assert db.default_db_dirs() == ("/Users/test/Library/Application Support/opencode",)
+
+
+def test_default_db_dir_respects_windows_localappdata(monkeypatch):
+    monkeypatch.setattr(db.sys, "platform", "win32")
+    monkeypatch.setenv("LOCALAPPDATA", r"C:\Users\test\AppData\Local")
+    assert db.default_db_dirs() == (os.path.join(r"C:\Users\test\AppData\Local", "opencode"),)
+
+
+def test_find_db_prefers_v2_across_default_directory_candidates(tmp_path, monkeypatch):
+    first = tmp_path / "primary"
+    second = tmp_path / "fallback"
+    first.mkdir()
+    second.mkdir()
+    (first / "opencode.db").write_text("")
+    (second / "opencode-next.db").write_text("")
+    monkeypatch.setattr(db, "default_db_dirs", lambda: (str(first), str(second)))
+    assert find_db(None) == str(second / "opencode-next.db")
 
 
 # ── schema detection (row-based, not table-based) ─────────────────────────────
@@ -166,6 +214,32 @@ def test_malformed_json_rows_are_skipped(tmp_path):
     rows = list(load_rows(path))
     assert len(rows) == 1  # only the valid object row survives
     assert rows[0].model == "gpt-4o"
+
+
+def test_v1_malformed_json_does_not_hide_valid_assistant_rows(tmp_path):
+    path = str(tmp_path / "v1-malformed.db")
+    con = sqlite3.connect(path)
+    try:
+        create_both_tables(con)
+        con.execute(
+            "INSERT INTO message(id, session_id, time_created, time_updated, data)"
+            " VALUES('bad-first','s1',1,1,'{not valid json')"
+        )
+        insert_v1(
+            con,
+            [
+                ("p1", "m1", "high", 10, 20, 3, 4, 5, 0.0, T0),
+                ("p2", "m2", "low", 30, 40, 6, 7, 8, 0.0, T0 + 1),
+            ],
+        )
+        con.commit()
+    finally:
+        con.close()
+
+    with _connect(path) as con:
+        assert detect_schema(con) == "v1"
+    rows = list(load_rows(path))
+    assert [(row.provider, row.model) for row in rows] == [("p1", "m1"), ("p2", "m2")]
 
 
 def test_missing_token_fields_default_to_zero(tmp_path):

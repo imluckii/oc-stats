@@ -47,17 +47,17 @@ Default (compact) report:
 
   ────  By Provider  ────
 
-   Provider         Turns       Input      Cache     Output  Reasoning      Total      Cost
+   Provider         Turns       Input  Cache Read  Cache Write      Output  Reasoning      Total      Cost
    ────────────────────────────────────────────────────────────────────────────────────────
-   zai-coding-plan   1,000   4,000,000  7,000,000   1,000,000  500,000  12,500,000   $12.00
-   openai              184   1,000,000          0      184,338    8,002   1,192,340   $12.00
-   cerebras             20     432,110     812,904     20,000    4,005   1,269,019       —
+   zai-coding-plan   1,000   4,000,000   7,000,000           0   1,000,000    500,000  12,500,000   $12.00
+   openai              184   1,000,000           0           0     184,338      8,002   1,192,340   $12.00
+   cerebras             20     432,110     812,904           0      20,000      4,005   1,269,019       —
 
   ────  By Model  ────
 
     zai-coding-plan
-    Model          Variant  Turns    Input   Cache   Output  Reasoning      Total      Cost
-    glm-4.7        default   1,000  4.00M   7.00M   1.00M     500K    12.50M   $12.00
+     Model          Variant  Turns    Input  Cache Read  Cache Write  Output  Reasoning      Total      Cost
+     glm-4.7        default   1,000  4.00M      7.00M           0    1.00M       500K    12.50M   $12.00
     ...
 ```
 
@@ -243,10 +243,9 @@ is never double-counted.
 
 | OS      | Path                                                         |
 | ------- | ------------------------------------------------------------ |
-| Linux   | `~/.local/share/opencode/opencode-next.db` (v2, preferred)  |
-| Linux   | `~/.local/share/opencode/opencode.db` (v1, legacy)           |
-| macOS   | `~/Library/Application Support/opencode/...`                 |
-| Windows | `%LOCALAPPDATA%\opencode\...`                                |
+| Linux/Unix | `$XDG_DATA_HOME/opencode/...` when set; otherwise `~/.local/share/opencode/...` |
+| macOS      | `~/Library/Application Support/opencode/...`                                  |
+| Windows    | `%LOCALAPPDATA%\opencode\...`                                                 |
 
 Auto-detection prefers `opencode-next.db`; override with `--db` any time.
 
