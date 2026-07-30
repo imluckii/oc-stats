@@ -54,6 +54,7 @@ def test_find_db_returns_v2_path_when_nothing_exists(tmp_path, monkeypatch):
 
 def test_default_db_dir_respects_xdg_data_home(monkeypatch):
     monkeypatch.setattr(db.os, "name", "posix")
+    monkeypatch.setattr(db.os, "path", posixpath)
     monkeypatch.setattr(db.sys, "platform", "linux")
     monkeypatch.setenv("XDG_DATA_HOME", "/tmp/xdg-data")
     assert db.default_db_dirs() == (posixpath.join("/tmp/xdg-data", "opencode"),)
@@ -61,6 +62,7 @@ def test_default_db_dir_respects_xdg_data_home(monkeypatch):
 
 def test_default_db_dir_uses_unix_home_fallback(monkeypatch):
     monkeypatch.setattr(db.os, "name", "posix")
+    monkeypatch.setattr(db.os, "path", posixpath)
     monkeypatch.setattr(db.sys, "platform", "linux")
     monkeypatch.delenv("XDG_DATA_HOME", raising=False)
     monkeypatch.setattr(
@@ -73,6 +75,7 @@ def test_default_db_dir_uses_unix_home_fallback(monkeypatch):
 
 def test_default_db_dir_uses_macos_application_support(monkeypatch):
     monkeypatch.setattr(db.os, "name", "posix")
+    monkeypatch.setattr(db.os, "path", posixpath)
     monkeypatch.setattr(db.sys, "platform", "darwin")
     monkeypatch.setattr(
         db.os.path,
@@ -320,14 +323,15 @@ def test_sqlite_uri_uses_platform_aware_windows_escaping(monkeypatch):
 
 
 def test_special_character_database_path_is_readable(tmp_path):
-    path = tmp_path / "usage #?% 日本.db"
+    # ``?`` is not a legal Windows filename; URI handling for it is covered by
+    # the deterministic Windows-path test above.
+    path = tmp_path / "usage #% 日本.db"
     build_v2_db(path, [("p", "m", "", 1, 2, 3, 4, 5, 0.0, T0)])
 
     assert len(list(load_rows(str(path)))) == 1
     uri = db._sqlite_uri(str(path))
     assert "%20" in uri
     assert "%23" in uri
-    assert "%3F" in uri
     assert "%25" in uri
     assert "日本" not in uri
 
