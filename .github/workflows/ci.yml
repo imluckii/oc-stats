@@ -51,6 +51,8 @@ jobs:
           /tmp/smoke/bin/python -m pip install dist/*.whl
           /tmp/smoke/bin/oc-usage --version
           /tmp/smoke/bin/oc-usage --help | head -n 3
+          /tmp/smoke/bin/oc-usage --help | grep -- --server
+          /tmp/smoke/bin/oc-usage --help | grep -- --password-stdin
 
   windows:
     name: Windows smoke (Python 3.12)
@@ -80,6 +82,9 @@ jobs:
           & $smokePython -m pip install $wheel
           & .\smoke\Scripts\oc-usage.exe --help
           & .\smoke\Scripts\oc-usage.exe --version
+          $help = & .\smoke\Scripts\oc-usage.exe --help
+          if (-not ($help -match "--server")) { throw "Server option missing from wheel" }
+          if (-not ($help -match "--password-stdin")) { throw "Password option missing from wheel" }
 
           $fixture = Join-Path $env:RUNNER_TEMP "oc-usage-fixture.db"
           $code = 'import json,sqlite3,sys; c=sqlite3.connect(sys.argv[1]); c.execute("create table session_message (id text,session_id text,type text,seq integer,time_created integer,time_updated integer,data text)"); c.execute("insert into session_message values (?,?,?,?,?,?,?)",("id","s","assistant",0,1,1,json.dumps({"model":{"id":"m","providerID":"p"},"tokens":{"input":10,"output":2}}))); c.commit(); c.close()'

@@ -1,15 +1,16 @@
 # oc-usage
 
-> All-time **OpenCode** token usage, straight from the local session database.
+> All-time **OpenCode** token usage, from a local database or one V2 server.
 
-`oc-usage` reads assistant turns from OpenCode's SQLite database and reports token
-usage — broken down by **provider**, **model**, and **variant** — with **cost**
-when it is tracked. It understands both the **v1** (`message`) and **v2**
-(`session_message`) database schemas and reconciles every number from the raw
-recorded components.
+`oc-usage` reads assistant turns from OpenCode's SQLite database or from one
+OpenCode V2 HTTP server and reports token usage — broken down by **provider**,
+**model**, and **variant** — with **cost** when it is tracked. It understands
+both the **v1** (`message`) and **v2** (`session_message`) database schemas and
+the V2 server's paginated session/message API. Every number is reconciled from
+raw recorded components.
 
-- 🔒 **Read-only.** Opens the database in SQLite `mode=ro`; never writes, never
-  sends data anywhere.
+- 🔒 **Read-only.** Opens local databases in SQLite `mode=ro`; server mode sends
+  only authenticated GET requests and never writes to the server.
 - 🧮 **Accurate.** Totals are summed from per-turn `input` / `cache_read` /
   `cache_write` / `output` / `reasoning` components — never estimated.
 - 💸 **Honest about cost.** Cost is shown only when actually recorded. If every
@@ -145,21 +146,32 @@ oc-usage --db "$env:LOCALAPPDATA\opencode\opencode.db"
 oc-usage --db 'C:\Users\Ada Lovelace\AppData\Local\opencode\opencode-next.db'
 ```
 
-On Windows, automatic discovery checks these directories in order (when the
-corresponding environment variable is set):
+OpenCode Desktop's Electron `userData` directory stores application settings and
+service metadata, not the authoritative session database. `oc-usage` therefore
+never scans Electron settings, logs, or service metadata for databases or
+credentials. The embedded/local OpenCode core server uses xdg-basedir data
+locations instead.
 
-1. `$env:XDG_DATA_HOME\opencode\`
-2. `$HOME\.local\share\opencode\` (the `%USERPROFILE%\.local\share\opencode\`
-   equivalent)
-3. `$env:LOCALAPPDATA\opencode\`
-4. `$HOME\AppData\Local\opencode\`
+On Windows, automatic discovery checks these directories in order:
 
-The last location is the fallback when `LOCALAPPDATA` is unavailable. In each
-directory, `opencode-next.db` is preferred to `opencode.db`, and `oc-usage`
-reads exactly one file; it never merges or double-counts both files. If both
-files are present, compare their size and `LastWriteTime` to identify the file
-OpenCode is currently updating, then use an explicit path when you want that
-file:
+1. `$env:XDG_DATA_HOME\opencode\` (when `XDG_DATA_HOME` is set)
+2. `$HOME\.local\share\opencode\` (the xdg-basedir fallback)
+3. `$env:LOCALAPPDATA\opencode\` (compatibility fallback)
+4. `$HOME\AppData\Local\opencode\` (compatibility fallback)
+
+The same current XDG-first rule applies on Linux and macOS: use
+`${XDG_DATA_HOME:-~/.local/share}/opencode/`. macOS's older
+`~/Library/Application Support/opencode/` is checked only after the XDG path.
+In each directory, filename order is deterministic:
+`opencode-next.db`, `opencode.db`, `opencode-dev.db`, then
+`opencode-local.db`. These correspond to `@next`/`opencode2`, stable/latest/
+beta/prod, dev, and local channels. `oc-usage` selects exactly one database and
+never merges or double-counts files or directories. Directory precedence is
+evaluated only after filename precedence, so an `opencode-next.db` in a later
+compatibility directory wins over an `opencode.db` in an earlier one.
+
+If several files exist, inspect their timestamps and use an explicit path when
+you know which channel is active:
 
 ```powershell
 Get-ChildItem `
@@ -173,7 +185,19 @@ Get-ChildItem `
 oc-usage --db "$env:LOCALAPPDATA\opencode\opencode.db"
 ```
 
-Use `--db` when OpenCode is configured to keep its data elsewhere.
+Use `--db` when OpenCode is configured to keep its data elsewhere. `--db` is the
+highest-precedence source selector. Alternatively, `OPENCODE_DB` selects one
+database before automatic discovery; an absolute value is used as-is and a
+relative value is resolved under the current XDG OpenCode data directory:
+
+```bash
+OPENCODE_DB=opencode-dev.db oc-usage --json
+OPENCODE_DB=/tmp/synthetic-opencode.db oc-usage
+```
+
+`:memory:` cannot be read after the OpenCode process exits and is rejected with
+a clear error. Electron in-memory service credentials are never extracted from
+logs or settings.
 
 Then run:
 
@@ -194,14 +218,22 @@ python -m oc_usage
 ## Usage
 
 ```
-usage: oc-usage [-h] [--db PATH] [--full] [--no-color] [--plain] [--ascii] [--json] [--version]
+usage: oc-usage [-h] [--db PATH | --server URL] [--username NAME]
+                [--password-env NAME | --password-stdin] [--full] [--no-color]
+                [--plain] [--ascii] [--json] [--version]
 
-All-time OpenCode token usage from the local session database. Reads assistant
-turns (OpenCode v1 and v2 schemas) and reports tokens by provider, model, and
+All-time OpenCode token usage from a local session database or one OpenCode V2
+HTTP server. Reads assistant turns and reports tokens by provider, model, and
 variant, with cost when tracked.
 
 options:
-  --db PATH        path to an opencode .db file (auto-detected by default; v2 preferred)
+  --db PATH        path to one opencode .db file (highest source precedence; never merged)
+  --server URL     read one OpenCode V2 HTTP server (mutually exclusive with --db)
+  --username NAME  HTTP Basic username for --server (default: opencode)
+  --password-env NAME
+                   read HTTP Basic password from environment variable NAME
+  --password-stdin
+                   read HTTP Basic password from one line of stdin
   --full           show full integers (no K/M rounding)
   --no-color       disable ANSI colors
   --plain          alias for --no-color
@@ -213,8 +245,9 @@ options:
 
 ### Selecting a database (`--db`)
 
-By default `oc-usage` auto-detects the database, preferring the active **v2**
-database. To inspect a specific one:
+By default `oc-usage` auto-detects one database, preferring the active **v2**
+filename and then the other channel filenames in the documented order. To
+inspect a specific one:
 
 ```bash
 # v2 (newer / opencode-next)
@@ -243,6 +276,49 @@ machine-readable, while `--plain` / `--no-color` only control styling.
 > After migrating, history can be **duplicated** across `opencode.db` and
 > `opencode-next.db`. `oc-usage` deliberately reads **one** database per run.
 > Pick the one that holds your current history (usually v2).
+
+### Desktop embedded service, remote servers, and WSL (`--server`)
+
+For Desktop's embedded service, local DB mode is usually the most complete and
+private option when the XDG data directory is accessible. Use server mode when
+the database is inaccessible (for example, Windows WSL or a remote Desktop
+server) but the OpenCode V2 HTTP API is reachable:
+
+```bash
+# Password is read without appearing in shell history or process arguments.
+printf '%s\n' "$OPENCODE_SERVER_PASSWORD" | \
+  oc-usage --server http://127.0.0.1:4096 --password-stdin
+
+# Or read it from a named environment variable.
+export OPENCODE_SERVER_PASSWORD='use-a-secret-manager-in-real-usage'
+oc-usage --server https://opencode.example.test --password-env OPENCODE_SERVER_PASSWORD
+```
+
+`4096` above is only an example/configured server address, not a universal
+Desktop default. `--server` and `--db` are mutually exclusive: server mode
+reads one server only and never implicitly aggregates it with local history.
+`--username` defaults to `opencode`; there is deliberately no plaintext
+`--password` option. `--password-env` and `--password-stdin` are mutually
+exclusive and are rejected unless `--server` is supplied.
+
+The client implements the current V2 contract documented at
+[`/v2/docs/api`](https://opencode.ai/v2/docs/api) and
+[`/v2/openapi.json`](https://opencode.ai/v2/openapi.json): it lists sessions
+with `GET /api/session`, follows `cursor.next`, then lists projected messages
+with `GET /api/session/{sessionID}/message`, follows that endpoint's cursor,
+and counts only `type: "assistant"` messages. It uses each assistant message's
+`model.id`, `model.providerID`, optional `model.variant`, `tokens` (including
+`cache.read` and `cache.write`), `cost`, and `time.created`. It does not use
+session-level aggregate totals. Incompatible JSON, HTTP 401/403, timeouts,
+connection failures, and unreachable/authenticated servers fail loudly rather
+than being reported as zero.
+
+The report header identifies `local database` or `server`; JSON adds a safe
+`source` object. Passwords are never printed or included in source metadata.
+Remote mode is read-only from this tool's perspective, but server access still
+depends on network reachability, API version, permissions, and the server's
+configured authentication. No attempt is made to find Desktop credentials in
+Electron settings or logs.
 
 ### Inside OpenCode
 
@@ -345,14 +421,13 @@ is never double-counted.
 
 | OS      | Path                                                         |
 | ------- | ------------------------------------------------------------ |
-| Linux/Unix | `$XDG_DATA_HOME/opencode/...` when set; otherwise `~/.local/share/opencode/...` |
-| macOS      | `~/Library/Application Support/opencode/...`                                  |
+| Linux/Unix | `${XDG_DATA_HOME:-~/.local/share}/opencode/...` |
+| macOS      | `${XDG_DATA_HOME:-~/.local/share}/opencode/...`, then `~/Library/Application Support/opencode/...` (compatibility) |
 | Windows    | `%XDG_DATA_HOME%\opencode\...` when set; then `%USERPROFILE%\.local\share\opencode\...`; then `%LOCALAPPDATA%\opencode\...`; then `%USERPROFILE%\AppData\Local\opencode\...` |
 
-Auto-detection checks those Windows directories in the listed order and
-prefers `opencode-next.db` over `opencode.db` in each directory. It returns one
-database only; override with `--db` any time, especially when both files are
-present and you have confirmed which one OpenCode is actively updating.
+Auto-detection checks directories in the listed order and filenames in the
+channel order documented above. It returns one database only; override with
+`--db` any time, especially when multiple channel files are present.
 
 ---
 
@@ -361,7 +436,9 @@ present and you have confirmed which one OpenCode is actively updating.
 - The database is opened with a SQLite `mode=ro` URI. `oc-usage` **cannot**
   modify your data and creates no sidecar files from reading.
 - It reads **only** the columns it needs to sum tokens/cost (`data`, `type`).
-- Nothing is transmitted off the machine — no telemetry, no network calls.
+- Local mode transmits nothing and makes no network calls. Server mode makes
+  only the GET requests needed for the selected server's session/message API;
+  it does not upload prompts or modify server state.
 - An active write-ahead log (`-wal`) is safe: the read-only connection sees the
   last committed state without locking writers.
 
@@ -381,6 +458,15 @@ present and you have confirmed which one OpenCode is actively updating.
 - **One database per run.** To avoid duplicate-counting across a migration,
   `oc-usage` reads a single database. Sum across `--db` invocations at your own
   risk.
+- **Desktop/server access.** Local Desktop history may be inaccessible when its
+  XDG directory is on another machine, inside WSL, or protected by OS
+  permissions. Server mode requires a reachable V2 API and credentials accepted
+  by that server; it cannot bypass network, firewall, proxy, or API-version
+  restrictions.
+- **No automatic merge or dedupe across sources.** A run has exactly one local
+  database or one server source. Pagination protects against repeated message
+  IDs within a broken server response, but histories from separate sources are
+  never combined.
 
 ---
 
@@ -410,6 +496,7 @@ src/oc_usage/
 ├── __main__.py   # python -m oc_usage
 ├── cli.py        # argparse + entry point
 ├── db.py         # discovery, schema detection, row loading (read-only)
+├── remote.py     # standard-library V2 HTTP session/message client
 ├── models.py     # normalized rows, buckets, aggregation
 └── render.py     # Rich report + JSON output
 ```
