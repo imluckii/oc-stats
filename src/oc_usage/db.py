@@ -23,10 +23,12 @@ safe to read concurrently.
 from __future__ import annotations
 
 import json
+import ntpath
 import os
 import sqlite3
 import sys
 from collections.abc import Iterator
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from oc_usage.models import UNKNOWN, UsageRow
@@ -44,8 +46,20 @@ def default_db_dirs() -> tuple[str, ...]:
     keeping discovery deterministic.
     """
     if os.name == "nt" or sys.platform.startswith("win"):
-        data_root = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~/AppData/Local")
-    elif sys.platform == "darwin":
+        # LOCALAPPDATA is the normal OpenCode location on Windows. It is not
+        # guaranteed to be present in stripped-down shells, CI, or services,
+        # so retain the conventional per-user fallback as a second candidate.
+        roots = []
+        local_app_data = os.environ.get("LOCALAPPDATA")
+        if local_app_data:
+            roots.append(local_app_data)
+        roots.append(os.path.expanduser("~/AppData/Local"))
+        return tuple(
+            os.path.join(root, "opencode")
+            for i, root in enumerate(roots)
+            if root and root not in roots[:i]
+        )
+    if sys.platform == "darwin":
         data_root = os.path.expanduser("~/Library/Application Support")
     else:
         data_root = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
@@ -101,11 +115,30 @@ def find_db(arg: str | None) -> str:
 # ── schema detection ─────────────────────────────────────────────────────────
 
 
+def _sqlite_uri(db_path: str) -> str:
+    """Return a correctly escaped read-only SQLite URI for ``db_path``.
+
+    ``file:`` URIs are URLs, not ordinary filesystem paths. In particular,
+    spaces, ``#``, ``?``, ``%``, Unicode, and Windows drive letters all need
+    handling before the query string is appended. ``Path.as_uri`` delegates
+    that job to the platform-aware pathlib implementation instead of relying
+    on a partial hand-rolled replacement.
+
+    The Windows branch uses ``PureWindowsPath`` deliberately. Besides being
+    the path class used by pathlib on Windows, it keeps this conversion
+    deterministic in tests that exercise Windows paths on a non-Windows host.
+    """
+    if os.name == "nt" or sys.platform.startswith("win"):
+        absolute = ntpath.abspath(os.path.expanduser(db_path))
+        path_uri = PureWindowsPath(absolute).as_uri()
+    else:
+        path_uri = Path(db_path).expanduser().resolve(strict=False).as_uri()
+    return f"{path_uri}?mode=ro"
+
+
 def _connect(db_path: str) -> sqlite3.Connection:
     """Open the database read-only via a SQLite URI (safe with an active WAL)."""
-    # Normalize to an absolute path and URL-encode it minimally for the URI.
-    abs_path = os.path.abspath(db_path)
-    uri = "file:" + abs_path.replace("?", "%3f").replace("#", "%23") + "?mode=ro"
+    uri = _sqlite_uri(db_path)
     return sqlite3.connect(uri, uri=True)
 
 

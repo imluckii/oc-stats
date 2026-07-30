@@ -51,3 +51,45 @@ jobs:
           /tmp/smoke/bin/python -m pip install dist/*.whl
           /tmp/smoke/bin/oc-usage --version
           /tmp/smoke/bin/oc-usage --help | head -n 3
+
+  windows:
+    name: Windows smoke (Python 3.12)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install project + dev deps
+        run: python -m pip install --upgrade pip; pip install -e ".[dev]"
+      - name: Ruff checks
+        run: ruff check .; ruff format --check .
+      - name: Run tests
+        run: pytest -q
+      - name: Build wheel
+        run: python -m build
+      - name: Install wheel and smoke-test console
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          python -m venv smoke
+          $smokePython = Join-Path $PWD "smoke\Scripts\python.exe"
+          & $smokePython -m pip install --upgrade pip
+          $wheel = (Get-ChildItem -Path dist -Filter *.whl | Select-Object -First 1).FullName
+          & $smokePython -m pip install $wheel
+          & .\smoke\Scripts\oc-usage.exe --help
+          & .\smoke\Scripts\oc-usage.exe --version
+
+          $fixture = Join-Path $env:RUNNER_TEMP "oc-usage-fixture.db"
+          $code = 'import json,sqlite3,sys; c=sqlite3.connect(sys.argv[1]); c.execute("create table session_message (id text,session_id text,type text,seq integer,time_created integer,time_updated integer,data text)"); c.execute("insert into session_message values (?,?,?,?,?,?,?)",("id","s","assistant",0,1,1,json.dumps({"model":{"id":"m","providerID":"p"},"tokens":{"input":10,"output":2}}))); c.commit(); c.close()'
+          & $smokePython -c $code $fixture
+
+          $json = & .\smoke\Scripts\oc-usage.exe --db $fixture --json | ConvertFrom-Json
+          if ($json.totals.turns -ne 1 -or $json.totals.total -ne 12) {
+            throw "Unexpected JSON smoke-test totals"
+          }
+          $asciiOutput = (& .\smoke\Scripts\oc-usage.exe --db $fixture --ascii --no-color) -join "`n"
+          if ($asciiOutput -match "[^\x00-\x7F]") {
+            throw "ASCII smoke-test output contained a non-ASCII character"
+          }

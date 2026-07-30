@@ -184,6 +184,24 @@ def test_rich_report_shows_cost_when_tracked():
     assert "$2.50" in out
 
 
+def test_rich_ascii_mode_uses_ascii_chrome_and_escapes_labels():
+    report = aggregate([UsageRow("提供者", "模型", "高", 10, 20, 0, 1, 0, 0.0, 1)])
+    out = _capture(report, NON_TTY_WIDTH)
+    # Keep the regular render assertion separate to prove Unicode remains the
+    # default for a Unicode-capable captured stream.
+    assert "提供者" in out
+
+    buf = StringIO()
+    console = Console(file=buf, width=NON_TTY_WIDTH, no_color=True, highlight=False)
+    render_rich(report, fmt_num=fmt_full, console=console, ascii=True)
+    ascii_out = buf.getvalue()
+    assert "提供者" not in ascii_out
+    assert "\\u63d0\\u4f9b\\u8005" in ascii_out
+    assert "=" in ascii_out
+    assert "━" not in ascii_out
+    assert all(ord(char) < 128 for char in ascii_out)
+
+
 def test_rich_report_marks_zero_cost_providers_as_not_tracked():
     # Cost is tracked overall (p1) but p2 never reported a cost -> "—", not "$0.00".
     report = aggregate(

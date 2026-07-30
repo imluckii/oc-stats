@@ -15,7 +15,14 @@ from collections.abc import Callable
 from oc_usage import __version__
 from oc_usage.db import DatabaseNotFoundError, NoUsageDataError, find_db, load_rows
 from oc_usage.models import aggregate
-from oc_usage.render import fmt_compact, fmt_full, make_console, render_json, render_rich
+from oc_usage.render import (
+    fmt_compact,
+    fmt_full,
+    make_console,
+    needs_ascii,
+    render_json,
+    render_rich,
+)
 
 PROG = "oc-usage"
 FormatFn = Callable[[int | float], str]
@@ -49,6 +56,11 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--full", action="store_true", help="show full integers (no K/M rounding)")
     ap.add_argument("--no-color", action="store_true", help="disable ANSI colors")
     ap.add_argument("--plain", action="store_true", help="alias for --no-color")
+    ap.add_argument(
+        "--ascii",
+        action="store_true",
+        help="use ASCII-only boxes and progress bars (auto-enabled for legacy encodings)",
+    )
     ap.add_argument("--json", action="store_true", help="emit JSON to stdout")
     ap.add_argument(
         "--version",
@@ -60,7 +72,20 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _err(message: str) -> None:
-    sys.stderr.write(f"{PROG}: {message}\n")
+    text = f"{PROG}: {message}\n"
+    try:
+        sys.stderr.write(text)
+    except UnicodeEncodeError:
+        # Error messages should not turn a useful exit status into another
+        # exception merely because a legacy console cannot print a path.
+        encoding = getattr(sys.stderr, "encoding", None) or "ascii"
+        try:
+            safe = text.encode(encoding, errors="backslashreplace").decode(
+                encoding, errors="replace"
+            )
+        except (LookupError, UnicodeError):
+            safe = text.encode("ascii", errors="backslashreplace").decode("ascii")
+        sys.stderr.write(safe)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -92,8 +117,16 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     no_color = args.no_color or args.plain
+    ascii_mode = args.ascii or needs_ascii()
     console = make_console(no_color=no_color)
-    render_rich(report, fmt_num=fmt_num, console=console)
+    try:
+        render_rich(report, fmt_num=fmt_num, console=console, ascii=ascii_mode)
+    except UnicodeEncodeError:
+        # A stream can misreport its encoding (or change it while the process
+        # is running). Retry once with the fully ASCII renderer; all dynamic
+        # labels are escaped there as well.
+        console = make_console(no_color=no_color)
+        render_rich(report, fmt_num=fmt_num, console=console, ascii=True)
     return 0
 
 

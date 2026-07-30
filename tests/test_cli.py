@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from io import StringIO
 
 import pytest
 
@@ -109,6 +110,31 @@ def test_no_color_is_alias_for_plain(v2_db, capsys):
     main(["--db", v2_db, "--no-color"])
     out = capsys.readouterr().out
     assert ANSI not in out
+
+
+def test_ascii_flag_uses_ascii_only_rendering(v2_db, capsys):
+    rc = main(["--db", v2_db, "--ascii"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "OpenCode Usage" in out
+    assert "=" in out
+    assert all(ord(char) < 128 for char in out), repr([(c, ord(c)) for c in out if ord(c) >= 128])
+
+
+def test_legacy_console_encoding_automatically_uses_ascii(v2_db, monkeypatch):
+    class LegacyTTY(StringIO):
+        encoding = "ascii"
+
+        def isatty(self):
+            return True
+
+    stream = LegacyTTY()
+    monkeypatch.setattr(sys, "stdout", stream)
+
+    assert main(["--db", v2_db]) == 0
+    out = stream.getvalue()
+    assert "OpenCode Usage" in out
+    assert all(ord(char) < 128 for char in out), repr([(c, ord(c)) for c in out if ord(c) >= 128])
 
 
 # ── python -m & entry point ───────────────────────────────────────────────────

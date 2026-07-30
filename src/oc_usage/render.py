@@ -15,6 +15,7 @@ full, and we disable ANSI color so captured output is clean plain text.
 
 from __future__ import annotations
 
+import codecs
 import json
 import sys
 from datetime import datetime, timezone
@@ -90,23 +91,68 @@ def pct(part: float, whole: float) -> float:
 
 
 def make_console(no_color: bool) -> Console:
-    """Build a Rich console tuned for TTY vs non-TTY output."""
-    is_tty = sys.stdout.isatty()
+    """Build a Rich console tuned for TTY vs non-TTY output.
+
+    Rich still receives the real stdout stream so callers can redirect or
+    capture output normally. ``ascii`` is a rendering choice, not a Rich
+    terminal choice, and is passed to :func:`render_rich` separately.
+    """
+    is_tty = _is_tty(sys.stdout)
     width = None if is_tty else NON_TTY_WIDTH
     return Console(no_color=no_color or not is_tty, highlight=False, width=width)
+
+
+def _is_tty(stream) -> bool:
+    """Return ``stream.isatty()`` without trusting every file-like object."""
+    try:
+        return bool(stream.isatty())
+    except (AttributeError, OSError, ValueError):
+        return False
+
+
+def needs_ascii(stream=None) -> bool:
+    """Whether a stream's declared encoding cannot safely carry Unicode.
+
+    UTF-8 (including Windows' ``cp65001`` alias) keeps the normal Unicode Rich
+    report. For a legacy code page or an unknown encoding we proactively use
+    the ASCII report; this avoids relying on a late ``UnicodeEncodeError``
+    after Rich has already written part of a report. Streams such as
+    ``StringIO`` with no encoding declaration are treated as Unicode-capable.
+    The renderer also has a retry fallback for streams that lie about their
+    encoding.
+    """
+    stream = sys.stdout if stream is None else stream
+    try:
+        encoding = getattr(stream, "encoding", None)
+    except (AttributeError, OSError, ValueError):
+        return True
+    if not encoding:
+        return False
+    try:
+        return codecs.lookup(encoding).name != "utf-8"
+    except LookupError:
+        return True
 
 
 # ── small renderable helpers ──────────────────────────────────────────────────
 
 
-def _bar(frac: float, width: int = 30) -> Text:
-    """A colored unicode progress bar as a Text renderable."""
+def _bar(frac: float, width: int = 30, *, ascii: bool = False) -> Text:
+    """A colored Unicode (or ASCII-safe) progress bar as a Text renderable."""
     frac = max(0.0, min(1.0, frac))
     filled = round(frac * width)
+    full_char, empty_char = ("=", "-") if ascii else ("━", "━")
     t = Text()
-    t.append("━" * filled, style="bold green")
-    t.append("━" * (width - filled), style="grey42")
+    t.append(full_char * filled, style="bold green")
+    t.append(empty_char * (width - filled), style="grey42")
     return t
+
+
+def _display(value: str, ascii: bool) -> str:
+    """Keep data labels printable on an ASCII-only console."""
+    if not ascii:
+        return value
+    return value.encode("ascii", errors="backslashreplace").decode("ascii")
 
 
 def _provider_color_map(by_provider: dict[str, Bucket]) -> dict[str, str]:
@@ -114,14 +160,21 @@ def _provider_color_map(by_provider: dict[str, Bucket]) -> dict[str, str]:
     return {name: PROVIDER_COLORS[i % len(PROVIDER_COLORS)] for i, name in enumerate(names)}
 
 
-def _section(title: str, style: str = "cyan") -> Rule:
-    return Rule(title=Text(f"  {title}  ", style=f"bold {style}"), style=style, align="left")
+def _section(title: str, style: str = "cyan", *, ascii: bool = False) -> Rule:
+    return Rule(
+        title=Text(f"  {title}  ", style=f"bold {style}"),
+        style=style,
+        align="left",
+        characters="-" if ascii else "─",
+    )
 
 
 def _make_table(
     columns: list[tuple[str, str, str]],
     box_style: box.Box = box.SIMPLE_HEAVY,
     header_style: str = "bold cyan",
+    *,
+    ascii: bool = False,
 ) -> Table:
     t = Table(
         box=box_style,
@@ -138,7 +191,7 @@ def _make_table(
             title,
             justify=justify,
             no_wrap=is_numeric,
-            overflow="fold" if not is_numeric else "ellipsis",
+            overflow="fold" if not is_numeric else ("crop" if ascii else "ellipsis"),
         )
     return t
 
@@ -146,7 +199,7 @@ def _make_table(
 # ── report sections ───────────────────────────────────────────────────────────
 
 
-def _build_header(report: Report, fmt_num) -> Panel:
+def _build_header(report: Report, fmt_num, *, ascii: bool = False) -> Panel:
     bits = [
         f"[bold]{fmt_num(report.totals.turns)}[/] turns",
         f"[bold]{len(report.by_provider)}[/] providers",
@@ -154,19 +207,24 @@ def _build_header(report: Report, fmt_num) -> Panel:
     ]
     if report.span:
         lo, hi = report.span
-        bits.append(f"[dim]{lo:%Y-%m-%d} → {hi:%Y-%m-%d}[/]")
-    body = Text.from_markup("  ·  ".join(bits))
+        arrow = "->" if ascii else "→"
+        bits.append(f"[dim]{lo:%Y-%m-%d} {arrow} {hi:%Y-%m-%d}[/]")
+    separator = "  |  " if ascii else "  ·  "
+    body = Text.from_markup(separator.join(bits))
     return Panel(
         Align.left(body, vertical="middle"),
-        title=Text("  ◇  OpenCode Usage · All Time  ", style="bold white on blue"),
+        title=Text(
+            "  *  OpenCode Usage - All Time  " if ascii else "  ◇  OpenCode Usage · All Time  ",
+            style="bold white on blue",
+        ),
         title_align="left",
         border_style="blue",
-        box=box.DOUBLE_EDGE,
+        box=box.ASCII if ascii else box.DOUBLE_EDGE,
         padding=(0, 1),
     )
 
 
-def _build_totals(report: Report, fmt_num) -> Table.grid:  # type: ignore[valid-type]
+def _build_totals(report: Report, fmt_num, *, ascii: bool = False) -> Table.grid:  # type: ignore[valid-type]
     totals = report.totals
     all_input = totals.input + totals.cache_read
 
@@ -179,9 +237,12 @@ def _build_totals(report: Report, fmt_num) -> Table.grid:  # type: ignore[valid-
     )
 
     t: Table = Table.grid(padding=(0, 2))
-    t.add_column(no_wrap=True)  # label
-    t.add_column(no_wrap=True, width=widest)  # value, fixed width → clean right-align
-    t.add_column(no_wrap=True)  # annotation
+    overflow = "crop" if ascii else "ellipsis"
+    t.add_column(no_wrap=True, overflow=overflow)  # label
+    t.add_column(
+        no_wrap=True, width=widest, overflow=overflow
+    )  # value, fixed width → clean right-align
+    t.add_column(no_wrap=True, overflow=overflow)  # annotation
 
     def row(label, value, annot="", label_style="", value_style="", end=False):
         t.add_row(
@@ -203,7 +264,7 @@ def _build_totals(report: Report, fmt_num) -> Table.grid:  # type: ignore[valid-
     else:
         row(
             "Cost",
-            "—",
+            "-" if ascii else "—",
             "not tracked by these providers",
             label_style="dim",
             value_style="dim",
@@ -211,7 +272,7 @@ def _build_totals(report: Report, fmt_num) -> Table.grid:  # type: ignore[valid-
     return t
 
 
-def _build_cache(report: Report, fmt_num) -> Table:
+def _build_cache(report: Report, fmt_num, *, ascii: bool = False) -> Table:
     totals = report.totals
     all_input = totals.input + totals.cache_read
     hit = pct(totals.cache_read, all_input)
@@ -221,14 +282,21 @@ def _build_cache(report: Report, fmt_num) -> Table:
     t.add_column(justify="right", no_wrap=True)
     t.add_column(no_wrap=True)
     t.add_row(
-        _bar(hit / 100),
+        _bar(hit / 100, ascii=ascii),
         Text(f"{hit:.1f}%", style="bold green", justify="right"),
         Text("cache hit", style="dim"),
     )
     return t
 
 
-def _build_providers(report: Report, colors: dict[str, str], fmt_num, has_cost: bool) -> Table:
+def _build_providers(
+    report: Report,
+    colors: dict[str, str],
+    fmt_num,
+    has_cost: bool,
+    *,
+    ascii: bool = False,
+) -> Table:
     cols = [
         ("Provider", "left", ""),
         ("Turns", "right", ""),
@@ -241,13 +309,18 @@ def _build_providers(report: Report, colors: dict[str, str], fmt_num, has_cost: 
     ]
     if has_cost:
         cols.append(("Cost", "right", ""))
-    t = _make_table(cols, box_style=box.HEAVY_HEAD, header_style="bold blue")
+    t = _make_table(
+        cols,
+        box_style=box.ASCII if ascii else box.HEAVY_HEAD,
+        header_style="bold blue",
+        ascii=ascii,
+    )
     for name, bucket in sorted(
         report.by_provider.items(), key=lambda kv: kv[1].total, reverse=True
     ):
         color = colors[name]
         cells = [
-            Text(name, style=f"bold {color}"),
+            Text(_display(name, ascii), style=f"bold {color}"),
             Text(fmt_num(bucket.turns), justify="right"),
             Text(fmt_num(bucket.input), justify="right"),
             Text(fmt_num(bucket.cache_read), justify="right", style="green"),
@@ -260,14 +333,23 @@ def _build_providers(report: Report, colors: dict[str, str], fmt_num, has_cost: 
             # A zero-cost provider means cost was not reported for it (not that it
             # was free), so show "—" rather than a misleading "$0.00".
             cells.append(
-                Text(money(bucket.cost) if bucket.cost > 0 else "—", justify="right", style="dim")
+                Text(
+                    money(bucket.cost) if bucket.cost > 0 else ("-" if ascii else "—"),
+                    justify="right",
+                    style="dim",
+                )
             )
         t.add_row(*cells)
     return t
 
 
 def _build_models(
-    report: Report, colors: dict[str, str], fmt_num, has_cost: bool
+    report: Report,
+    colors: dict[str, str],
+    fmt_num,
+    has_cost: bool,
+    *,
+    ascii: bool = False,
 ) -> list[RenderableType]:
     """One sub-table per provider, sorted by total desc."""
     groups: list[RenderableType] = []
@@ -291,11 +373,16 @@ def _build_models(
         ]
         if has_cost:
             cols.append(("Cost", "right", ""))
-        tbl = _make_table(cols, box_style=box.ROUNDED, header_style=f"bold {color}")
+        tbl = _make_table(
+            cols,
+            box_style=box.ASCII if ascii else box.ROUNDED,
+            header_style=f"bold {color}",
+            ascii=ascii,
+        )
         for (_prov, model, variant), bucket in models:
             cells = [
-                Text(model, style=f"bold {color}"),
-                Text(variant, style="dim italic") if variant else Text(""),
+                Text(_display(model, ascii), style=f"bold {color}"),
+                Text(_display(variant, ascii), style="dim italic") if variant else Text(""),
                 Text(fmt_num(bucket.turns), justify="right"),
                 Text(fmt_num(bucket.input), justify="right"),
                 Text(fmt_num(bucket.cache_read), justify="right", style="green"),
@@ -307,36 +394,38 @@ def _build_models(
             if has_cost:
                 cells.append(
                     Text(
-                        money(bucket.cost) if bucket.cost > 0 else "—", justify="right", style="dim"
+                        money(bucket.cost) if bucket.cost > 0 else ("-" if ascii else "—"),
+                        justify="right",
+                        style="dim",
                     )
                 )
             tbl.add_row(*cells)
 
-        header = Text(f"  {name}  ", style=f"bold white on {color}")
+        header = Text(f"  {_display(name, ascii)}  ", style=f"bold white on {color}")
         groups.append(Group(header, tbl))
     return groups
 
 
-def render_rich(report: Report, *, fmt_num, console: Console) -> None:
+def render_rich(report: Report, *, fmt_num, console: Console, ascii: bool = False) -> None:
     """Render the full human report to ``console``."""
     colors = _provider_color_map(report.by_provider)
     has_cost = report.cost_tracked
 
     sections: list[RenderableType] = [
-        _build_header(report, fmt_num),
+        _build_header(report, fmt_num, ascii=ascii),
         Text(""),
-        _section("Token Totals", "cyan"),
-        _build_totals(report, fmt_num),
+        _section("Token Totals", "cyan", ascii=ascii),
+        _build_totals(report, fmt_num, ascii=ascii),
         Text(""),
-        _section("Cache", "green"),
-        _build_cache(report, fmt_num),
+        _section("Cache", "green", ascii=ascii),
+        _build_cache(report, fmt_num, ascii=ascii),
         Text(""),
-        _section("By Provider", "blue"),
-        _build_providers(report, colors, fmt_num, has_cost),
+        _section("By Provider", "blue", ascii=ascii),
+        _build_providers(report, colors, fmt_num, has_cost, ascii=ascii),
         Text(""),
-        _section("By Model", "magenta"),
+        _section("By Model", "magenta", ascii=ascii),
     ]
-    sections.extend(_build_models(report, colors, fmt_num, has_cost))
+    sections.extend(_build_models(report, colors, fmt_num, has_cost, ascii=ascii))
     console.print(Group(*sections))
 
 

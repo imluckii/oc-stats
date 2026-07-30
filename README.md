@@ -15,6 +15,8 @@ recorded components.
 - 💸 **Honest about cost.** Cost is shown only when actually recorded. If every
   recorded cost is zero, it says *not tracked*.
 - 🎨 **Beautiful by default** (Rich), with `--plain`, `--full`, and `--json` modes.
+- 🪟 **Windows-ready.** Uses `%LOCALAPPDATA%` (with a per-user fallback), safe
+  SQLite file URIs, and an explicit `--ascii` mode for legacy consoles.
 - 📦 **Single dependency:** [`rich`](https://github.com/Textualize/rich).
 
 ---
@@ -104,6 +106,48 @@ python -m venv .venv && source .venv/bin/activate
 pip install git+https://github.com/imluckii/oc-usage.git
 ```
 
+### Windows PowerShell
+
+Install with [pipx](https://pipx.pypa.io/), which keeps `oc-usage` isolated from
+your other Python projects. In PowerShell:
+
+```powershell
+py -m pip install --user pipx
+py -m pipx ensurepath
+# Open a new PowerShell window after ensurepath updates PATH.
+pipx install git+https://github.com/imluckii/oc-usage.git
+```
+
+If `oc-usage` is not found after restarting PowerShell, check the executable
+directory pipx selected and add that directory to your user PATH:
+
+```powershell
+pipx environment --value PIPX_BIN_DIR
+pipx list
+Get-Command oc-usage -ErrorAction SilentlyContinue
+```
+
+After changing PATH, start a new PowerShell window (or refresh the current
+process's `$env:Path`). Upgrade or remove the installation with:
+
+```powershell
+pipx upgrade oc-usage
+pipx uninstall oc-usage
+```
+
+Windows database paths can be passed directly. Quote paths containing spaces,
+`#`, `?`, `%`, or non-ASCII characters:
+
+```powershell
+oc-usage --db "$env:LOCALAPPDATA\opencode\opencode-next.db"
+oc-usage --db "$env:LOCALAPPDATA\opencode\opencode.db"
+oc-usage --db 'C:\Users\Ada Lovelace\AppData\Local\opencode\opencode-next.db'
+```
+
+When `LOCALAPPDATA` is unavailable, discovery also checks
+`$HOME\AppData\Local\opencode`. Use `--db` when OpenCode is configured to keep
+its data elsewhere.
+
 Then run:
 
 ```bash
@@ -123,7 +167,7 @@ python -m oc_usage
 ## Usage
 
 ```
-usage: oc-usage [-h] [--db PATH] [--full] [--no-color] [--plain] [--json] [--version]
+usage: oc-usage [-h] [--db PATH] [--full] [--no-color] [--plain] [--ascii] [--json] [--version]
 
 All-time OpenCode token usage from the local session database. Reads assistant
 turns (OpenCode v1 and v2 schemas) and reports tokens by provider, model, and
@@ -134,6 +178,7 @@ options:
   --full           show full integers (no K/M rounding)
   --no-color       disable ANSI colors
   --plain          alias for --no-color
+  --ascii          use ASCII-only boxes and progress bars (auto-enabled for legacy encodings)
   --json           emit JSON to stdout
   --version        show version and exit
   -h, --help       show this help message and exit
@@ -152,6 +197,21 @@ oc-usage --db ~/.local/share/opencode/opencode-next.db
 oc-usage --db ~/.local/share/opencode/opencode.db
 ```
 
+For a redirected report or a legacy Windows console that cannot render Rich's
+Unicode box drawing, request the portable form explicitly:
+
+```powershell
+oc-usage --ascii
+oc-usage --ascii --no-color > usage.txt
+```
+
+Unicode Rich output remains the default for UTF-8 terminals, including modern
+Windows Terminal and PowerShell. If stdout declares a non-UTF-8 encoding,
+`oc-usage` automatically switches to the ASCII renderer. If a stream still
+rejects Unicode, it retries once in ASCII; labels that contain non-ASCII data
+are escaped rather than causing a crash. `--json` is unchanged and remains
+machine-readable, while `--plain` / `--no-color` only control styling.
+
 > ⚠️ **Don't point two invocations at different databases and add them up.**
 > After migrating, history can be **duplicated** across `opencode.db` and
 > `opencode-next.db`. `oc-usage` deliberately reads **one** database per run.
@@ -165,11 +225,19 @@ From OpenCode's shell mode, run it inline:
 !oc-usage
 ```
 
+This inline form works in the OpenCode v2 TUI as long as `oc-usage` is on the
+shell's PATH. On Windows, install it with pipx as above and verify with
+`Get-Command oc-usage` before starting OpenCode.
+
 #### Optional global `/stats` command
 
-To turn `oc-usage` into a first-class slash command, add an OpenCode command
-file. In `~/.config/opencode/command/` (or your project's `.opencode/command/`)
-create `stats.md`:
+To turn `oc-usage` into a named slash command, add an OpenCode command file. The
+user-level location used by the current OpenCode command-file workflow is
+`~/.config/opencode/command/` (or use your project's `.opencode/command/`). On
+Windows, the corresponding user path is normally
+`$HOME\.config\opencode\command\`. OpenCode command discovery is versioned, so
+if your v2 build uses a different configured command directory, follow that
+build's documentation and keep the same file contents. Create `stats.md`:
 
 ```markdown
 ---
@@ -180,6 +248,9 @@ description: All-time OpenCode token usage
 ```
 
 Then `/stats` runs `oc-usage` for you.
+
+The portable, version-independent option is still `!oc-usage` from the TUI;
+the command file is optional and does not change database discovery.
 
 ---
 

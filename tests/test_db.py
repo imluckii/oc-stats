@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
+from pathlib import PureWindowsPath
 
 import pytest
 
@@ -84,7 +85,37 @@ def test_default_db_dir_uses_macos_application_support(monkeypatch):
 def test_default_db_dir_respects_windows_localappdata(monkeypatch):
     monkeypatch.setattr(db.sys, "platform", "win32")
     monkeypatch.setenv("LOCALAPPDATA", r"C:\Users\test\AppData\Local")
+    monkeypatch.setattr(
+        db.os.path,
+        "expanduser",
+        lambda path: r"C:\Users\test\AppData\Local" if path == "~/AppData/Local" else path,
+    )
     assert db.default_db_dirs() == (os.path.join(r"C:\Users\test\AppData\Local", "opencode"),)
+
+
+def test_default_db_dir_falls_back_when_localappdata_is_missing(monkeypatch):
+    monkeypatch.setattr(db.sys, "platform", "win32")
+    monkeypatch.delenv("LOCALAPPDATA", raising=False)
+    monkeypatch.setattr(
+        db.os.path,
+        "expanduser",
+        lambda path: r"C:\Users\test\AppData\Local" if path == "~/AppData/Local" else path,
+    )
+    assert db.default_db_dirs() == (os.path.join(r"C:\Users\test\AppData\Local", "opencode"),)
+
+
+def test_default_db_dir_tries_localappdata_then_home_fallback(monkeypatch):
+    monkeypatch.setattr(db.sys, "platform", "win32")
+    monkeypatch.setenv("LOCALAPPDATA", r"D:\portable\AppData\Local")
+    monkeypatch.setattr(
+        db.os.path,
+        "expanduser",
+        lambda path: r"C:\Users\test\AppData\Local" if path == "~/AppData/Local" else path,
+    )
+    assert db.default_db_dirs() == (
+        os.path.join(r"D:\portable\AppData\Local", "opencode"),
+        os.path.join(r"C:\Users\test\AppData\Local", "opencode"),
+    )
 
 
 def test_find_db_prefers_v2_across_default_directory_candidates(tmp_path, monkeypatch):
@@ -274,6 +305,25 @@ def test_database_opened_read_only(v2_db):
     assert rows  # reads succeed
     # No WAL files should have been created by read-only access.
     assert not os.path.exists(v2_db + "-wal")
+
+
+def test_sqlite_uri_uses_platform_aware_windows_escaping(monkeypatch):
+    monkeypatch.setattr(db.sys, "platform", "win32")
+    path = r"C:\Users\Test User\AppData\Local\opencode\usage #?% 日本.db"
+    assert db._sqlite_uri(path) == PureWindowsPath(path).as_uri() + "?mode=ro"
+
+
+def test_special_character_database_path_is_readable(tmp_path):
+    path = tmp_path / "usage #?% 日本.db"
+    build_v2_db(str(path), [("p", "m", "", 1, 2, 3, 4, 5, 0.0, T0)])
+
+    assert len(list(load_rows(str(path)))) == 1
+    uri = db._sqlite_uri(str(path))
+    assert "%20" in uri
+    assert "%23" in uri
+    assert "%3F" in uri
+    assert "%25" in uri
+    assert "日本" not in uri
 
 
 def test_active_wal_can_still_be_read(tmp_path):
