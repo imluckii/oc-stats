@@ -2,97 +2,51 @@
 
 Exit codes:
     0  — success
-    1  — database not found, no usage data, or other runtime error
+    1  — no executable, service unavailable, incompatible API, or no usage data
     2  — argument parsing error (from argparse)
 """
 
 from __future__ import annotations
 
 import argparse
-import os
 import sys
-from collections.abc import Callable
 
 from oc_usage import __version__
-from oc_usage.db import DatabaseNotFoundError, NoUsageDataError, find_db, load_rows
-from oc_usage.models import SourceMetadata, aggregate
-from oc_usage.remote import (
-    RemoteAuthError,
-    RemoteClient,
-    RemoteConnectionError,
-    RemoteError,
-    RemoteNoUsageDataError,
-    RemoteSchemaError,
-)
+from oc_usage.models import aggregate
 from oc_usage.render import (
     fmt_compact,
-    fmt_full,
     make_console,
     needs_ascii,
     render_json,
     render_rich,
 )
+from oc_usage.service import (
+    ExecutableNotFoundError,
+    IncompatibleExecutableError,
+    NoUsageDataError,
+    ServiceClient,
+    ServiceError,
+    ServiceSchemaError,
+    ServiceUnavailableError,
+)
 
 PROG = "oc-usage"
-FormatFn = Callable[[int | float], str]
 
 
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(
         prog=PROG,
         description=(
-            "All-time OpenCode token usage from a local session database or "
-            "one OpenCode V2 HTTP server. Reads assistant turns and reports "
-            "tokens by provider, model, and variant, with cost when tracked."
+            "All-time OpenCode token usage, read live from your running OpenCode V2 service."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
-            "  oc-usage                 # auto-detected database, compact numbers\n"
-            "  oc-usage --full          # full integers (no K/M rounding)\n"
-            "  oc-usage --json          # machine-readable JSON\n"
-            "  oc-usage --db ~/.local/share/opencode/opencode.db   # v1 database\n"
-            "  oc-usage --db ~/.local/share/opencode/opencode-next.db  # v2 database\n"
-            "  oc-usage --server http://127.0.0.1:4096 --password-stdin\n"
+            "  oc-usage          # show the report\n"
+            "  oc-usage --json   # machine-readable JSON\n"
             "\n"
             "In OpenCode's shell mode:  !oc-usage\n"
         ),
-    )
-    sources = ap.add_mutually_exclusive_group()
-    sources.add_argument(
-        "--db",
-        metavar="PATH",
-        help="path to one opencode .db file (highest source precedence; never merged)",
-    )
-    sources.add_argument(
-        "--server",
-        metavar="URL",
-        help="read one OpenCode V2 HTTP server (mutually exclusive with --db)",
-    )
-    ap.add_argument(
-        "--username",
-        default="opencode",
-        metavar="NAME",
-        help="HTTP Basic username for --server (default: opencode)",
-    )
-    password = ap.add_mutually_exclusive_group()
-    password.add_argument(
-        "--password-env",
-        metavar="NAME",
-        help="read the HTTP Basic password from environment variable NAME",
-    )
-    password.add_argument(
-        "--password-stdin",
-        action="store_true",
-        help="read the HTTP Basic password from one line of stdin",
-    )
-    ap.add_argument("--full", action="store_true", help="show full integers (no K/M rounding)")
-    ap.add_argument("--no-color", action="store_true", help="disable ANSI colors")
-    ap.add_argument("--plain", action="store_true", help="alias for --no-color")
-    ap.add_argument(
-        "--ascii",
-        action="store_true",
-        help="use ASCII-only boxes and progress bars (auto-enabled for legacy encodings)",
     )
     ap.add_argument("--json", action="store_true", help="emit JSON to stdout")
     ap.add_argument(
@@ -110,7 +64,7 @@ def _err(message: str) -> None:
         sys.stderr.write(text)
     except UnicodeEncodeError:
         # Error messages should not turn a useful exit status into another
-        # exception merely because a legacy console cannot print a path.
+        # exception merely because a legacy console cannot print a character.
         encoding = getattr(sys.stderr, "encoding", None) or "ascii"
         try:
             safe = text.encode(encoding, errors="backslashreplace").decode(
@@ -124,79 +78,44 @@ def _err(message: str) -> None:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
-    fmt_num: FormatFn = fmt_full if args.full else fmt_compact
+    try:
+        client = ServiceClient()
+        rows = list(client.rows())
+    except ExecutableNotFoundError as exc:
+        _err(str(exc))
+        return 1
+    except IncompatibleExecutableError as exc:
+        _err(str(exc))
+        return 1
+    except ServiceUnavailableError as exc:
+        _err(str(exc))
+        return 1
+    except NoUsageDataError as exc:
+        _err(str(exc))
+        return 1
+    except ServiceSchemaError as exc:
+        _err(str(exc))
+        return 1
+    except ServiceError as exc:  # any other transport error, surfaced cleanly
+        _err(str(exc))
+        return 1
 
-    if not args.server and (args.password_env or args.password_stdin):
-        _err("--password-env and --password-stdin require --server")
-        return 2
-
-    if args.server:
-        try:
-            password_value = _read_password(args)
-            client = RemoteClient(args.server, username=args.username, password=password_value)
-            rows = list(client.rows())
-        except RemoteNoUsageDataError as exc:
-            _err(str(exc))
-            return 1
-        except (RemoteAuthError, RemoteConnectionError, RemoteSchemaError, RemoteError) as exc:
-            _err(str(exc))
-            return 1
-        report = aggregate(rows, source=SourceMetadata("server", client.server.value))
-    else:
-        db = find_db(args.db)
-        if db == ":memory:":
-            _err("database path :memory: cannot be read after process exit; provide a file path")
-            return 1
-        try:
-            rows = list(load_rows(db))
-        except DatabaseNotFoundError:
-            _err(f"database not found: {db}")
-            return 1
-        except NoUsageDataError:
-            _err(f"no assistant messages found in {db}")
-            return 1
-        except Exception as exc:  # noqa: BLE001 — surface a clean message, not a traceback
-            _err(f"could not read {db}: {exc}")
-            return 1
-
-        if not rows:
-            _err(f"no assistant messages found in {db}")
-            return 1
-        report = aggregate(rows, source=SourceMetadata("local_database"))
+    report = aggregate(rows)
 
     if args.json:
         print(render_json(report))
         return 0
 
-    no_color = args.no_color or args.plain
-    ascii_mode = args.ascii or needs_ascii()
-    console = make_console(no_color=no_color)
+    ascii_mode = needs_ascii()
+    console = make_console()
     try:
-        render_rich(report, fmt_num=fmt_num, console=console, ascii=ascii_mode)
+        render_rich(report, fmt_num=fmt_compact, console=console, ascii=ascii_mode)
     except UnicodeEncodeError:
         # A stream can misreport its encoding (or change it while the process
         # is running). Retry once with the fully ASCII renderer; all dynamic
         # labels are escaped there as well.
-        console = make_console(no_color=no_color)
-        render_rich(report, fmt_num=fmt_num, console=console, ascii=True)
+        render_rich(report, fmt_num=fmt_compact, console=make_console(), ascii=True)
     return 0
-
-
-def _read_password(args: argparse.Namespace) -> str | None:
-    """Read a server password without ever including it in diagnostics."""
-    if args.password_env:
-        value = os.environ.get(args.password_env)
-        if value is None:
-            raise RemoteError(f"password environment variable not set: {args.password_env}")
-        return value
-    if args.password_stdin:
-        value = sys.stdin.readline()
-        if value.endswith("\n"):
-            value = value[:-1]
-        if value.endswith("\r"):
-            value = value[:-1]
-        return value
-    return None
 
 
 if __name__ == "__main__":

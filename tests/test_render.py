@@ -224,27 +224,22 @@ def test_rich_report_marks_zero_cost_providers_as_not_tracked():
     assert "$0.00" not in out
 
 
-def test_make_console_non_tty_uses_fixed_width(monkeypatch):
+def test_make_console_non_tty_uses_fixed_width_and_disables_color(monkeypatch):
     import sys
 
     monkeypatch.setattr(sys, "stdout", StringIO())  # not a tty
-    console = make_console(no_color=False)
+    console = make_console()
     assert console.width == NON_TTY_WIDTH
     assert console.no_color is True  # color auto-disabled when not a tty
 
 
-def test_make_console_no_color_flag_respected():
+def test_make_console_tty_keeps_color_on(monkeypatch):
     import sys
 
-    # Force a tty-like stdout so color would normally be on, then disable it.
     class FakeTTY:
         def isatty(self):
             return True
 
-    orig = sys.stdout
-    sys.stdout = FakeTTY()
-    try:
-        console = make_console(no_color=True)
-        assert console.no_color is True
-    finally:
-        sys.stdout = orig
+    monkeypatch.setattr(sys, "stdout", FakeTTY())
+    console = make_console()
+    assert console.no_color is False  # color stays on for a real TTY

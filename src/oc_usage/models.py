@@ -1,8 +1,9 @@
 """Normalized data models and aggregation for OpenCode usage rows.
 
-The loader (:mod:`oc_usage.db`) converts persisted assistant turns from either
-the v1 or v2 schema into a single :class:`UsageRow` shape. This module is
-schema-agnostic and responsible only for summing those rows into buckets.
+The service transport (:mod:`oc_usage.service`) converts assistant messages
+returned by OpenCode's running V2 service into a single :class:`UsageRow` shape.
+This module is transport-agnostic and responsible only for summing those rows
+into buckets.
 
 Token total semantics
 ---------------------
@@ -10,10 +11,7 @@ The component total of a turn is::
 
     total = input + cache_read + cache_write + output + reasoning
 
-We always compute ``total`` from the explicit components rather than trusting a
-stored ``tokens.total`` field. For the v1 schema the stored ``total`` has been
-validated (against fixtures and real data) to equal exactly this sum, but we
-keep the categories explicit and never estimate.
+We always compute ``total`` from the explicit components and never estimate.
 """
 
 from __future__ import annotations
@@ -32,20 +30,6 @@ UNKNOWN = "(unknown)"
 ModelKey = tuple[str, str, str]
 
 
-@dataclass(frozen=True)
-class SourceMetadata:
-    """Safe metadata identifying the one source used for a report.
-
-    ``value`` is intentionally optional.  Local database reports only expose
-    their source *type* so a JSON report does not unexpectedly disclose a
-    user's home directory.  Remote reports may include the server URL, which
-    is validated and never contains URL userinfo or a password.
-    """
-
-    type: str
-    value: str | None = None
-
-
 def component_total(
     input: int,
     cache_read: int,
@@ -61,9 +45,8 @@ def component_total(
 class UsageRow:
     """A single normalized assistant turn.
 
-    ``cost`` defaults to ``0.0`` when the source row did not carry a cost
-    (common in the v2 schema). ``time_created`` is the Unix epoch in
-    milliseconds, or ``0`` when unknown.
+    ``cost`` defaults to ``0.0`` when the source message did not carry a cost.
+    ``time_created`` is the Unix epoch in milliseconds, or ``0`` when unknown.
     """
 
     provider: str
@@ -114,17 +97,16 @@ class Bucket:
 
 @dataclass
 class Report:
-    """Fully aggregated usage for a single database."""
+    """Fully aggregated usage for the running OpenCode service."""
 
     totals: Bucket
     by_provider: dict[str, Bucket]
     by_model: dict[ModelKey, Bucket]
     span: tuple[datetime, datetime] | None
     cost_tracked: bool
-    source: SourceMetadata | None = None
 
 
-def aggregate(rows: Iterable[UsageRow], *, source: SourceMetadata | None = None) -> Report:
+def aggregate(rows: Iterable[UsageRow]) -> Report:
     """Sum rows into totals, per-provider, and per-model buckets."""
     totals = Bucket()
     by_provider: dict[str, Bucket] = {}
@@ -153,18 +135,4 @@ def aggregate(rows: Iterable[UsageRow], *, source: SourceMetadata | None = None)
         by_model=by_model,
         span=span,
         cost_tracked=any_cost,
-        source=source,
-    )
-
-
-# Pre-built empty report for the "no data" path so callers/renderers can rely on
-# a stable shape even before aggregation runs.
-def empty_report(source: SourceMetadata | None = None) -> Report:
-    return Report(
-        totals=Bucket(),
-        by_provider={},
-        by_model={},
-        span=None,
-        cost_tracked=False,
-        source=source,
     )

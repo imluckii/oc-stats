@@ -38,6 +38,10 @@ if TYPE_CHECKING:
 # (longest model name + 8 numeric columns) so nothing is truncated.
 NON_TTY_WIDTH = 165
 
+# Single source for the whole tool: the running OpenCode service. Reported
+# consistently in the Rich header and the JSON payload.
+SOURCE_LABEL = "OpenCode service"
+
 # Distinct colors cycled across providers for visual grouping.
 PROVIDER_COLORS = [
     "bright_cyan",
@@ -90,7 +94,7 @@ def pct(part: float, whole: float) -> float:
 # ── console construction ──────────────────────────────────────────────────────
 
 
-def make_console(no_color: bool) -> Console:
+def make_console() -> Console:
     """Build a Rich console tuned for TTY vs non-TTY output.
 
     Rich still receives the real stdout stream so callers can redirect or
@@ -99,7 +103,7 @@ def make_console(no_color: bool) -> Console:
     """
     is_tty = _is_tty(sys.stdout)
     width = None if is_tty else NON_TTY_WIDTH
-    return Console(no_color=no_color or not is_tty, highlight=False, width=width)
+    return Console(no_color=not is_tty, highlight=False, width=width)
 
 
 def _is_tty(stream) -> bool:
@@ -201,7 +205,7 @@ def _make_table(
 
 def _build_header(report: Report, fmt_num, *, ascii: bool = False) -> Panel:
     bits = [
-        f"[dim]Source: {_source_label(report)}[/]",
+        f"[dim]Source: {SOURCE_LABEL}[/]",
         f"[bold]{fmt_num(report.totals.turns)}[/] turns",
         f"[bold]{len(report.by_provider)}[/] providers",
         f"[bold]{len(report.by_model)}[/] models",
@@ -223,16 +227,6 @@ def _build_header(report: Report, fmt_num, *, ascii: bool = False) -> Panel:
         box=box.ASCII if ascii else box.DOUBLE_EDGE,
         padding=(0, 1),
     )
-
-
-def _source_label(report: Report) -> str:
-    if report.source is None:
-        return "unknown"
-    if report.source.type == "local_database":
-        return "local database"
-    if report.source.type == "server":
-        return "server"
-    return report.source.type.replace("_", " ")
 
 
 def _build_totals(report: Report, fmt_num, *, ascii: bool = False) -> Table.grid:  # type: ignore[valid-type]
@@ -459,6 +453,7 @@ def _pack(bucket: Bucket) -> dict[str, int | float]:
 
 def render_json(report: Report) -> str:
     payload: dict[str, object] = {
+        "source": SOURCE_LABEL,
         "totals": {**_pack(report.totals), "cost_tracked": report.cost_tracked},
         "providers": {
             name: _pack(b)
@@ -471,11 +466,6 @@ def render_json(report: Report) -> str:
             for k, v in sorted(report.by_model.items(), key=lambda kv: kv[1].total, reverse=True)
         ],
     }
-    if report.source:
-        source: dict[str, str] = {"type": report.source.type}
-        if report.source.value:
-            source["url"] = report.source.value
-        payload["source"] = source
     if report.span:
         lo, hi = report.span
         payload["span"] = {"from": _iso(lo), "to": _iso(hi)}

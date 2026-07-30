@@ -1,4 +1,4 @@
-"""Tests for the CLI entry point, exit codes, and flags."""
+"""Tests for the CLI entry point, exit codes, flags, and JSON output."""
 
 from __future__ import annotations
 
@@ -9,79 +9,137 @@ from io import StringIO
 
 import pytest
 
-from oc_usage import __version__
+from oc_usage import __version__, cli
 from oc_usage.cli import main
+from oc_usage.service import ServiceClient
+from tests.helpers import T0, FakeService, assistant_message
 
-ANSI = "\x1b["
+
+def _fake_with_data():
+    return FakeService(
+        ["s1"],
+        {
+            "s1": [
+                assistant_message(
+                    "a0", ("zai", "glm-4.7", "default", 800, 14000, 0, 60, 10, 0.0123, T0)
+                ),
+                assistant_message(
+                    "a1", ("openai", "gpt-4o", "high", 1000, 0, 0, 200, 50, 0.5, T0 + 1)
+                ),
+                assistant_message(
+                    "a2", ("openai", "gpt-4o-mini", "low", 100, 0, 0, 10, 0, 0.0, T0 + 2)
+                ),
+            ]
+        },
+    )
+
+
+def patch_service(monkeypatch, fake):
+    """Make ``main()`` build a client that talks to ``fake`` instead of subprocess."""
+    monkeypatch.setattr(
+        cli, "ServiceClient", lambda: ServiceClient(executable="opencode2", runner=fake)
+    )
 
 
 # ── happy paths ───────────────────────────────────────────────────────────────
 
 
-def test_json_output_is_valid_and_complete(v2_db, capsys):
-    rc = main(["--db", v2_db, "--json"])
+def test_json_output_is_valid_and_has_exact_values(monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    rc = main(["--json"])
     out = capsys.readouterr().out
     assert rc == 0
     data = json.loads(out)
-    assert data["totals"]["turns"] == 4
-    assert data["totals"]["cost_tracked"] is True
-    assert "zai-coding-plan" in data["providers"]
+
+    t = data["totals"]
+    assert t["turns"] == 3
+    assert t["input"] == 1900
+    assert t["cache_read"] == 14000
+    assert t["cache_write"] == 0
+    assert t["output"] == 270
+    assert t["reasoning"] == 60
+    assert t["total"] == 1900 + 14000 + 0 + 270 + 60
+    assert t["cost"] == round(0.0123 + 0.5, 6)
+    assert t["cost_tracked"] is True
+
+    assert data["source"] == "OpenCode service"
+    assert data["providers"]["zai"]["total"] == 800 + 14000 + 0 + 60 + 10
+    assert data["providers"]["openai"]["cost"] == 0.5
     assert {"provider", "model", "variant"} <= set(data["models"][0])
+    assert data["span"]["from"].endswith("Z")
 
 
-def test_human_report_exits_zero(v2_db, capsys):
-    rc = main(["--db", v2_db])
+def test_human_report_exits_zero(monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    rc = main([])
     out = capsys.readouterr().out
     assert rc == 0
     assert "OpenCode Usage" in out
+    assert "OpenCode service" in out
     assert "By Provider" in out
 
 
-def test_v1_database_works(v1_db, capsys):
-    rc = main(["--db", v1_db, "--json"])
+def test_default_compact_numbers_are_shown(monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    main([])
     out = capsys.readouterr().out
-    assert rc == 0
-    data = json.loads(out)
-    assert data["totals"]["turns"] == 3
-    assert "cerebras" in data["providers"]
-
-
-def test_full_mode_shows_unrounded_numbers(v2_db, capsys):
-    # zai-coding-plan/glm-4.7 aggregates cache_read 8000+6000 = 14000.
-    main(["--db", v2_db, "--full"])
-    out = capsys.readouterr().out
-    assert "14,000" in out
-
-
-def test_compact_mode_shows_rounded_numbers(v2_db, capsys):
-    main(["--db", v2_db])  # default = compact; 14000 -> "14.0K"
-    out = capsys.readouterr().out
+    # 14000 cache read -> compact "14.0K" in the default report.
     assert "14.0K" in out
 
 
 # ── error / no-data paths ─────────────────────────────────────────────────────
 
 
-def test_missing_db_exits_1(tmp_path, capsys):
-    missing = str(tmp_path / "absent.db")
-    rc = main(["--db", missing])
+def test_no_executable_exits_1(monkeypatch, capsys):
+    monkeypatch.setattr("oc_usage.service.shutil.which", lambda _name: None)
+    rc = main([])
     err = capsys.readouterr().err
     assert rc == 1
-    assert "database not found" in err
+    assert "not found" in err
+    assert "opencode2" in err
 
 
-def test_memory_db_exits_with_post_process_explanation(capsys):
-    rc = main(["--db", ":memory:"])
+def test_incompatible_executable_exits_1(monkeypatch, capsys):
+    fake = _fake_with_data()
+    fake.help_stdout = ""  # V1 binary: dumps help to stderr, empty stdout
+    patch_service(monkeypatch, fake)
+    rc = main([])
     err = capsys.readouterr().err
     assert rc == 1
-    assert "cannot be read after process exit" in err
+    assert "does not provide" in err
 
 
-def test_empty_db_exits_1(empty_db, capsys):
-    rc = main(["--db", empty_db])
+def test_service_unavailable_exits_1(monkeypatch, capsys):
+    fake = _fake_with_data()
+    fake.mode = "down"
+    patch_service(monkeypatch, fake)
+    rc = main([])
     err = capsys.readouterr().err
     assert rc == 1
-    assert "no assistant messages" in err
+    assert "unavailable" in err
+    # No DB paths or internal socket details are leaked.
+    assert "opencode-next.db" not in err
+
+
+def test_invalid_json_exits_1(monkeypatch, capsys):
+    fake = _fake_with_data()
+    fake.mode = "bad-json"
+    patch_service(monkeypatch, fake)
+    rc = main([])
+    err = capsys.readouterr().err
+    assert rc == 1
+    assert "invalid JSON" in err
+
+
+def test_no_assistant_messages_exits_1(monkeypatch, capsys):
+    from tests.helpers import user_message
+
+    fake = FakeService(["s1"], {"s1": [user_message("u1")]})
+    patch_service(monkeypatch, fake)
+    rc = main([])
+    err = capsys.readouterr().err
+    assert rc == 1
+    assert "No assistant messages" in err
 
 
 # ── flags ─────────────────────────────────────────────────────────────────────
@@ -95,61 +153,47 @@ def test_version_prints_version(capsys):
     assert __version__ in out
 
 
-def test_help_prints_usage(capsys):
+def test_help_is_short_and_lists_only_public_options(capsys):
     with pytest.raises(SystemExit) as exc:
         main(["--help"])
     assert exc.value.code == 0
     out = capsys.readouterr().out
     assert "OpenCode token usage" in out
-    assert "--db" in out
     assert "--json" in out
-    assert "--server" in out
-    assert "--password-stdin" in out
+    assert "--version" in out
+    # Removed options must not appear in help.
+    for removed in ("--db", "--server", "--username", "--password", "--full", "--ascii"):
+        assert removed not in out
 
 
-def test_db_and_server_are_mutually_exclusive():
+@pytest.mark.parametrize(
+    "flag",
+    [
+        "--db",
+        "--server",
+        "--username",
+        "--password-stdin",
+        "--password-env",
+        "--full",
+        "--no-color",
+        "--plain",
+        "--ascii",
+        "--bogus",
+    ],
+)
+def test_removed_flags_are_rejected(flag, monkeypatch):
+    patch_service(monkeypatch, _fake_with_data())
     with pytest.raises(SystemExit) as exc:
-        main(["--db", "a.db", "--server", "http://127.0.0.1:4096"])
+        main([flag])
     assert exc.value.code == 2
 
 
-def test_password_options_require_server(v2_db, capsys):
-    rc = main(["--db", v2_db, "--password-env", "NO_SECRET"])
-    err = capsys.readouterr().err
-    assert rc == 2
-    assert "require --server" in err
+# ── automatic ASCII fallback (no public flag) ─────────────────────────────────
 
 
-def test_local_json_identifies_local_source(v2_db, capsys):
-    assert main(["--db", v2_db, "--json"]) == 0
-    data = json.loads(capsys.readouterr().out)
-    assert data["source"] == {"type": "local_database"}
+def test_legacy_console_encoding_automatically_uses_ascii(monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
 
-
-def test_plain_flag_produces_no_ansi(v2_db, capsys):
-    # capsys replaces stdout with a non-tty, so color is already off; this still
-    # confirms the captured stream carries no escape codes.
-    main(["--db", v2_db, "--plain"])
-    out = capsys.readouterr().out
-    assert ANSI not in out
-
-
-def test_no_color_is_alias_for_plain(v2_db, capsys):
-    main(["--db", v2_db, "--no-color"])
-    out = capsys.readouterr().out
-    assert ANSI not in out
-
-
-def test_ascii_flag_uses_ascii_only_rendering(v2_db, capsys):
-    rc = main(["--db", v2_db, "--ascii"])
-    out = capsys.readouterr().out
-    assert rc == 0
-    assert "OpenCode Usage" in out
-    assert "=" in out
-    assert all(ord(char) < 128 for char in out), repr([(c, ord(c)) for c in out if ord(c) >= 128])
-
-
-def test_legacy_console_encoding_automatically_uses_ascii(v2_db, monkeypatch):
     class LegacyTTY(StringIO):
         encoding = "ascii"
 
@@ -158,11 +202,10 @@ def test_legacy_console_encoding_automatically_uses_ascii(v2_db, monkeypatch):
 
     stream = LegacyTTY()
     monkeypatch.setattr(sys, "stdout", stream)
-
-    assert main(["--db", v2_db]) == 0
+    assert main([]) == 0
     out = stream.getvalue()
     assert "OpenCode Usage" in out
-    assert all(ord(char) < 128 for char in out), repr([(c, ord(c)) for c in out if ord(c) >= 128])
+    assert all(ord(ch) < 128 for ch in out), repr([(c, ord(c)) for c in out if ord(c) >= 128])
 
 
 # ── python -m & entry point ───────────────────────────────────────────────────
@@ -188,3 +231,4 @@ def test_python_m_module_help():
     )
     assert result.returncode == 0
     assert "OpenCode token usage" in result.stdout
+    assert "--db" not in result.stdout

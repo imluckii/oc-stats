@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "oc-usage"
-version = "0.1.0"
-description = "All-time OpenCode token usage from local v1/v2 databases or one OpenCode V2 server."
+version = "0.2.0"
+description = "All-time OpenCode token usage, read live from your running OpenCode V2 service."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
