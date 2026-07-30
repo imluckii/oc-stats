@@ -51,8 +51,14 @@ jobs:
           /tmp/smoke/bin/python -m pip install dist/*.whl
           /tmp/smoke/bin/oc-usage --version
           /tmp/smoke/bin/oc-usage --help | head -n 3
-          /tmp/smoke/bin/oc-usage --help | grep -- --server
-          /tmp/smoke/bin/oc-usage --help | grep -- --password-stdin
+          /tmp/smoke/bin/oc-usage --help | grep -- --json
+          if /tmp/smoke/bin/oc-usage --help | grep -q -- --db; then
+            echo "removed --db flag still advertised"; exit 1
+          fi
+          # Removed flags must be rejected (argparse exit 2), not silently work.
+          if /tmp/smoke/bin/oc-usage --db x >/tmp/err 2>&1; then
+            echo "--db should have been rejected"; exit 1
+          fi
 
   windows:
     name: Windows smoke (Python 3.12)
@@ -80,21 +86,12 @@ jobs:
           & $smokePython -m pip install --upgrade pip
           $wheel = (Get-ChildItem -Path dist -Filter *.whl | Select-Object -First 1).FullName
           & $smokePython -m pip install $wheel
-          & .\smoke\Scripts\oc-usage.exe --help
           & .\smoke\Scripts\oc-usage.exe --version
+          & .\smoke\Scripts\oc-usage.exe --help
           $help = & .\smoke\Scripts\oc-usage.exe --help
-          if (-not ($help -match "--server")) { throw "Server option missing from wheel" }
-          if (-not ($help -match "--password-stdin")) { throw "Password option missing from wheel" }
+          if (-not ($help -match "--json")) { throw "JSON option missing from wheel" }
+          if ($help -match "--db") { throw "Removed --db flag still advertised" }
 
-          $fixture = Join-Path $env:RUNNER_TEMP "oc-usage-fixture.db"
-          $code = 'import json,sqlite3,sys; c=sqlite3.connect(sys.argv[1]); c.execute("create table session_message (id text,session_id text,type text,seq integer,time_created integer,time_updated integer,data text)"); c.execute("insert into session_message values (?,?,?,?,?,?,?)",("id","s","assistant",0,1,1,json.dumps({"model":{"id":"m","providerID":"p"},"tokens":{"input":10,"output":2}}))); c.commit(); c.close()'
-          & $smokePython -c $code $fixture
-
-          $json = & .\smoke\Scripts\oc-usage.exe --db $fixture --json | ConvertFrom-Json
-          if ($json.totals.turns -ne 1 -or $json.totals.total -ne 12) {
-            throw "Unexpected JSON smoke-test totals"
-          }
-          $asciiOutput = (& .\smoke\Scripts\oc-usage.exe --db $fixture --ascii --no-color) -join "`n"
-          if ($asciiOutput -match "[^\x00-\x7F]") {
-            throw "ASCII smoke-test output contained a non-ASCII character"
-          }
+          # A removed flag must be rejected (nonzero exit), not silently accepted.
+          & .\smoke\Scripts\oc-usage.exe --db x
+          if ($LASTEXITCODE -eq 0) { throw "--db should have been rejected" }
