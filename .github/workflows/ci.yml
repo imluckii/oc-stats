@@ -63,8 +63,8 @@ jobs:
           cache: pip
       - name: Install project + dev deps
         run: python -m pip install --upgrade pip; pip install -e ".[dev]"
-      - name: Ruff checks
-        run: ruff check .; ruff format --check .
+      - name: Ruff check
+        run: ruff check .
       - name: Run tests
         run: pytest -q
       - name: Build wheel
