@@ -39,19 +39,21 @@ from oc_usage.models import UsageRow
 EXECUTABLE_CANDIDATES = ("opencode2", "opencode")
 
 # Per-request page size, sent on every page (including cursor pages, which the
-# spec permits combining with ``limit``). Kept moderate because the ``api``
-# command can intermittently truncate very large pages.
-PAGE_LIMIT = 50
+# spec permits combining with ``limit``). Kept small deliberately: the ``api``
+# command can intermittently truncate responses of roughly ~130KB and up, so a
+# small page size keeps every response well under that threshold. Retries
+# (below) cover the rare case that still truncates.
+PAGE_LIMIT = 2
 
 # Upper bound on a single ``api`` subprocess call so a hung service cannot stall
 # the report forever.
 REQUEST_TIMEOUT = 60.0
 
-# The ``api`` command can intermittently truncate a page (an upstream streaming
-# quirk that is not strictly size-correlated). Each request is an idempotent GET,
-# so a JSON-decode failure is retried several times before the report gives up.
+# The ``api`` command can intermittently truncate a page. Each request is an
+# idempotent GET, so a JSON-decode failure is retried several times before the
+# report gives up.
 JSON_RETRIES = 5
-RETRY_DELAY = 0.15
+RETRY_DELAY = 0.2
 
 
 class ServiceError(RuntimeError):
