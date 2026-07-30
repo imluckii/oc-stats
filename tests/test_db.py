@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import posixpath
 import sqlite3
 from pathlib import PureWindowsPath
 
@@ -55,7 +56,7 @@ def test_default_db_dir_respects_xdg_data_home(monkeypatch):
     monkeypatch.setattr(db.os, "name", "posix")
     monkeypatch.setattr(db.sys, "platform", "linux")
     monkeypatch.setenv("XDG_DATA_HOME", "/tmp/xdg-data")
-    assert db.default_db_dirs() == ("/tmp/xdg-data/opencode",)
+    assert db.default_db_dirs() == (posixpath.join("/tmp/xdg-data", "opencode"),)
 
 
 def test_default_db_dir_uses_unix_home_fallback(monkeypatch):
@@ -67,7 +68,7 @@ def test_default_db_dir_uses_unix_home_fallback(monkeypatch):
         "expanduser",
         lambda path: "/home/test/.local/share" if path == "~/.local/share" else path,
     )
-    assert db.default_db_dirs() == ("/home/test/.local/share/opencode",)
+    assert db.default_db_dirs() == (posixpath.join("/home/test/.local/share", "opencode"),)
 
 
 def test_default_db_dir_uses_macos_application_support(monkeypatch):
@@ -82,7 +83,9 @@ def test_default_db_dir_uses_macos_application_support(monkeypatch):
             else path
         ),
     )
-    assert db.default_db_dirs() == ("/Users/test/Library/Application Support/opencode",)
+    assert db.default_db_dirs() == (
+        posixpath.join("/Users/test/Library/Application Support", "opencode"),
+    )
 
 
 def test_default_db_dir_respects_windows_localappdata(monkeypatch):
@@ -318,7 +321,7 @@ def test_sqlite_uri_uses_platform_aware_windows_escaping(monkeypatch):
 
 def test_special_character_database_path_is_readable(tmp_path):
     path = tmp_path / "usage #?% 日本.db"
-    build_v2_db(str(path), [("p", "m", "", 1, 2, 3, 4, 5, 0.0, T0)])
+    build_v2_db(path, [("p", "m", "", 1, 2, 3, 4, 5, 0.0, T0)])
 
     assert len(list(load_rows(str(path)))) == 1
     uri = db._sqlite_uri(str(path))

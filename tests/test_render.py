@@ -201,6 +201,15 @@ def test_rich_ascii_mode_uses_ascii_chrome_and_escapes_labels():
     assert "━" not in ascii_out
     assert all(ord(char) < 128 for char in ascii_out)
 
+    narrow = StringIO()
+    render_rich(
+        report,
+        fmt_num=fmt_full,
+        console=Console(file=narrow, width=40, no_color=True, highlight=False),
+        ascii=True,
+    )
+    assert all(ord(char) < 128 for char in narrow.getvalue())
+
 
 def test_rich_report_marks_zero_cost_providers_as_not_tracked():
     # Cost is tracked overall (p1) but p2 never reported a cost -> "—", not "$0.00".

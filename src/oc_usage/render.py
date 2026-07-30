@@ -278,9 +278,10 @@ def _build_cache(report: Report, fmt_num, *, ascii: bool = False) -> Table:
     hit = pct(totals.cache_read, all_input)
 
     t: Table = Table.grid(padding=(0, 1))
-    t.add_column(no_wrap=True, min_width=32)
-    t.add_column(justify="right", no_wrap=True)
-    t.add_column(no_wrap=True)
+    overflow = "crop" if ascii else "ellipsis"
+    t.add_column(no_wrap=True, min_width=32, overflow=overflow)
+    t.add_column(justify="right", no_wrap=True, overflow=overflow)
+    t.add_column(no_wrap=True, overflow=overflow)
     t.add_row(
         _bar(hit / 100, ascii=ascii),
         Text(f"{hit:.1f}%", style="bold green", justify="right"),
