@@ -52,12 +52,14 @@ def test_find_db_returns_v2_path_when_nothing_exists(tmp_path, monkeypatch):
 
 
 def test_default_db_dir_respects_xdg_data_home(monkeypatch):
+    monkeypatch.setattr(db.os, "name", "posix")
     monkeypatch.setattr(db.sys, "platform", "linux")
     monkeypatch.setenv("XDG_DATA_HOME", "/tmp/xdg-data")
     assert db.default_db_dirs() == ("/tmp/xdg-data/opencode",)
 
 
 def test_default_db_dir_uses_unix_home_fallback(monkeypatch):
+    monkeypatch.setattr(db.os, "name", "posix")
     monkeypatch.setattr(db.sys, "platform", "linux")
     monkeypatch.delenv("XDG_DATA_HOME", raising=False)
     monkeypatch.setattr(
@@ -69,6 +71,7 @@ def test_default_db_dir_uses_unix_home_fallback(monkeypatch):
 
 
 def test_default_db_dir_uses_macos_application_support(monkeypatch):
+    monkeypatch.setattr(db.os, "name", "posix")
     monkeypatch.setattr(db.sys, "platform", "darwin")
     monkeypatch.setattr(
         db.os.path,
