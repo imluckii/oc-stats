@@ -6,6 +6,8 @@ are used.
 
 from __future__ import annotations
 
+import os
+
 import pytest
 
 from oc_usage.service import (
@@ -435,7 +437,6 @@ def _install_fake_executable(tmp_path) -> str:
     Cross-platform: a shebang script + chmod on POSIX, a ``.bat`` launcher over a
     ``.py`` script on Windows (so ``shutil.which`` resolves it via PATHEXT).
     """
-    import os
     import sys
 
     bin_dir = tmp_path / "bin"
@@ -461,7 +462,8 @@ def test_real_fake_executable_end_to_end(tmp_path, monkeypatch):
     passing (a list, never shell=True) using a deterministic fake executable.
     """
     bin_dir = _install_fake_executable(tmp_path)
-    monkeypatch.setenv("PATH", bin_dir, prepend=":")
+    # Use the OS-correct separator so discovery works on Windows (`;`) too.
+    monkeypatch.setenv("PATH", bin_dir, prepend=os.pathsep)
     rows = list(ServiceClient().rows())
     assert len(rows) == 1
     assert rows[0].input == 7
