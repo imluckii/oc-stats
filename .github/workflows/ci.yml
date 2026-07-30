@@ -78,27 +78,22 @@ jobs:
       - name: Build wheel
         run: python -m build
       - name: Install wheel and smoke-test console
-        shell: pwsh
+        shell: bash
         run: |
-          $ErrorActionPreference = "Stop"
           python -m venv smoke
-          $smokePython = Join-Path $PWD "smoke\Scripts\python.exe"
-          & $smokePython -m pip install --upgrade pip
-          $wheel = (Get-ChildItem -Path dist -Filter *.whl | Select-Object -First 1).FullName
-          & $smokePython -m pip install $wheel
-          & .\smoke\Scripts\oc-usage.exe --version
-          & .\smoke\Scripts\oc-usage.exe --help
-          $help = & .\smoke\Scripts\oc-usage.exe --help
-          if (-not ($help -match "--json")) { throw "JSON option missing from wheel" }
-          if ($help -match "--db") { throw "Removed --db flag still advertised" }
-
-          # A removed flag must be rejected (nonzero exit), not silently accepted.
-          # Relax ErrorActionPreference for this one deliberately-failing call,
-          # since a native command's nonzero exit (argparse writes the rejection
-          # to stderr) otherwise aborts the whole step.
-          $prev = $ErrorActionPreference
-          $ErrorActionPreference = "Continue"
-          & .\smoke\Scripts\oc-usage.exe --db x 2>$null
-          $rc = $LASTEXITCODE
-          $ErrorActionPreference = $prev
-          if ($rc -eq 0) { throw "--db should have been rejected" }
+          # venv layout differs by platform: bin/ on POSIX, Scripts/ on Windows.
+          if [ -x smoke/bin/python ]; then PY=smoke/bin/python; else PY=smoke/Scripts/python; fi
+          "$PY" -m pip install --upgrade pip
+          wheel="$(ls dist/*.whl | head -n1)"
+          "$PY" -m pip install "$wheel"
+          if [ -x smoke/bin/oc-usage ]; then EXE=smoke/bin/oc-usage; else EXE=smoke/Scripts/oc-usage; fi
+          "$EXE" --version | grep -q "0.2.0"
+          "$EXE" --help | grep -q -- "--json"
+          if "$EXE" --help | grep -q -- "--db"; then
+            echo "removed --db flag still advertised"; exit 1
+          fi
+          # Removed flags must be rejected (argparse exit 2), not silently work.
+          if "$EXE" --db x >/dev/null 2>&1; then
+            echo "--db should have been rejected"; exit 1
+          fi
+          echo "Windows console smoke OK"
