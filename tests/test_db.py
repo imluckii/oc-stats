@@ -178,7 +178,6 @@ def test_find_db_discovers_synthetic_database_in_windows_xdg_root(monkeypatch, t
 
 def test_find_db_discovers_synthetic_database_in_macos_xdg_root(monkeypatch, tmp_path):
     monkeypatch.setattr(db.os, "name", "posix")
-    monkeypatch.setattr(db.os, "path", posixpath)
     monkeypatch.setattr(db.sys, "platform", "darwin")
     xdg_dir = tmp_path / "xdg-data" / "opencode"
     xdg_dir.mkdir(parents=True)
@@ -186,11 +185,12 @@ def test_find_db_discovers_synthetic_database_in_macos_xdg_root(monkeypatch, tmp
     db_path = xdg_dir / "opencode-next.db"
     build_v2_db(db_path, [("p", "m", "", 1, 0, 0, 2, 0, 0.0, T0)])
 
-    assert find_db(None) == str(db_path)
+    assert os.path.normcase(os.path.normpath(find_db(None))) == os.path.normcase(
+        os.path.normpath(str(db_path))
+    )
 
 
 def test_find_db_uses_windows_native_compatibility_after_xdg(monkeypatch, tmp_path):
-    monkeypatch.setattr(db.os, "path", posixpath)
     monkeypatch.setattr(db.sys, "platform", "win32")
     profile = tmp_path / "profile"
     local = tmp_path / "localappdata"
@@ -202,7 +202,9 @@ def test_find_db_uses_windows_native_compatibility_after_xdg(monkeypatch, tmp_pa
     db_path = native_dir / "opencode-dev.db"
     build_v2_db(db_path, [("p", "m", "", 1, 0, 0, 2, 0, 0.0, T0)])
 
-    assert find_db(None) == str(db_path)
+    assert os.path.normcase(os.path.normpath(find_db(None))) == os.path.normcase(
+        os.path.normpath(str(db_path))
+    )
 
 
 def test_find_db_prefers_v2_across_default_directory_candidates(tmp_path, monkeypatch):
