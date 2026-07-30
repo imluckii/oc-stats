@@ -92,39 +92,89 @@ def test_default_db_dir_uses_macos_application_support(monkeypatch):
 
 
 def test_default_db_dir_respects_windows_localappdata(monkeypatch):
+    monkeypatch.setattr(db.os, "path", posixpath)
     monkeypatch.setattr(db.sys, "platform", "win32")
-    monkeypatch.setenv("LOCALAPPDATA", r"C:\Users\test\AppData\Local")
-    monkeypatch.setattr(
-        db.os.path,
-        "expanduser",
-        lambda path: r"C:\Users\test\AppData\Local" if path == "~/AppData/Local" else path,
+    monkeypatch.setenv("USERPROFILE", r"C:\Users\test")
+    monkeypatch.setenv("LOCALAPPDATA", r"D:\portable\AppData\Local")
+    monkeypatch.setenv("XDG_DATA_HOME", r"C:\Users\test\xdg-data")
+    assert db.default_db_dirs() == (
+        posixpath.join(r"C:\Users\test\xdg-data", "opencode"),
+        posixpath.join(r"C:\Users\test", ".local", "share", "opencode"),
+        posixpath.join(r"D:\portable\AppData\Local", "opencode"),
+        posixpath.join(r"C:\Users\test", "AppData", "Local", "opencode"),
     )
-    assert db.default_db_dirs() == (os.path.join(r"C:\Users\test\AppData\Local", "opencode"),)
 
 
 def test_default_db_dir_falls_back_when_localappdata_is_missing(monkeypatch):
+    monkeypatch.setattr(db.os, "path", posixpath)
     monkeypatch.setattr(db.sys, "platform", "win32")
+    monkeypatch.setenv("USERPROFILE", r"C:\Users\test")
     monkeypatch.delenv("LOCALAPPDATA", raising=False)
+    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
+    assert db.default_db_dirs() == (
+        posixpath.join(r"C:\Users\test", ".local", "share", "opencode"),
+        posixpath.join(r"C:\Users\test", "AppData", "Local", "opencode"),
+    )
+
+
+def test_default_db_dir_uses_home_when_userprofile_is_missing(monkeypatch):
+    monkeypatch.setattr(db.os, "path", posixpath)
+    monkeypatch.setattr(db.sys, "platform", "win32")
+    monkeypatch.delenv("USERPROFILE", raising=False)
+    monkeypatch.delenv("LOCALAPPDATA", raising=False)
+    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
     monkeypatch.setattr(
         db.os.path,
         "expanduser",
-        lambda path: r"C:\Users\test\AppData\Local" if path == "~/AppData/Local" else path,
+        lambda path: {
+            "~/.local/share": r"C:\Users\test\.local\share",
+            "~/AppData/Local": r"C:\Users\test\AppData\Local",
+        }[path],
     )
-    assert db.default_db_dirs() == (os.path.join(r"C:\Users\test\AppData\Local", "opencode"),)
+    assert db.default_db_dirs() == (
+        posixpath.join(r"C:\Users\test\.local\share", "opencode"),
+        posixpath.join(r"C:\Users\test\AppData\Local", "opencode"),
+    )
 
 
 def test_default_db_dir_tries_localappdata_then_home_fallback(monkeypatch):
+    monkeypatch.setattr(db.os, "path", posixpath)
     monkeypatch.setattr(db.sys, "platform", "win32")
+    monkeypatch.setenv("USERPROFILE", r"C:\Users\test")
     monkeypatch.setenv("LOCALAPPDATA", r"D:\portable\AppData\Local")
-    monkeypatch.setattr(
-        db.os.path,
-        "expanduser",
-        lambda path: r"C:\Users\test\AppData\Local" if path == "~/AppData/Local" else path,
-    )
+    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
     assert db.default_db_dirs() == (
-        os.path.join(r"D:\portable\AppData\Local", "opencode"),
-        os.path.join(r"C:\Users\test\AppData\Local", "opencode"),
+        posixpath.join(r"C:\Users\test", ".local", "share", "opencode"),
+        posixpath.join(r"D:\portable\AppData\Local", "opencode"),
+        posixpath.join(r"C:\Users\test", "AppData", "Local", "opencode"),
     )
+
+
+def test_default_db_dir_deduplicates_windows_roots(monkeypatch, tmp_path):
+    monkeypatch.setattr(db.os, "path", posixpath)
+    monkeypatch.setattr(db.sys, "platform", "win32")
+    profile = str(tmp_path / "profile")
+    monkeypatch.setenv("USERPROFILE", profile)
+    monkeypatch.setenv("XDG_DATA_HOME", posixpath.join(profile, ".local", "share"))
+    monkeypatch.setenv("LOCALAPPDATA", posixpath.join(profile, "AppData", "Local"))
+    assert db.default_db_dirs() == (
+        posixpath.join(profile, ".local", "share", "opencode"),
+        posixpath.join(profile, "AppData", "Local", "opencode"),
+    )
+
+
+def test_find_db_discovers_synthetic_database_in_windows_xdg_root(monkeypatch, tmp_path):
+    monkeypatch.setattr(db.os, "path", posixpath)
+    monkeypatch.setattr(db.sys, "platform", "win32")
+    monkeypatch.setenv("USERPROFILE", str(tmp_path / "profile"))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "xdg-data"))
+    monkeypatch.delenv("LOCALAPPDATA", raising=False)
+    xdg_dir = tmp_path / "xdg-data" / "opencode"
+    xdg_dir.mkdir(parents=True)
+    db_path = xdg_dir / "opencode-next.db"
+    build_v2_db(db_path, [("p", "m", "", 1, 0, 0, 2, 0, 0.0, T0)])
+
+    assert find_db(None) == str(db_path)
 
 
 def test_find_db_prefers_v2_across_default_directory_candidates(tmp_path, monkeypatch):

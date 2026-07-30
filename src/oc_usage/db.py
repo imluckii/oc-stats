@@ -46,19 +46,42 @@ def default_db_dirs() -> tuple[str, ...]:
     keeping discovery deterministic.
     """
     if os.name == "nt" or sys.platform.startswith("win"):
-        # LOCALAPPDATA is the normal OpenCode location on Windows. It is not
-        # guaranteed to be present in stripped-down shells, CI, or services,
-        # so retain the conventional per-user fallback as a second candidate.
+        # OpenCode/xdg-basedir has used both the XDG-style and native Windows
+        # locations over time. Keep all of them in a stable order: a configured
+        # XDG root is most specific, followed by the user's XDG-style home,
+        # LOCALAPPDATA, and the conventional Windows fallback.
+        user_profile = os.environ.get("USERPROFILE")
+        home_data = (
+            os.path.join(user_profile, ".local", "share")
+            if user_profile
+            else os.path.expanduser("~/.local/share")
+        )
+        home_local_app_data = (
+            os.path.join(user_profile, "AppData", "Local")
+            if user_profile
+            else os.path.expanduser("~/AppData/Local")
+        )
         roots = []
+        xdg_data_home = os.environ.get("XDG_DATA_HOME")
+        if xdg_data_home:
+            roots.append(xdg_data_home)
+        roots.append(home_data)
         local_app_data = os.environ.get("LOCALAPPDATA")
         if local_app_data:
             roots.append(local_app_data)
-        roots.append(os.path.expanduser("~/AppData/Local"))
-        return tuple(
-            os.path.join(root, "opencode")
-            for i, root in enumerate(roots)
-            if root and root not in roots[:i]
-        )
+        roots.append(home_local_app_data)
+
+        unique_roots = []
+        seen = set()
+        for root in roots:
+            if not root:
+                continue
+            key = os.path.normcase(os.path.normpath(root))
+            if key in seen:
+                continue
+            seen.add(key)
+            unique_roots.append(root)
+        return tuple(os.path.join(root, "opencode") for root in unique_roots)
     if sys.platform == "darwin":
         data_root = os.path.expanduser("~/Library/Application Support")
     else:

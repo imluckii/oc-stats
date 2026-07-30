@@ -15,8 +15,9 @@ recorded components.
 - 💸 **Honest about cost.** Cost is shown only when actually recorded. If every
   recorded cost is zero, it says *not tracked*.
 - 🎨 **Beautiful by default** (Rich), with `--plain`, `--full`, and `--json` modes.
-- 🪟 **Windows-ready.** Uses `%LOCALAPPDATA%` (with a per-user fallback), safe
-  SQLite file URIs, and an explicit `--ascii` mode for legacy consoles.
+- 🪟 **Windows-ready.** Checks the XDG-style and native OpenCode data locations,
+  uses safe SQLite file URIs, and has an explicit `--ascii` mode for legacy
+  consoles.
 - 📦 **Single dependency:** [`rich`](https://github.com/Textualize/rich).
 
 ---
@@ -144,9 +145,35 @@ oc-usage --db "$env:LOCALAPPDATA\opencode\opencode.db"
 oc-usage --db 'C:\Users\Ada Lovelace\AppData\Local\opencode\opencode-next.db'
 ```
 
-When `LOCALAPPDATA` is unavailable, discovery also checks
-`$HOME\AppData\Local\opencode`. Use `--db` when OpenCode is configured to keep
-its data elsewhere.
+On Windows, automatic discovery checks these directories in order (when the
+corresponding environment variable is set):
+
+1. `$env:XDG_DATA_HOME\opencode\`
+2. `$HOME\.local\share\opencode\` (the `%USERPROFILE%\.local\share\opencode\`
+   equivalent)
+3. `$env:LOCALAPPDATA\opencode\`
+4. `$HOME\AppData\Local\opencode\`
+
+The last location is the fallback when `LOCALAPPDATA` is unavailable. In each
+directory, `opencode-next.db` is preferred to `opencode.db`, and `oc-usage`
+reads exactly one file; it never merges or double-counts both files. If both
+files are present, compare their size and `LastWriteTime` to identify the file
+OpenCode is currently updating, then use an explicit path when you want that
+file:
+
+```powershell
+Get-ChildItem `
+  "$env:XDG_DATA_HOME\opencode\opencode*.db", `
+  "$HOME\.local\share\opencode\opencode*.db", `
+  "$env:LOCALAPPDATA\opencode\opencode*.db", `
+  "$HOME\AppData\Local\opencode\opencode*.db" `
+  -ErrorAction SilentlyContinue |
+  Select-Object FullName, Length, LastWriteTime
+
+oc-usage --db "$env:LOCALAPPDATA\opencode\opencode.db"
+```
+
+Use `--db` when OpenCode is configured to keep its data elsewhere.
 
 Then run:
 
@@ -219,7 +246,8 @@ machine-readable, while `--plain` / `--no-color` only control styling.
 
 ### Inside OpenCode
 
-From OpenCode's shell mode, run it inline:
+From the interactive OpenCode TUI shell mode, run it inline (this is the bare
+shell form):
 
 ```
 !oc-usage
@@ -231,26 +259,29 @@ shell's PATH. On Windows, install it with pipx as above and verify with
 
 #### Optional global `/stats` command
 
-To turn `oc-usage` into a named slash command, add an OpenCode command file. The
-user-level location used by the current OpenCode command-file workflow is
-`~/.config/opencode/command/` (or use your project's `.opencode/command/`). On
-Windows, the corresponding user path is normally
-`$HOME\.config\opencode\command\`. OpenCode command discovery is versioned, so
-if your v2 build uses a different configured command directory, follow that
-build's documentation and keep the same file contents. Create `stats.md`:
+To turn `oc-usage` into a named slash command, add an OpenCode v2 command file.
+The official global location is `~/.config/opencode/commands/` (or use your
+project's `.opencode/commands/`). On Windows, the corresponding user path is
+normally `$HOME\.config\opencode\commands\`. Create `stats.md` there:
 
 ```markdown
 ---
 description: All-time OpenCode token usage
 ---
 
-!oc-usage
+!`oc-usage`
 ```
 
-Then `/stats` runs `oc-usage` for you.
+The backtick-wrapped interpolation in the code block is OpenCode's
+stored-command syntax; the bare `!oc-usage` form above is only for interactive
+TUI shell mode. Then `/stats` runs `oc-usage` for you. On Windows, make sure
+`oc-usage` is on the PATH inherited by OpenCode (for example, verify it with
+`Get-Command oc-usage` in the same environment).
 
-The portable, version-independent option is still `!oc-usage` from the TUI;
-the command file is optional and does not change database discovery.
+The command file is optional and does not change database discovery. If your
+OpenCode v2 build uses a custom command directory, follow that build's
+configuration, but retain the same backtick-wrapped interpolation form in the
+file.
 
 ---
 
@@ -316,9 +347,12 @@ is never double-counted.
 | ------- | ------------------------------------------------------------ |
 | Linux/Unix | `$XDG_DATA_HOME/opencode/...` when set; otherwise `~/.local/share/opencode/...` |
 | macOS      | `~/Library/Application Support/opencode/...`                                  |
-| Windows    | `%LOCALAPPDATA%\opencode\...`                                                 |
+| Windows    | `%XDG_DATA_HOME%\opencode\...` when set; then `%USERPROFILE%\.local\share\opencode\...`; then `%LOCALAPPDATA%\opencode\...`; then `%USERPROFILE%\AppData\Local\opencode\...` |
 
-Auto-detection prefers `opencode-next.db`; override with `--db` any time.
+Auto-detection checks those Windows directories in the listed order and
+prefers `opencode-next.db` over `opencode.db` in each directory. It returns one
+database only; override with `--db` any time, especially when both files are
+present and you have confirmed which one OpenCode is actively updating.
 
 ---
 
