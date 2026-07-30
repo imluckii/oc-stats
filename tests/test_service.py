@@ -408,63 +408,80 @@ def test_assistant_with_non_dict_model_fails_loudly():
 # ── end-to-end subprocess plumbing (real argv, no shell) ──────────────────────
 
 
-_FAKE_LOGIC = (
-    "#!/usr/bin/env python3\n"
-    "import json, sys\n"
-    "CREATED = __CREATED__\n"
-    "args = sys.argv[1:]\n"
-    "if args[:2] == ['api', '--help']:\n"
-    "    print('opencode2 api help'); sys.exit(0)\n"
-    "if args[:2] == ['api', 'get']:\n"
-    "    path = args[2]\n"
-    "    if path.startswith('/api/session?order=asc') and '/message' not in path:\n"
-    "        print(json.dumps({'data':[{'id':'s1'}],'cursor':{'previous':None,'next':None}}))\n"
-    "    elif '/s1/message?order=asc' in path:\n"
-    "        print(json.dumps({'data':[{'id':'m1','type':'assistant',"
-    "        'time':{'created':CREATED},"
-    "        'model':{'id':'m','providerID':'p','variant':''},"
-    "        'tokens':{'input':7,'output':2,'reasoning':0,'cache':{'read':0,'write':0}},"
-    "        'cost':0.0}],'cursor':{'previous':None,'next':None}}))\n"
-    "    else:\n"
-    "        sys.exit(0)\n"
-    "    sys.exit(0)\n"
-)
+_FAKE_LOGIC = """\
+#!/usr/bin/env python3
+import json, sys
+CREATED = {created}
+# A realistic fake `opencode2`: the real binary is argv[0]; remaining args are
+# the subcommand. The script must read them from sys.argv exactly as a real
+# binary would, proving argv-list (never shell) plumbing.
+args = sys.argv[1:]
+if args[:2] == ['api', '--help']:
+    print('opencode2 api help'); sys.exit(0)
+if args[:2] == ['api', 'get']:
+    path = args[2]
+    if path.startswith('/api/session?order=asc') and '/message' not in path:
+        print(json.dumps({{'data':[{{'id':'s1'}}],'cursor':{{'previous':None,'next':None}}}}))
+    elif '/s1/message?order=asc' in path:
+        print(json.dumps({{'data':[{{'id':'m1','type':'assistant',
+        'time':{{'created':CREATED}},
+        'model':{{'id':'m','providerID':'p','variant':''}},
+        'tokens':{{'input':7,'output':2,'reasoning':0,'cache':{{'read':0,'write':0}}}},
+        'cost':0.0}}],'cursor':{{'previous':None,'next':None}}}}))
+    else:
+        sys.exit(0)
+    sys.exit(0)
+"""
 
 
-def _install_fake_executable(tmp_path) -> str:
-    """Place a deterministic fake `opencode2` on a fresh bin dir; return it.
+def _write_fake_executable(tmp_path):
+    """Write the fake-opencode2 logic to a .py file and return its path.
 
-    Cross-platform: a shebang script + chmod on POSIX, a ``.bat`` launcher over a
-    ``.py`` script on Windows (so ``shutil.which`` resolves it via PATHEXT).
+    Runs it under the current Python interpreter, which is how the real
+    ``default_runner`` exercises argv-list plumbing cross-platform without any
+    Windows ``.bat``/PATHEXT/cmd.exe-quoting fragility.
     """
     import sys
 
+    script = tmp_path / "fake_opencode2.py"
+    script.write_text(_FAKE_LOGIC.format(created=T0), encoding="utf-8")
+    return [sys.executable, str(script)]
+
+
+def test_real_runner_argv_plumbing_no_shell(tmp_path):
+    """The real default_runner passes argv as a list (never shell=True).
+
+    Drives the actual subprocess code path against a deterministic fake
+    executable, including the compatibility probe, pagination, and a query
+    string containing reserved characters (? & =). Cross-platform: the fake
+    runs under the test interpreter so it behaves identically everywhere.
+    """
+    fake_argv0 = _write_fake_executable(tmp_path)
+    from oc_usage.service import default_runner
+
+    # The client resolves self.executable, then calls runner([exe, "api", ...]).
+    # Point both at our interpreter+script so the real subprocess path runs.
+    client = ServiceClient(
+        executable="opencode2",  # placeholder; runner ignores it below
+        runner=lambda argv: default_runner(fake_argv0 + argv[1:]),
+    )
+    rows = list(client.rows())
+    assert len(rows) == 1
+    assert rows[0].input == 7
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX shebang discovery; Windows uses PATHEXT")
+def test_executable_discovery_on_path_prefers_opencode2(tmp_path, monkeypatch):
+    """shutil.which resolves `opencode2` from PATH (POSIX shebang + chmod)."""
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    logic = _FAKE_LOGIC.replace("__CREATED__", str(T0))
-    if os.name == "nt" or sys.platform.startswith("win"):
-        script = bin_dir / "opencode2.py"
-        script.write_text(logic, encoding="utf-8")
-        (bin_dir / "opencode2.bat").write_text(
-            f'@"{sys.executable}" "{script}" %*\n', encoding="utf-8"
-        )
-    else:
-        exe = bin_dir / "opencode2"
-        exe.write_text(logic, encoding="utf-8")
-        exe.chmod(0o755)
-    return str(bin_dir)
+    exe = bin_dir / "opencode2"
+    exe.write_text(_FAKE_LOGIC.format(created=T0), encoding="utf-8")
+    exe.chmod(0o755)
+    monkeypatch.setenv("PATH", str(bin_dir), prepend=os.pathsep)
+    from oc_usage.service import default_runner
 
-
-def test_real_fake_executable_end_to_end(tmp_path, monkeypatch):
-    """Validate the real default_runner with argv plumbing against a script.
-
-    Confirms PATH discovery, the compatibility probe, and Windows-safe argv
-    passing (a list, never shell=True) using a deterministic fake executable.
-    """
-    bin_dir = _install_fake_executable(tmp_path)
-    # Use the OS-correct separator so discovery works on Windows (`;`) too.
-    monkeypatch.setenv("PATH", bin_dir, prepend=os.pathsep)
-    rows = list(ServiceClient().rows())
+    rows = list(ServiceClient(runner=default_runner).rows())
     assert len(rows) == 1
     assert rows[0].input == 7
 
