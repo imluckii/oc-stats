@@ -164,7 +164,6 @@ def test_default_db_dir_deduplicates_windows_roots(monkeypatch, tmp_path):
 
 
 def test_find_db_discovers_synthetic_database_in_windows_xdg_root(monkeypatch, tmp_path):
-    monkeypatch.setattr(db.os, "path", posixpath)
     monkeypatch.setattr(db.sys, "platform", "win32")
     monkeypatch.setenv("USERPROFILE", str(tmp_path / "profile"))
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "xdg-data"))
