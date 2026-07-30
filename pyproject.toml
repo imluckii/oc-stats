@@ -1,0 +1,79 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "oc-usage"
+version = "0.1.0"
+description = "All-time OpenCode token usage, straight from the local session database. Supports OpenCode v1 and v2 SQLite schemas."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "imluckii", email = "167329163+imluckii@users.noreply.github.com" }]
+keywords = [
+    "opencode",
+    "opencode-ai",
+    "cli",
+    "token-usage",
+    "llm",
+    "analytics",
+    "tokens",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+dependencies = ["rich>=13.6"]
+
+[project.urls]
+Homepage = "https://github.com/imluckii/oc-usage"
+Repository = "https://github.com/imluckii/oc-usage"
+Issues = "https://github.com/imluckii/oc-usage/issues"
+Changelog = "https://github.com/imluckii/oc-usage/releases"
+
+[project.scripts]
+oc-usage = "oc_usage.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    "build>=1.2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/oc_usage"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "README.md", "LICENSE"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "PIE", "RET"]
+ignore = ["E501"]  # line length handled by formatter
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["E402"]  # test setup may need late imports
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra"
