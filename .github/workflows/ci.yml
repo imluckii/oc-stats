@@ -49,14 +49,14 @@ jobs:
           python -m venv /tmp/smoke
           /tmp/smoke/bin/python -m pip install --upgrade pip
           /tmp/smoke/bin/python -m pip install dist/*.whl
-          /tmp/smoke/bin/oc-usage --version
-          /tmp/smoke/bin/oc-usage --help | head -n 3
-          /tmp/smoke/bin/oc-usage --help | grep -- --json
-          if /tmp/smoke/bin/oc-usage --help | grep -q -- --db; then
+          /tmp/smoke/bin/oc-stats --version
+          /tmp/smoke/bin/oc-stats --help | head -n 3
+          /tmp/smoke/bin/oc-stats --help | grep -- --json
+          if /tmp/smoke/bin/oc-stats --help | grep -q -- --db; then
             echo "removed --db flag still advertised"; exit 1
           fi
           # Removed flags must be rejected (argparse exit 2), not silently work.
-          if /tmp/smoke/bin/oc-usage --db x >/tmp/err 2>&1; then
+          if /tmp/smoke/bin/oc-stats --db x >/tmp/err 2>&1; then
             echo "--db should have been rejected"; exit 1
           fi
 
@@ -86,8 +86,8 @@ jobs:
           "$PY" -m pip install --upgrade pip
           wheel="$(ls dist/*.whl | head -n1)"
           "$PY" -m pip install "$wheel"
-          if [ -x smoke/bin/oc-usage ]; then EXE=smoke/bin/oc-usage; else EXE=smoke/Scripts/oc-usage; fi
-          "$EXE" --version | grep -q "0.2.0"
+          if [ -x smoke/bin/oc-stats ]; then EXE=smoke/bin/oc-stats; else EXE=smoke/Scripts/oc-stats; fi
+          "$EXE" --version | grep -q "0.3.0"
           "$EXE" --help | grep -q -- "--json"
           if "$EXE" --help | grep -q -- "--db"; then
             echo "removed --db flag still advertised"; exit 1

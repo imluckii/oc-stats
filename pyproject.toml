@@ -3,9 +3,9 @@ requires = ["hatchling>=1.18"]
 build-backend = "hatchling.build"
 
 [project]
-name = "oc-usage"
-version = "0.2.0"
-description = "All-time OpenCode token usage, read live from your running OpenCode V2 service."
+name = "oc-stats"
+version = "0.3.0"
+description = "Minimal OpenCode usage stats."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
@@ -36,13 +36,13 @@ classifiers = [
 dependencies = ["rich>=13.6"]
 
 [project.urls]
-Homepage = "https://github.com/imluckii/oc-usage"
-Repository = "https://github.com/imluckii/oc-usage"
-Issues = "https://github.com/imluckii/oc-usage/issues"
-Changelog = "https://github.com/imluckii/oc-usage/releases"
+Homepage = "https://github.com/imluckii/oc-stats"
+Repository = "https://github.com/imluckii/oc-stats"
+Issues = "https://github.com/imluckii/oc-stats/issues"
+Changelog = "https://github.com/imluckii/oc-stats/releases"
 
 [project.scripts]
-oc-usage = "oc_usage.cli:main"
+oc-stats = "oc_usage.cli:main"
 
 [project.optional-dependencies]
 dev = [

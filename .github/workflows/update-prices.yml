@@ -1,0 +1,29 @@
+name: Update model prices
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python scripts/update_prices.py
+      - run: pip install -e ".[dev]" && pytest -q
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: chore/update-model-prices
+          delete-branch: true
+          commit-message: "chore(pricing): update model prices"
+          title: "chore(pricing): update model prices"
+          body: "Automated weekly refresh from the models.dev catalog."

@@ -1,4 +1,4 @@
-"""Rendering for ``oc-usage``: a Rich human report and a JSON payload.
+"""Rendering for ``oc-stats``: a Rich human report and a JSON payload.
 
 Width strategy
 --------------
@@ -7,7 +7,7 @@ When stdout is a TTY, Rich auto-detects the terminal width. Text columns
 line instead of being cut; numeric columns are ``no_wrap`` and right-aligned so
 token suffixes are never truncated.
 
-When stdout is **not** a TTY (piped, captured, ``!oc-usage``, ``/stats``,
+When stdout is **not** a TTY (piped, captured, ``!oc-stats``, ``/stats``,
 redirection) Rich would otherwise default to a narrow 80 columns and crop the
 tables. We force a generous fixed width in that case so every value renders in
 full, and we disable ANSI color so captured output is clean plain text.
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 # Width used when stdout is not a TTY. Comfortably fits the per-model table
 # (longest model name + 8 numeric columns) so nothing is truncated.
-NON_TTY_WIDTH = 165
+NON_TTY_WIDTH = 180
 
 # Single source for the whole tool: the running OpenCode service. Reported
 # consistently in the Rich header and the JSON payload.
@@ -264,13 +264,16 @@ def _build_totals(report: Report, fmt_num, *, ascii: bool = False) -> Table.grid
     row("Output", fmt_num(totals.output))
     row("Reasoning", fmt_num(totals.reasoning), end=True)
     row("Total", fmt_num(totals.total), "", label_style="bold", value_style="bold white")
-    if report.cost_tracked:
-        row("Cost", money(totals.cost), "", label_style="bold")
+    if totals.priced_turns:
+        annotation = "current API list rates"
+        if not totals.estimate_complete:
+            annotation += f" · {fmt_full(totals.turns - totals.priced_turns)} unpriced turns"
+        row("Estimated cost", money(totals.estimated_cost), annotation, label_style="bold")
     else:
         row(
-            "Cost",
+            "Estimated cost",
             "-" if ascii else "—",
-            "not tracked by these providers",
+            "model pricing unavailable",
             label_style="dim",
             value_style="dim",
         )
@@ -296,12 +299,7 @@ def _build_cache(report: Report, fmt_num, *, ascii: bool = False) -> Table:
 
 
 def _build_providers(
-    report: Report,
-    colors: dict[str, str],
-    fmt_num,
-    has_cost: bool,
-    *,
-    ascii: bool = False,
+    report: Report, colors: dict[str, str], fmt_num, *, ascii: bool = False
 ) -> Table:
     cols = [
         ("Provider", "left", ""),
@@ -312,9 +310,8 @@ def _build_providers(
         ("Output", "right", ""),
         ("Reasoning", "right", ""),
         ("Total", "right", "bold"),
+        ("Estimate", "right", ""),
     ]
-    if has_cost:
-        cols.append(("Cost", "right", ""))
     t = _make_table(
         cols,
         box_style=box.ASCII if ascii else box.HEAVY_HEAD,
@@ -334,17 +331,12 @@ def _build_providers(
             Text(fmt_num(bucket.output), justify="right"),
             Text(fmt_num(bucket.reasoning), justify="right"),
             Text(fmt_num(bucket.total), justify="right", style="bold"),
+            Text(
+                money(bucket.estimated_cost) if bucket.priced_turns else ("-" if ascii else "—"),
+                justify="right",
+                style="dim",
+            ),
         ]
-        if has_cost:
-            # A zero-cost provider means cost was not reported for it (not that it
-            # was free), so show "—" rather than a misleading "$0.00".
-            cells.append(
-                Text(
-                    money(bucket.cost) if bucket.cost > 0 else ("-" if ascii else "—"),
-                    justify="right",
-                    style="dim",
-                )
-            )
         t.add_row(*cells)
     return t
 
@@ -353,7 +345,6 @@ def _build_models(
     report: Report,
     colors: dict[str, str],
     fmt_num,
-    has_cost: bool,
     *,
     ascii: bool = False,
 ) -> list[RenderableType]:
@@ -376,9 +367,8 @@ def _build_models(
             ("Output", "right", ""),
             ("Reasoning", "right", ""),
             ("Total", "right", ""),
+            ("Estimate", "right", ""),
         ]
-        if has_cost:
-            cols.append(("Cost", "right", ""))
         tbl = _make_table(
             cols,
             box_style=box.ASCII if ascii else box.ROUNDED,
@@ -396,15 +386,14 @@ def _build_models(
                 Text(fmt_num(bucket.output), justify="right"),
                 Text(fmt_num(bucket.reasoning), justify="right"),
                 Text(fmt_num(bucket.total), justify="right", style="bold white"),
+                Text(
+                    money(bucket.estimated_cost)
+                    if bucket.priced_turns
+                    else ("-" if ascii else "—"),
+                    justify="right",
+                    style="dim",
+                ),
             ]
-            if has_cost:
-                cells.append(
-                    Text(
-                        money(bucket.cost) if bucket.cost > 0 else ("-" if ascii else "—"),
-                        justify="right",
-                        style="dim",
-                    )
-                )
             tbl.add_row(*cells)
 
         header = Text(f"  {_display(name, ascii)}  ", style=f"bold white on {color}")
@@ -415,8 +404,6 @@ def _build_models(
 def render_rich(report: Report, *, fmt_num, console: Console, ascii: bool = False) -> None:
     """Render the full human report to ``console``."""
     colors = _provider_color_map(report.by_provider)
-    has_cost = report.cost_tracked
-
     sections: list[RenderableType] = [
         _build_header(report, fmt_num, ascii=ascii),
         Text(""),
@@ -427,18 +414,18 @@ def render_rich(report: Report, *, fmt_num, console: Console, ascii: bool = Fals
         _build_cache(report, fmt_num, ascii=ascii),
         Text(""),
         _section("By Provider", "blue", ascii=ascii),
-        _build_providers(report, colors, fmt_num, has_cost, ascii=ascii),
+        _build_providers(report, colors, fmt_num, ascii=ascii),
         Text(""),
         _section("By Model", "magenta", ascii=ascii),
     ]
-    sections.extend(_build_models(report, colors, fmt_num, has_cost, ascii=ascii))
+    sections.extend(_build_models(report, colors, fmt_num, ascii=ascii))
     console.print(Group(*sections))
 
 
 # ── JSON rendering ────────────────────────────────────────────────────────────
 
 
-def _pack(bucket: Bucket) -> dict[str, int | float]:
+def _pack(bucket: Bucket) -> dict[str, int | float | bool | None]:
     return {
         "turns": bucket.turns,
         "input": bucket.input,
@@ -447,14 +434,15 @@ def _pack(bucket: Bucket) -> dict[str, int | float]:
         "cache_read": bucket.cache_read,
         "cache_write": bucket.cache_write,
         "total": bucket.total,
-        "cost": round(bucket.cost, 6),
+        "estimated_cost": round(bucket.estimated_cost, 6) if bucket.priced_turns else None,
+        "estimate_complete": bucket.estimate_complete,
     }
 
 
 def render_json(report: Report) -> str:
     payload: dict[str, object] = {
         "source": SOURCE_LABEL,
-        "totals": {**_pack(report.totals), "cost_tracked": report.cost_tracked},
+        "totals": _pack(report.totals),
         "providers": {
             name: _pack(b)
             for name, b in sorted(

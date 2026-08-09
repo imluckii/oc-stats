@@ -1,6 +1,6 @@
-# Contributing to oc-usage
+# Contributing to oc-stats
 
-Thanks for your interest! `oc-usage` is small on purpose — keep it that way.
+Thanks for your interest! `oc-stats` is small on purpose — keep it that way.
 
 ## Setup
 
@@ -23,7 +23,7 @@ pytest -q
   thing that talks to OpenCode (via the `api` command) — never open databases or
   raw sockets. If you change how a response is parsed, add/adjust a synthetic
   fixture in `tests/helpers.py` and a test in `tests/test_service.py`.
-- **Never estimate cost or tokens.** Every number must trace back to a recorded
+- **Never estimate tokens.** Every token count must trace back to a recorded
   field. If a field is missing, treat it as `0` and document it.
 - **Fail loudly, never silently report zero.** An incompatible API, invalid JSON,
   or a missing executable must raise, not produce an empty report.

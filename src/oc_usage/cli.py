@@ -1,4 +1,4 @@
-"""Command-line interface for ``oc-usage``.
+"""Command-line interface for ``oc-stats``.
 
 Exit codes:
     0  — success
@@ -30,7 +30,7 @@ from oc_usage.service import (
     ServiceUnavailableError,
 )
 
-PROG = "oc-usage"
+PROG = "oc-stats"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -42,10 +42,10 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
-            "  oc-usage          # show the report\n"
-            "  oc-usage --json   # machine-readable JSON\n"
+            "  oc-stats          # show the report\n"
+            "  oc-stats --json   # machine-readable JSON\n"
             "\n"
-            "In OpenCode's shell mode:  !oc-usage\n"
+            "In OpenCode's shell mode:  !oc-stats\n"
         ),
     )
     ap.add_argument("--json", action="store_true", help="emit JSON to stdout")

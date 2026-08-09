@@ -20,6 +20,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
+from oc_usage.pricing import estimate_row
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
@@ -76,7 +78,8 @@ class Bucket:
     cache_write: int = 0
     output: int = 0
     reasoning: int = 0
-    cost: float = 0.0
+    estimated_cost: float = 0.0
+    priced_turns: int = 0
     turns: int = 0
 
     def add(self, row: UsageRow) -> None:
@@ -85,7 +88,10 @@ class Bucket:
         self.cache_write += row.cache_write
         self.output += row.output
         self.reasoning += row.reasoning
-        self.cost += row.cost
+        estimate = estimate_row(row)
+        if estimate is not None:
+            self.estimated_cost += estimate
+            self.priced_turns += 1
         self.turns += 1
 
     @property
@@ -93,6 +99,10 @@ class Bucket:
         return component_total(
             self.input, self.cache_read, self.cache_write, self.output, self.reasoning
         )
+
+    @property
+    def estimate_complete(self) -> bool:
+        return self.priced_turns == self.turns
 
 
 @dataclass
@@ -103,7 +113,6 @@ class Report:
     by_provider: dict[str, Bucket]
     by_model: dict[ModelKey, Bucket]
     span: tuple[datetime, datetime] | None
-    cost_tracked: bool
 
 
 def aggregate(rows: Iterable[UsageRow]) -> Report:
@@ -112,16 +121,12 @@ def aggregate(rows: Iterable[UsageRow]) -> Report:
     by_provider: dict[str, Bucket] = {}
     by_model: dict[ModelKey, Bucket] = {}
     times: list[int] = []
-    any_cost = False
-
     for row in rows:
         totals.add(row)
         by_provider.setdefault(row.provider, Bucket()).add(row)
         by_model.setdefault((row.provider, row.model, row.variant), Bucket()).add(row)
         if row.time_created:
             times.append(row.time_created)
-        if row.cost > 0:
-            any_cost = True
 
     span: tuple[datetime, datetime] | None = None
     if times:
@@ -134,5 +139,4 @@ def aggregate(rows: Iterable[UsageRow]) -> Report:
         by_provider=by_provider,
         by_model=by_model,
         span=span,
-        cost_tracked=any_cost,
     )

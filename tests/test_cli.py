@@ -59,12 +59,12 @@ def test_json_output_is_valid_and_has_exact_values(monkeypatch, capsys):
     assert t["output"] == 270
     assert t["reasoning"] == 60
     assert t["total"] == 1900 + 14000 + 0 + 270 + 60
-    assert t["cost"] == round(0.0123 + 0.5, 6)
-    assert t["cost_tracked"] is True
+    assert t["estimated_cost"] > 0
+    assert t["estimate_complete"] is True
 
     assert data["source"] == "OpenCode service"
     assert data["providers"]["zai"]["total"] == 800 + 14000 + 0 + 60 + 10
-    assert data["providers"]["openai"]["cost"] == 0.5
+    assert data["providers"]["openai"]["estimated_cost"] > 0
     assert {"provider", "model", "variant"} <= set(data["models"][0])
     assert data["span"]["from"].endswith("Z")
 

@@ -1,6 +1,6 @@
 """Read usage from the running OpenCode V2 service via its ``api`` CLI command.
 
-``oc-usage`` never opens databases or raw HTTP sockets. It discovers the
+``oc-stats`` never opens databases or raw HTTP sockets. It discovers the
 OpenCode executable on ``PATH`` (preferring ``opencode2``, then ``opencode``)
 and invokes its ``api get <path>`` subcommand, so OpenCode owns service
 discovery, startup, and authentication and always inherits the active server
@@ -23,6 +23,7 @@ Subprocess invocation always uses an argv list (never ``shell=True``).
 from __future__ import annotations
 
 import json
+import math
 import shutil
 import subprocess
 import time
@@ -373,8 +374,13 @@ def _assistant_row(message: dict[str, Any]) -> UsageRow:
     created = _number_as_int(time, "created", "assistant time")
 
     cost = message.get("cost", 0.0)
-    if isinstance(cost, bool) or not isinstance(cost, (int, float)):
-        raise ServiceSchemaError("OpenCode assistant cost must be a number.")
+    if (
+        isinstance(cost, bool)
+        or not isinstance(cost, (int, float))
+        or not math.isfinite(cost)
+        or cost < 0
+    ):
+        raise ServiceSchemaError("OpenCode assistant cost must be a finite non-negative number.")
 
     return UsageRow(
         provider=provider,
@@ -399,8 +405,14 @@ def _required_string(value: dict[str, Any], key: str, label: str) -> str:
 
 def _number_as_int(value: dict[str, Any], key: str, label: str) -> int:
     result = value.get(key)
-    if isinstance(result, bool) or not isinstance(result, (int, float)):
-        raise ServiceSchemaError(f"OpenCode {label}.{key} must be a number.")
+    if (
+        isinstance(result, bool)
+        or not isinstance(result, (int, float))
+        or not math.isfinite(result)
+        or result < 0
+        or result != int(result)
+    ):
+        raise ServiceSchemaError(f"OpenCode {label}.{key} must be a finite non-negative integer.")
     return int(result)
 
 

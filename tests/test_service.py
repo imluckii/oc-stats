@@ -18,6 +18,7 @@ from oc_usage.service import (
     ServiceClient,
     ServiceSchemaError,
     ServiceUnavailableError,
+    _assistant_row,
     discover_executable,
 )
 from tests.helpers import (
@@ -32,6 +33,22 @@ from tests.helpers import (
 
 def patch_which(monkeypatch, mapping: dict[str, str | None]) -> None:
     monkeypatch.setattr("oc_usage.service.shutil.which", lambda name: mapping.get(name))
+
+
+@pytest.mark.parametrize("invalid", [-1, 1.5, float("inf"), float("nan")])
+def test_assistant_rejects_invalid_token_counts(invalid):
+    message = assistant_message("a0", ("openai", "gpt-4o", "", 1, 0, 0, 1, 0, 0.0, T0))
+    message["tokens"]["input"] = invalid
+    with pytest.raises(ServiceSchemaError, match="finite non-negative integer"):
+        _assistant_row(message)
+
+
+@pytest.mark.parametrize("invalid", [-1, float("inf"), float("nan")])
+def test_assistant_rejects_invalid_cost(invalid):
+    message = assistant_message("a0", ("openai", "gpt-4o", "", 1, 0, 0, 1, 0, 0.0, T0))
+    message["cost"] = invalid
+    with pytest.raises(ServiceSchemaError, match="finite non-negative number"):
+        _assistant_row(message)
 
 
 # ── executable discovery & compatibility ──────────────────────────────────────

@@ -21,9 +21,9 @@ from oc_usage.render import (
 
 def _rows():
     return [
-        UsageRow("p1", "m1", "high", 10, 100, 0, 5, 2, 0.0, 1_000),
-        UsageRow("p1", "m1", "high", 20, 200, 0, 6, 3, 1.5, 2_000),
-        UsageRow("p2", "m2", "low", 5, 0, 0, 1, 0, 0.0, 3_000),
+        UsageRow("p1", "gpt-4o", "high", 10, 100, 0, 5, 2, 0.0, 1_000),
+        UsageRow("p1", "gpt-4o", "high", 20, 200, 0, 6, 3, 1.5, 2_000),
+        UsageRow("p2", "gpt-4o-mini", "low", 5, 0, 0, 1, 0, 0.0, 3_000),
     ]
 
 
@@ -61,18 +61,18 @@ def test_json_totals_and_components():
     assert t["cache_write"] == 0
     assert t["total"] == 35 + 300 + 0 + 12 + 5
     assert t["turns"] == 3
-    assert t["cost"] == 1.5
-    assert t["cost_tracked"] is True
+    assert t["estimated_cost"] > 0
+    assert t["estimate_complete"] is True
 
 
-def test_json_cost_tracked_false_when_all_zero():
+def test_json_estimate_unavailable_for_unknown_model():
     rows = [
         UsageRow("p", "m", "", 1, 0, 0, 1, 0, 0.0, 1),
         UsageRow("p", "m", "", 1, 0, 0, 1, 0, 0.0, 2),
     ]
     data = json.loads(render_json(aggregate(rows)))
-    assert data["totals"]["cost_tracked"] is False
-    assert data["totals"]["cost"] == 0.0
+    assert data["totals"]["estimate_complete"] is False
+    assert data["totals"]["estimated_cost"] is None
 
 
 def test_json_providers_and_models_sorted_by_total_desc():
@@ -85,15 +85,17 @@ def test_json_providers_and_models_sorted_by_total_desc():
     model_totals = [v["total"] for v in data["models"]]
     assert model_totals == sorted(model_totals, reverse=True)
 
-    assert {"provider", "model", "variant", "input", "total", "cost"} <= set(data["models"][0])
+    assert {"provider", "model", "variant", "input", "total", "estimated_cost"} <= set(
+        data["models"][0]
+    )
 
 
 def test_json_models_include_variant():
     report = aggregate(_rows())
     data = json.loads(render_json(report))
     variants = {(m["provider"], m["model"], m["variant"]) for m in data["models"]}
-    assert ("p1", "m1", "high") in variants
-    assert ("p2", "m2", "low") in variants
+    assert ("p1", "gpt-4o", "high") in variants
+    assert ("p2", "gpt-4o-mini", "low") in variants
 
 
 def test_json_span_iso8601():
@@ -172,16 +174,17 @@ def test_rich_report_degrades_safely_at_narrow_width():
     assert fmt_full(352) in out
 
 
-def test_rich_report_shows_not_tracked_when_cost_zero():
+def test_rich_report_shows_unavailable_for_unknown_model():
     report = aggregate([UsageRow("p", "m", "", 10, 0, 0, 1, 0, 0.0, 1)])
     out = _capture(report, NON_TTY_WIDTH)
-    assert "not tracked" in out.lower()
+    assert "pricing unavailable" in out.lower()
 
 
-def test_rich_report_shows_cost_when_tracked():
-    report = aggregate([UsageRow("p", "m", "", 10, 0, 0, 1, 0, 2.5, 1)])
+def test_rich_report_shows_estimated_cost():
+    report = aggregate([UsageRow("p", "gpt-4o", "", 1_000_000, 0, 0, 0, 0, 2.5, 1)])
     out = _capture(report, NON_TTY_WIDTH)
     assert "$2.50" in out
+    assert "Estimated cost" in out
 
 
 def test_rich_ascii_mode_uses_ascii_chrome_and_escapes_labels():
@@ -211,12 +214,11 @@ def test_rich_ascii_mode_uses_ascii_chrome_and_escapes_labels():
     assert all(ord(char) < 128 for char in narrow.getvalue())
 
 
-def test_rich_report_marks_zero_cost_providers_as_not_tracked():
-    # Cost is tracked overall (p1) but p2 never reported a cost -> "—", not "$0.00".
+def test_rich_report_marks_unknown_provider_as_unpriced():
     report = aggregate(
         [
-            UsageRow("p1", "m1", "", 10, 0, 0, 1, 0, 2.5, 1),
-            UsageRow("p2", "m2", "", 10, 0, 0, 1, 0, 0.0, 2),
+            UsageRow("p1", "gpt-4o", "", 10, 0, 0, 1, 0, 2.5, 1),
+            UsageRow("p2", "unknown", "", 10, 0, 0, 1, 0, 0.0, 2),
         ]
     )
     out = _capture(report, NON_TTY_WIDTH)

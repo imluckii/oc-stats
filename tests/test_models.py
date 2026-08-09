@@ -108,13 +108,28 @@ def test_aggregate_reconciles_provider_and_model_totals():
     assert report.by_model[("p1", "m1", "")].total == 347
 
 
-def test_cost_tracked_only_when_any_cost_positive():
-    all_zero = aggregate([_row(cost=0.0), _row(cost=0.0)])
-    assert all_zero.cost_tracked is False
+def test_estimate_uses_model_price_not_recorded_cost():
+    report = aggregate(
+        [_row(model="gpt-5.6-sol", input=100_000, output=10_000, reasoning=10_000, cost=99)]
+    )
+    assert report.totals.estimated_cost == 1.1
+    assert report.totals.estimate_complete is True
 
-    some = aggregate([_row(cost=0.0), _row(cost=0.5)])
-    assert some.cost_tracked is True
-    assert some.totals.cost == 0.5
+
+def test_estimate_marks_unknown_models_incomplete():
+    report = aggregate([_row(model="unknown"), _row(model="gpt-4o")])
+    assert report.totals.priced_turns == 1
+    assert report.totals.estimate_complete is False
+
+
+def test_estimate_applies_long_context_rate_per_turn():
+    report = aggregate([_row(model="gpt-5.6-sol", input=300_000)])
+    assert report.totals.estimated_cost == 3.0
+
+
+def test_estimate_accepts_namespaced_model_ids():
+    report = aggregate([_row(model="gateway/kimi-k3", input=1_000_000)])
+    assert report.totals.estimated_cost == 3.0
 
 
 def test_span_is_min_max_of_created_times_in_utc():
