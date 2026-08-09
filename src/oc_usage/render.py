@@ -254,9 +254,7 @@ def _build_totals(report: Report, fmt_num, *, ascii: bool = False) -> Table.grid
         )
 
     row("Input (non-cache)", fmt_num(totals.input), f"{pct(totals.input, all_input):.0f}% of input")
-    row("Cache read", fmt_num(totals.cache_read), "cached", value_style="bold green")
-    if totals.cache_write:
-        row("Cache write", fmt_num(totals.cache_write), "cached", value_style="green")
+    row("Cache", fmt_num(totals.cache_read), "cached", value_style="bold green")
     row("Output", fmt_num(totals.output))
     row("Reasoning", fmt_num(totals.reasoning), end=True)
     row("Total", fmt_num(totals.total), "", label_style="bold", value_style="bold white")
@@ -301,8 +299,7 @@ def _build_providers(
         ("Provider", "left", ""),
         ("Turns", "right", ""),
         ("Input", "right", ""),
-        ("Cache Read", "right", "green"),
-        ("Cache Write", "right", "green"),
+        ("Cache", "right", "green"),
         ("Output", "right", ""),
         ("Reasoning", "right", ""),
         ("Total", "right", "bold"),
@@ -323,7 +320,6 @@ def _build_providers(
             Text(fmt_num(bucket.turns), justify="right"),
             Text(fmt_num(bucket.input), justify="right"),
             Text(fmt_num(bucket.cache_read), justify="right", style="green"),
-            Text(fmt_num(bucket.cache_write), justify="right", style="green"),
             Text(fmt_num(bucket.output), justify="right"),
             Text(fmt_num(bucket.reasoning), justify="right"),
             Text(fmt_num(bucket.total), justify="right", style="bold"),
@@ -358,8 +354,8 @@ def _build_models(
             ("Variant", "left", ""),
             ("Turns", "right", ""),
             ("Input", "right", ""),
-            ("Cache Read", "right", "green"),
-            ("Cache Write", "right", "green"),
+            ("Cache", "right", "green"),
+            ("Cache Hit", "right", "green"),
             ("Output", "right", ""),
             ("Reasoning", "right", ""),
             ("Total", "right", ""),
@@ -378,7 +374,11 @@ def _build_models(
                 Text(fmt_num(bucket.turns), justify="right"),
                 Text(fmt_num(bucket.input), justify="right"),
                 Text(fmt_num(bucket.cache_read), justify="right", style="green"),
-                Text(fmt_num(bucket.cache_write), justify="right", style="green"),
+                Text(
+                    f"{pct(bucket.cache_read, bucket.input + bucket.cache_read):.1f}%",
+                    justify="right",
+                    style="green",
+                ),
                 Text(fmt_num(bucket.output), justify="right"),
                 Text(fmt_num(bucket.reasoning), justify="right"),
                 Text(fmt_num(bucket.total), justify="right", style="bold white"),

@@ -152,14 +152,15 @@ def test_rich_report_never_truncates_large_numbers_with_long_model_names():
     assert out.rstrip().endswith("widths") or "widths" in out
 
 
-def test_rich_report_shows_cache_read_and_write_in_provider_and_model_tables():
+def test_rich_report_shows_cache_and_model_hit_percentage():
     report = aggregate([UsageRow("p", "m", "", 10, 1_234, 5_678, 9, 2, 0.0, 1_000)])
     for width in (NON_TTY_WIDTH, 200):
         out = _capture(report, width)
-        assert out.count("Cache Read") == 2  # provider and per-model tables
-        assert out.count("Cache Write") == 2
+        assert "Cache Read" not in out
+        assert "Cache Write" not in out
+        assert "Cache Hit" in out
         assert fmt_full(1_234) in out
-        assert fmt_full(5_678) in out
+        assert "99.2%" in out
 
 
 def test_rich_report_degrades_safely_at_narrow_width():
