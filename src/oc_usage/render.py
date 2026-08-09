@@ -367,17 +367,20 @@ def _build_models(
             ascii=ascii,
         )
         for (_prov, model, variant), bucket in models:
+            cache = Text(justify="right")
+            cache.append(fmt_num(bucket.cache_read), style="green")
+            cache.append(" (", style="dim")
+            cache.append(
+                f"{pct(bucket.cache_read, bucket.input + bucket.cache_read):.1f}%",
+                style="bright_cyan",
+            )
+            cache.append(")", style="dim")
             cells = [
                 Text(_display(model, ascii), style=f"bold {color}"),
                 Text(_display(variant, ascii), style="dim italic") if variant else Text(""),
                 Text(fmt_num(bucket.turns), justify="right"),
                 Text(fmt_num(bucket.input), justify="right"),
-                Text(
-                    f"{fmt_num(bucket.cache_read)} "
-                    f"({pct(bucket.cache_read, bucket.input + bucket.cache_read):.1f}%)",
-                    justify="right",
-                    style="green",
-                ),
+                cache,
                 Text(fmt_num(bucket.output), justify="right"),
                 Text(fmt_num(bucket.reasoning), justify="right"),
                 Text(fmt_num(bucket.total), justify="right", style="bold white"),
