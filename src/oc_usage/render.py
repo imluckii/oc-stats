@@ -372,7 +372,7 @@ def _build_models(
             cache.append(" (", style="dim")
             cache.append(
                 f"{pct(bucket.cache_read, bucket.input + bucket.cache_read):.1f}%",
-                style="bright_cyan",
+                style="dim",
             )
             cache.append(")", style="dim")
             cells = [
