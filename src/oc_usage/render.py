@@ -355,7 +355,6 @@ def _build_models(
             ("Turns", "right", ""),
             ("Input", "right", ""),
             ("Cache", "right", "green"),
-            ("Cache Hit", "right", "green"),
             ("Output", "right", ""),
             ("Reasoning", "right", ""),
             ("Total", "right", ""),
@@ -373,8 +372,8 @@ def _build_models(
                 Text(_display(variant, ascii), style="dim italic") if variant else Text(""),
                 Text(fmt_num(bucket.turns), justify="right"),
                 Text(fmt_num(bucket.input), justify="right"),
-                Text(fmt_num(bucket.cache_read), justify="right", style="green"),
                 Text(
+                    f"{fmt_num(bucket.cache_read)}  "
                     f"{pct(bucket.cache_read, bucket.input + bucket.cache_read):.1f}%",
                     justify="right",
                     style="green",
