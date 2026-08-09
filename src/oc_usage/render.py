@@ -38,10 +38,6 @@ if TYPE_CHECKING:
 # (longest model name + 8 numeric columns) so nothing is truncated.
 NON_TTY_WIDTH = 180
 
-# Single source for the whole tool: the running OpenCode service. Reported
-# consistently in the Rich header and the JSON payload.
-SOURCE_LABEL = "OpenCode service"
-
 # Distinct colors cycled across providers for visual grouping.
 PROVIDER_COLORS = [
     "bright_cyan",
@@ -205,7 +201,7 @@ def _make_table(
 
 def _build_header(report: Report, fmt_num, *, ascii: bool = False) -> Panel:
     bits = [
-        f"[dim]Source: {SOURCE_LABEL}[/]",
+        f"[dim]Source: {report.source}[/]",
         f"[bold]{fmt_num(report.totals.turns)}[/] turns",
         f"[bold]{len(report.by_provider)}[/] providers",
         f"[bold]{len(report.by_model)}[/] models",
@@ -441,7 +437,7 @@ def _pack(bucket: Bucket) -> dict[str, int | float | bool | None]:
 
 def render_json(report: Report) -> str:
     payload: dict[str, object] = {
-        "source": SOURCE_LABEL,
+        "source": report.source,
         "totals": _pack(report.totals),
         "providers": {
             name: _pack(b)

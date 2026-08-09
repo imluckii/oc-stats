@@ -10,8 +10,10 @@ from __future__ import annotations
 
 import argparse
 import sys
+from contextlib import nullcontext
 
 from oc_usage import __version__
+from oc_usage.database import DatabaseClient, DatabaseError, discover_database
 from oc_usage.models import aggregate
 from oc_usage.render import (
     fmt_compact,
@@ -36,9 +38,7 @@ PROG = "oc-stats"
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(
         prog=PROG,
-        description=(
-            "All-time OpenCode token usage, read live from your running OpenCode V2 service."
-        ),
+        description=("All-time OpenCode token usage from your local OpenCode V2 data."),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
@@ -77,10 +77,25 @@ def _err(message: str) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    console = make_console()
+    loading = (
+        console.status("Reading OpenCode usage...", spinner="line")
+        if console.is_terminal and not args.json
+        else nullcontext()
+    )
 
     try:
-        client = ServiceClient()
-        rows = list(client.rows())
+        with loading:
+            database = discover_database()
+            if database is not None:
+                try:
+                    rows = list(DatabaseClient(database).rows())
+                    source = "local OpenCode database"
+                except DatabaseError:
+                    database = None
+            if database is None:
+                rows = list(ServiceClient().rows())
+                source = "OpenCode service"
     except ExecutableNotFoundError as exc:
         _err(str(exc))
         return 1
@@ -100,14 +115,13 @@ def main(argv: list[str] | None = None) -> int:
         _err(str(exc))
         return 1
 
-    report = aggregate(rows)
+    report = aggregate(rows, source=source)
 
     if args.json:
         print(render_json(report))
         return 0
 
     ascii_mode = needs_ascii()
-    console = make_console()
     try:
         render_rich(report, fmt_num=fmt_compact, console=console, ascii=ascii_mode)
     except UnicodeEncodeError:

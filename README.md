@@ -7,7 +7,7 @@ pipx install git+https://github.com/imluckii/oc-stats.git
 oc-stats
 ```
 
-`oc-stats` reads assistant-message usage from the running OpenCode service and
+`oc-stats` reads assistant-message usage from the local OpenCode database and
 groups tokens by provider, model, and variant. Cost is estimated from current
 standard first-party API list prices; subscription charges may differ.
 
@@ -17,7 +17,8 @@ oc-stats --json   # machine-readable output
 ```
 
 Requires Python 3.10+ and OpenCode V2 (`opencode2` or `opencode`) on `PATH`.
-The tool only makes read-only requests through OpenCode's built-in `api` command.
+Database access is read-only. If no local database exists, the tool falls back to
+read-only requests through OpenCode's built-in `api` command.
 
 Model prices are generated from [models.dev](https://models.dev/) and refreshed
 weekly through a reviewable pull request.

@@ -113,9 +113,10 @@ class Report:
     by_provider: dict[str, Bucket]
     by_model: dict[ModelKey, Bucket]
     span: tuple[datetime, datetime] | None
+    source: str
 
 
-def aggregate(rows: Iterable[UsageRow]) -> Report:
+def aggregate(rows: Iterable[UsageRow], *, source: str = "OpenCode data") -> Report:
     """Sum rows into totals, per-provider, and per-model buckets."""
     totals = Bucket()
     by_provider: dict[str, Bucket] = {}
@@ -139,4 +140,5 @@ def aggregate(rows: Iterable[UsageRow]) -> Report:
         by_provider=by_provider,
         by_model=by_model,
         span=span,
+        source=source,
     )
