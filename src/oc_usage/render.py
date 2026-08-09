@@ -373,8 +373,8 @@ def _build_models(
                 Text(fmt_num(bucket.turns), justify="right"),
                 Text(fmt_num(bucket.input), justify="right"),
                 Text(
-                    f"{fmt_num(bucket.cache_read)}  "
-                    f"{pct(bucket.cache_read, bucket.input + bucket.cache_read):.1f}%",
+                    f"{fmt_num(bucket.cache_read)} "
+                    f"({pct(bucket.cache_read, bucket.input + bucket.cache_read):.1f}%)",
                     justify="right",
                     style="green",
                 ),

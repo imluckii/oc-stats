@@ -160,7 +160,7 @@ def test_rich_report_shows_model_hit_percentage_inside_cache_column():
         assert "Cache Write" not in out
         assert "Cache Hit" not in out
         assert fmt_full(1_234) in out
-        assert "99.2%" in out
+        assert "1,234 (99.2%)" in out
 
 
 def test_rich_report_degrades_safely_at_narrow_width():
