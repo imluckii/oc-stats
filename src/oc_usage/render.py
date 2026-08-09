@@ -183,12 +183,19 @@ def _make_table(
         pad_edge=False,
         padding=(0, 1),
     )
-    for title, justify, _style in columns:
+    for title, justify, style in columns:
         # Numeric columns never wrap (so suffixes survive); text columns fold
         # long names instead of being cut.
         is_numeric = justify == "right"
         t.add_column(
-            title,
+            Text(
+                title,
+                style=(
+                    f"bold {style}"
+                    if style in {"green", "yellow"}
+                    else ("bold white" if style == "bold" else header_style)
+                ),
+            ),
             justify=justify,
             no_wrap=is_numeric,
             overflow="fold" if not is_numeric else ("crop" if ascii else "ellipsis"),
@@ -262,7 +269,13 @@ def _build_totals(report: Report, fmt_num, *, ascii: bool = False) -> Table.grid
         annotation = "current API list rates"
         if not totals.estimate_complete:
             annotation += f" · {fmt_full(totals.turns - totals.priced_turns)} unpriced turns"
-        row("Estimated cost", money(totals.estimated_cost), annotation, label_style="bold")
+        row(
+            "Estimated cost",
+            money(totals.estimated_cost),
+            annotation,
+            label_style="bold yellow",
+            value_style="bold yellow",
+        )
     else:
         row(
             "Estimated cost",
@@ -303,7 +316,7 @@ def _build_providers(
         ("Output", "right", ""),
         ("Reasoning", "right", ""),
         ("Total", "right", "bold"),
-        ("Estimate", "right", ""),
+        ("Estimate", "right", "yellow"),
     ]
     t = _make_table(
         cols,
@@ -326,7 +339,7 @@ def _build_providers(
             Text(
                 money(bucket.estimated_cost) if bucket.priced_turns else ("-" if ascii else "—"),
                 justify="right",
-                style="dim",
+                style="yellow" if bucket.priced_turns else "dim",
             ),
         ]
         t.add_row(*cells)
@@ -351,14 +364,13 @@ def _build_models(
 
         cols = [
             ("Model", "left", ""),
-            ("Variant", "left", ""),
             ("Turns", "right", ""),
             ("Input", "right", ""),
             ("Cache", "right", "green"),
             ("Output", "right", ""),
             ("Reasoning", "right", ""),
             ("Total", "right", ""),
-            ("Estimate", "right", ""),
+            ("Estimate", "right", "yellow"),
         ]
         tbl = _make_table(
             cols,
@@ -367,6 +379,12 @@ def _build_models(
             ascii=ascii,
         )
         for (_prov, model, variant), bucket in models:
+            model_name = Text()
+            model_name.append(_display(model, ascii), style=f"bold {color}")
+            if variant:
+                model_name.append(" · " if not ascii else " - ", style="dim")
+                model_name.append(_display(variant, ascii), style="dim italic")
+
             cache = Text(justify="right")
             cache.append(fmt_num(bucket.cache_read), style="green")
             cache.append(" (", style="dim")
@@ -376,8 +394,7 @@ def _build_models(
             )
             cache.append(")", style="dim")
             cells = [
-                Text(_display(model, ascii), style=f"bold {color}"),
-                Text(_display(variant, ascii), style="dim italic") if variant else Text(""),
+                model_name,
                 Text(fmt_num(bucket.turns), justify="right"),
                 Text(fmt_num(bucket.input), justify="right"),
                 cache,
@@ -389,7 +406,7 @@ def _build_models(
                     if bucket.priced_turns
                     else ("-" if ascii else "—"),
                     justify="right",
-                    style="dim",
+                    style="yellow" if bucket.priced_turns else "dim",
                 ),
             ]
             tbl.add_row(*cells)
@@ -405,7 +422,7 @@ def render_rich(report: Report, *, fmt_num, console: Console, ascii: bool = Fals
     sections: list[RenderableType] = [
         _build_header(report, fmt_num, ascii=ascii),
         Text(""),
-        _section("Token Totals", "cyan", ascii=ascii),
+        _section("Token Totals", "blue", ascii=ascii),
         _build_totals(report, fmt_num, ascii=ascii),
         Text(""),
         _section("Cache", "green", ascii=ascii),
@@ -414,7 +431,7 @@ def render_rich(report: Report, *, fmt_num, console: Console, ascii: bool = Fals
         _section("By Provider", "blue", ascii=ascii),
         _build_providers(report, colors, fmt_num, ascii=ascii),
         Text(""),
-        _section("By Model", "magenta", ascii=ascii),
+        _section("By Model", "blue", ascii=ascii),
     ]
     sections.extend(_build_models(report, colors, fmt_num, ascii=ascii))
     console.print(Group(*sections))

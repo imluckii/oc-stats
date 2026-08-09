@@ -163,6 +163,12 @@ def test_rich_report_shows_model_hit_percentage_inside_cache_column():
         assert "1,234 (99.2%)" in out
 
 
+def test_rich_report_inlines_gray_variant_in_model_cell():
+    out = _capture(aggregate(_rows()), NON_TTY_WIDTH)
+    assert "Variant" not in out
+    assert "gpt-4o · high" in out
+
+
 def test_rich_report_degrades_safely_at_narrow_width():
     # At a narrow width the report must still render without raising and keep its
     # section structure; numeric columns are sized to their content so the small
