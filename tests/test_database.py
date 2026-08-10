@@ -21,6 +21,16 @@ def create_database(path, messages):
     connection.close()
 
 
+def create_v1_database(path, messages):
+    connection = sqlite3.connect(path)
+    connection.execute("CREATE TABLE message (data TEXT)")
+    connection.executemany(
+        "INSERT INTO message (data) VALUES (?)", [(json.dumps(m),) for m in messages]
+    )
+    connection.commit()
+    connection.close()
+
+
 def assistant(model="gpt-4o"):
     return {
         "type": "assistant",
@@ -52,6 +62,34 @@ def test_database_client_skips_malformed_rows(tmp_path):
     assert [row.model for row in rows] == ["gpt-4o-mini"]
 
 
+def test_database_client_reads_legacy_opencode_database(tmp_path):
+    path = tmp_path / "opencode.db"
+    create_v1_database(
+        path,
+        [
+            {"role": "user"},
+            {
+                "role": "assistant",
+                "providerID": "openai",
+                "modelID": "gpt-4o",
+                "variant": "high",
+                "tokens": {
+                    "input": 10,
+                    "output": 2,
+                    "reasoning": 1,
+                    "cache": {"read": 20, "write": 3},
+                },
+                "time": {"created": 1_000},
+            },
+        ],
+    )
+    rows = list(DatabaseClient(path).rows())
+    assert len(rows) == 1
+    assert rows[0].provider == "openai"
+    assert rows[0].model == "gpt-4o"
+    assert rows[0].total == 36
+
+
 def test_database_client_rejects_wrong_schema(tmp_path):
     path = tmp_path / "opencode-next.db"
     sqlite3.connect(path).close()
@@ -65,4 +103,14 @@ def test_discover_database_uses_xdg_data_home(tmp_path, monkeypatch):
     path.touch()
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
     monkeypatch.delenv("LOCALAPPDATA", raising=False)
+    assert discover_database() == path
+
+
+def test_discover_database_uses_windows_user_profile(tmp_path, monkeypatch):
+    path = tmp_path / ".local" / "share" / "opencode" / "opencode.db"
+    path.parent.mkdir(parents=True)
+    path.touch()
+    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
+    monkeypatch.delenv("LOCALAPPDATA", raising=False)
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
     assert discover_database() == path

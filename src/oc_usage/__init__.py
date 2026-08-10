@@ -13,8 +13,8 @@ try:  # installed distribution: authoritative
     try:
         __version__ = version("oc-stats")
     except PackageNotFoundError:  # pragma: no cover - dev/editable fallback
-        __version__ = "0.3.0"
+        __version__ = "0.3.1"
 except Exception:  # pragma: no cover - extremely defensive
-    __version__ = "0.3.0"
+    __version__ = "0.3.1"
 
 __all__ = ["__version__"]

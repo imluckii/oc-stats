@@ -1,6 +1,6 @@
 # oc-stats
 
-Minimal all-time usage stats for OpenCode V2.
+Minimal all-time usage stats for OpenCode.
 
 ```bash
 pipx install git+https://github.com/imluckii/oc-stats.git
@@ -14,9 +14,11 @@ standard first-party API list prices; subscription charges may differ.
 ```bash
 oc-stats          # Rich terminal report
 oc-stats --json   # machine-readable output
+oc-stats --db "C:\Users\Anchit\.local\share\opencode\opencode.db"
 ```
 
-Requires Python 3.10+ and OpenCode V2 (`opencode2` or `opencode`) on `PATH`.
+Requires Python 3.10+. V1 and V2 database schemas are supported; service fallback
+requires OpenCode V2 (`opencode2` or `opencode`) on `PATH`.
 Database access is read-only. If no local database exists, the tool falls back to
 read-only requests through OpenCode's built-in `api` command.
 

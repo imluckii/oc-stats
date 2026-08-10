@@ -52,13 +52,7 @@ jobs:
           /tmp/smoke/bin/oc-stats --version
           /tmp/smoke/bin/oc-stats --help | head -n 3
           /tmp/smoke/bin/oc-stats --help | grep -- --json
-          if /tmp/smoke/bin/oc-stats --help | grep -q -- --db; then
-            echo "removed --db flag still advertised"; exit 1
-          fi
-          # Removed flags must be rejected (argparse exit 2), not silently work.
-          if /tmp/smoke/bin/oc-stats --db x >/tmp/err 2>&1; then
-            echo "--db should have been rejected"; exit 1
-          fi
+          /tmp/smoke/bin/oc-stats --help | grep -- --db
 
   windows:
     name: Windows smoke (Python 3.12)
@@ -87,13 +81,7 @@ jobs:
           wheel="$(ls dist/*.whl | head -n1)"
           "$PY" -m pip install "$wheel"
           if [ -x smoke/bin/oc-stats ]; then EXE=smoke/bin/oc-stats; else EXE=smoke/Scripts/oc-stats; fi
-          "$EXE" --version | grep -q "0.3.0"
+          "$EXE" --version | grep -q "0.3.1"
           "$EXE" --help | grep -q -- "--json"
-          if "$EXE" --help | grep -q -- "--db"; then
-            echo "removed --db flag still advertised"; exit 1
-          fi
-          # Removed flags must be rejected (argparse exit 2), not silently work.
-          if "$EXE" --db x >/dev/null 2>&1; then
-            echo "--db should have been rejected"; exit 1
-          fi
+          "$EXE" --help | grep -q -- "--db"
           echo "Windows console smoke OK"

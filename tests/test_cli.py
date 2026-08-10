@@ -11,6 +11,7 @@ import pytest
 
 from oc_usage import __version__, cli
 from oc_usage.cli import main
+from oc_usage.models import UsageRow
 from oc_usage.service import ServiceClient
 from tests.helpers import T0, FakeService, assistant_message
 
@@ -162,16 +163,16 @@ def test_help_is_short_and_lists_only_public_options(capsys):
     out = capsys.readouterr().out
     assert "OpenCode token usage" in out
     assert "--json" in out
+    assert "--db" in out
     assert "--version" in out
     # Removed options must not appear in help.
-    for removed in ("--db", "--server", "--username", "--password", "--full", "--ascii"):
+    for removed in ("--server", "--username", "--password", "--full", "--ascii"):
         assert removed not in out
 
 
 @pytest.mark.parametrize(
     "flag",
     [
-        "--db",
         "--server",
         "--username",
         "--password-stdin",
@@ -188,6 +189,26 @@ def test_removed_flags_are_rejected(flag, monkeypatch):
     with pytest.raises(SystemExit) as exc:
         main([flag])
     assert exc.value.code == 2
+
+
+def test_manual_database_path_is_used(tmp_path, monkeypatch, capsys):
+    path = tmp_path / "custom.db"
+    path.touch()
+    row = UsageRow("openai", "gpt-4o", "", 10, 0, 0, 1, 0, 0.0, 1)
+    monkeypatch.setattr(
+        cli,
+        "DatabaseClient",
+        lambda selected: type("DB", (), {"rows": lambda _self: iter([row])})(),
+    )
+    assert main(["--db", str(path), "--json"]) == 0
+    assert json.loads(capsys.readouterr().out)["totals"]["turns"] == 1
+
+
+def test_missing_manual_database_fails_without_service_fallback(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(cli, "ServiceClient", lambda: pytest.fail("service fallback used"))
+    path = tmp_path / "missing.db"
+    assert main(["--db", str(path)]) == 1
+    assert f"database not found: {path}" in capsys.readouterr().err
 
 
 # ── automatic ASCII fallback (no public flag) ─────────────────────────────────
@@ -233,4 +254,4 @@ def test_python_m_module_help():
     )
     assert result.returncode == 0
     assert "OpenCode token usage" in result.stdout
-    assert "--db" not in result.stdout
+    assert "--db" in result.stdout

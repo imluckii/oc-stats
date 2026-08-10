@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import sys
 from contextlib import nullcontext
+from pathlib import Path
 
 from oc_usage import __version__
 from oc_usage.database import DatabaseClient, DatabaseError, discover_database
@@ -48,6 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
             "In OpenCode's shell mode:  !oc-stats\n"
         ),
     )
+    ap.add_argument("--db", type=Path, metavar="PATH", help="path to an OpenCode database")
     ap.add_argument("--json", action="store_true", help="emit JSON to stdout")
     ap.add_argument(
         "--version",
@@ -86,12 +88,17 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         with loading:
-            database = discover_database()
+            explicit_database = args.db is not None
+            database = args.db.expanduser() if explicit_database else discover_database()
             if database is not None:
+                if not database.is_file():
+                    raise DatabaseError(f"database not found: {database}")
                 try:
                     rows = list(DatabaseClient(database).rows())
                     source = "local OpenCode database"
                 except DatabaseError:
+                    if explicit_database:
+                        raise
                     database = None
             if database is None:
                 rows = list(ServiceClient().rows())
@@ -112,6 +119,9 @@ def main(argv: list[str] | None = None) -> int:
         _err(str(exc))
         return 1
     except ServiceError as exc:  # any other transport error, surfaced cleanly
+        _err(str(exc))
+        return 1
+    except DatabaseError as exc:
         _err(str(exc))
         return 1
 
