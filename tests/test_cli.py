@@ -37,7 +37,7 @@ def _fake_with_data():
 
 def patch_service(monkeypatch, fake):
     """Make ``main()`` build a client that talks to ``fake`` instead of subprocess."""
-    monkeypatch.setattr(cli, "discover_database", lambda: None)
+    monkeypatch.setattr(cli, "discover_databases", list)
     monkeypatch.setattr(
         cli, "ServiceClient", lambda: ServiceClient(executable="opencode2", runner=fake)
     )
@@ -93,7 +93,7 @@ def test_default_compact_numbers_are_shown(monkeypatch, capsys):
 
 
 def test_no_executable_exits_1(monkeypatch, capsys):
-    monkeypatch.setattr(cli, "discover_database", lambda: None)
+    monkeypatch.setattr(cli, "discover_databases", list)
     monkeypatch.setattr("oc_usage.service.shutil.which", lambda _name: None)
     rc = main([])
     err = capsys.readouterr().err
@@ -195,11 +195,7 @@ def test_manual_database_path_is_used(tmp_path, monkeypatch, capsys):
     path = tmp_path / "custom.db"
     path.touch()
     row = UsageRow("openai", "gpt-4o", "", 10, 0, 0, 1, 0, 0.0, 1)
-    monkeypatch.setattr(
-        cli,
-        "DatabaseClient",
-        lambda selected: type("DB", (), {"rows": lambda _self: iter([row])})(),
-    )
+    monkeypatch.setattr(cli, "load_databases", lambda paths, **_kwargs: ([row], paths))
     assert main(["--db", str(path), "--json"]) == 0
     assert json.loads(capsys.readouterr().out)["totals"]["turns"] == 1
 

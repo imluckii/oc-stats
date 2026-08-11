@@ -17,6 +17,9 @@ oc-stats --json   # machine-readable output
 oc-stats --db "C:\Users\Anchit\.local\share\opencode\opencode.db"
 ```
 
+All discovered databases are merged automatically. Repeating `--db` merges
+explicit paths; messages copied between databases are deduplicated by ID.
+
 Requires Python 3.10+. V1 and V2 database schemas are supported; service fallback
 requires OpenCode V2 (`opencode2` or `opencode`) on `PATH`.
 Database access is read-only. If no local database exists, the tool falls back to

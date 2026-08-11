@@ -81,7 +81,7 @@ jobs:
           wheel="$(ls dist/*.whl | head -n1)"
           "$PY" -m pip install "$wheel"
           if [ -x smoke/bin/oc-stats ]; then EXE=smoke/bin/oc-stats; else EXE=smoke/Scripts/oc-stats; fi
-          "$EXE" --version | grep -q "0.3.1"
+          "$EXE" --version | grep -q "0.3.2"
           "$EXE" --help | grep -q -- "--json"
           "$EXE" --help | grep -q -- "--db"
           echo "Windows console smoke OK"

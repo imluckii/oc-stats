@@ -14,7 +14,7 @@ from contextlib import nullcontext
 from pathlib import Path
 
 from oc_usage import __version__
-from oc_usage.database import DatabaseClient, DatabaseError, discover_database
+from oc_usage.database import DatabaseError, discover_databases, load_databases
 from oc_usage.models import aggregate
 from oc_usage.render import (
     fmt_compact,
@@ -49,7 +49,13 @@ def build_parser() -> argparse.ArgumentParser:
             "In OpenCode's shell mode:  !oc-stats\n"
         ),
     )
-    ap.add_argument("--db", type=Path, metavar="PATH", help="path to an OpenCode database")
+    ap.add_argument(
+        "--db",
+        type=Path,
+        action="append",
+        metavar="PATH",
+        help="database path; repeat to merge multiple databases",
+    )
     ap.add_argument("--json", action="store_true", help="emit JSON to stdout")
     ap.add_argument(
         "--version",
@@ -88,19 +94,20 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         with loading:
-            explicit_database = args.db is not None
-            database = args.db.expanduser() if explicit_database else discover_database()
-            if database is not None:
+            explicit_databases = args.db is not None
+            databases = (
+                [path.expanduser() for path in args.db]
+                if explicit_databases
+                else discover_databases()
+            )
+            for database in databases:
                 if not database.is_file():
                     raise DatabaseError(f"database not found: {database}")
-                try:
-                    rows = list(DatabaseClient(database).rows())
-                    source = "local OpenCode database"
-                except DatabaseError:
-                    if explicit_database:
-                        raise
-                    database = None
-            if database is None:
+            rows, used_databases = load_databases(databases, skip_errors=not explicit_databases)
+            if used_databases:
+                count = len(used_databases)
+                source = f"{count} local OpenCode database{'s' if count != 1 else ''}"
+            else:
                 rows = list(ServiceClient().rows())
                 source = "OpenCode service"
     except ExecutableNotFoundError as exc:
