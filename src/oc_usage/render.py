@@ -78,7 +78,9 @@ def money(c: float) -> str:
         return f"${c:,.0f}"
     if c >= 1:
         return f"${c:,.2f}"
-    return f"${c:.4f}".rstrip("0").rstrip(".")
+    # Six decimals so tiny per-turn estimates on cheap models stay visible
+    # (0.000021 must not collapse to $0).
+    return f"${c:.6f}".rstrip("0").rstrip(".")
 
 
 def pct(part: float, whole: float) -> float:
@@ -237,11 +239,13 @@ def _build_totals(report: Report, fmt_num, *, ascii: bool = False) -> Table.grid
     all_input = totals.input + totals.cache_read
 
     # Value field width: widest of all numeric values we'll show, so the grid
-    # right-aligns cleanly without manual ANSI padding.
+    # right-aligns cleanly without manual ANSI padding. Cost strings are
+    # included so tiny estimates like "$0.000021" are never cropped.
     widest = max(
         len(fmt_num(totals.total)),
         len(fmt_num(totals.cache_read)),
         len(fmt_num(totals.input)),
+        len(money(totals.estimated_cost)),
     )
 
     t: Table = Table.grid(padding=(0, 2))
@@ -305,6 +309,15 @@ def _build_cache(report: Report, fmt_num, *, ascii: bool = False) -> Table:
     return t
 
 
+def _widen_cost_column(table: Table, report: Report) -> None:
+    """Give the trailing Estimate column room for its widest money cell."""
+    buckets = list(report.by_provider.values()) + list(report.by_model.values())
+    needed = max(
+        [len("Estimate")] + [len(money(b.estimated_cost)) for b in buckets if b.priced_turns]
+    )
+    table.columns[-1].min_width = needed
+
+
 def _build_providers(
     report: Report, colors: dict[str, str], fmt_num, *, ascii: bool = False
 ) -> Table:
@@ -324,6 +337,7 @@ def _build_providers(
         header_style="bold blue",
         ascii=ascii,
     )
+    _widen_cost_column(t, report)
     for name, bucket in sorted(
         report.by_provider.items(), key=lambda kv: kv[1].total, reverse=True
     ):
@@ -378,6 +392,7 @@ def _build_models(
             header_style=f"bold {color}",
             ascii=ascii,
         )
+        _widen_cost_column(tbl, report)
         for (_prov, model, variant), bucket in models:
             model_name = Text()
             model_name.append(_display(model, ascii), style=f"bold {color}")

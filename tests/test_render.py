@@ -229,8 +229,11 @@ def test_rich_report_marks_unknown_provider_as_unpriced():
         ]
     )
     out = _capture(report, NON_TTY_WIDTH)
+    # The unpriced provider gets an em-dash cell, and the totals annotation
+    # counts its turns as unpriced. (Tiny priced estimates like "$0.000035"
+    # legitimately start with "$0.00", so no substring ban here.)
     assert "—" in out
-    assert "$0.00" not in out
+    assert "unpriced" in out
 
 
 def test_make_console_non_tty_uses_fixed_width_and_disables_color(monkeypatch):
