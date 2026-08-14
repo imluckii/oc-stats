@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "oc-stats"
-version = "0.3.2"
+version = "0.4.0"
 description = "Minimal OpenCode usage stats."
 readme = "README.md"
 license = { text = "MIT" }
@@ -33,7 +33,10 @@ classifiers = [
     "Topic :: Utilities",
     "Typing :: Typed",
 ]
-dependencies = ["rich>=13.6"]
+dependencies = [
+    "rich>=13.6",
+    "tomli>=2.0 ; python_version < '3.11'",
+]
 
 [project.urls]
 Homepage = "https://github.com/imluckii/oc-stats"
