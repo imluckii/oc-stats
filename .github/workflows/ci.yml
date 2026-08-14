@@ -81,7 +81,10 @@ jobs:
           wheel="$(ls dist/*.whl | head -n1)"
           "$PY" -m pip install "$wheel"
           if [ -x smoke/bin/oc-stats ]; then EXE=smoke/bin/oc-stats; else EXE=smoke/Scripts/oc-stats; fi
-          "$EXE" --version | grep -q "0.3.2"
+          # Derive the expected version from pyproject so this check never
+          # goes stale on a release bump.
+          ver="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          "$EXE" --version | grep -q "$ver"
           "$EXE" --help | grep -q -- "--json"
           "$EXE" --help | grep -q -- "--db"
           echo "Windows console smoke OK"
