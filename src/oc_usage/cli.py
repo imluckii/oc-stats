@@ -16,6 +16,7 @@ from pathlib import Path
 from oc_usage import __version__
 from oc_usage.database import DatabaseError, discover_databases, load_databases
 from oc_usage.models import aggregate
+from oc_usage.pricing import PricingError
 from oc_usage.render import (
     fmt_compact,
     make_console,
@@ -132,7 +133,12 @@ def main(argv: list[str] | None = None) -> int:
         _err(str(exc))
         return 1
 
-    report = aggregate(rows, source=source)
+    try:
+        report = aggregate(rows, source=source)
+    except PricingError as exc:
+        # A broken user price override must fail loudly, not zero the report.
+        _err(str(exc))
+        return 1
 
     if args.json:
         print(render_json(report))
