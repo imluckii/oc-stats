@@ -1,0 +1,37 @@
+name: Update model prices
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Regenerate prices.toml from models.dev
+        run: python scripts/update_prices.py
+      - name: Run tests against the refreshed catalog
+        run: |
+          python -m pip install -e ".[dev]"
+          pytest -q
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          title: "chore(prices): refresh catalog from models.dev"
+          body: |
+            Automated weekly refresh of `src/oc_usage/prices.toml` from
+            [models.dev](https://models.dev/api.json), with the hand-verified
+            `OVERRIDES` from `scripts/update_prices.py` reapplied.
+
+            Tests were run against the refreshed catalog.
+          branch: prices/auto-update
+          commit-message: "chore(prices): refresh catalog from models.dev"
+          delete-branch: true
