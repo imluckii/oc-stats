@@ -25,11 +25,11 @@ pytest -q
   fixture in `tests/helpers.py` and a test in `tests/test_service.py`.
 - **Never estimate tokens.** Every token count must trace back to a recorded
   field. If a field is missing, treat it as `0` and document it.
-- **Never invent prices.** Estimated *cost* is allowed only via
-  `src/oc_usage/prices.toml`, and every entry there must be verifiable against
-  the provider's official pricing page on the day it is added — when in doubt,
-  skip the model and say so in the PR. Update the `updated` field when prices
-  change, and cite the source in the section comment.
+- **Never invent prices.** The bundled `prices.toml` is generated from
+  models.dev by `scripts/update_prices.py` — never hand-edit generated
+  sections (the next refresh overwrites them). Corrections and pins go in
+  that script's `OVERRIDES`, each citing the provider's official pricing
+  page and the date it was checked.
 - **Fail loudly, never silently report zero.** An incompatible API, invalid JSON,
   a missing executable, or a broken price file must raise, not produce an empty
   report.

@@ -27,18 +27,22 @@ read-only requests through OpenCode's built-in `api` command.
 
 ## Prices
 
-Estimates come from the bundled `src/oc_usage/prices.toml` — a hand-curated,
-human-editable list where every entry was verified against the provider's
-official pricing page (Anthropic, OpenAI, Google, xAI, DeepSeek, Mistral,
-Moonshot, Z.AI, MiniMax, Groq, Cohere, Perplexity, Alibaba, Amazon Bedrock,
-OpenCode Zen, and OpenRouter's live listings). Prices are US dollars per 1M
-tokens, per provider, with cache tiers and long-context tiers where providers
-publish them. Models whose pricing could not be verified are deliberately
-absent — they get no estimate rather than a guess.
+Estimates come from the bundled `src/oc_usage/prices.toml` — generated from
+the full [models.dev](https://models.dev) catalog (175 providers, 6,000+
+models, gateway/reseller prices included as-is) and refreshed weekly through
+a reviewable pull request. Prices are US dollars per 1M tokens, per provider,
+with cache tiers and long-context tiers where models.dev publishes them.
+Models without published pricing get no estimate rather than a guess.
 
-Matching is provider-aware: `anthropic/claude-opus-5` from any gateway resolves
-to Anthropic's rate, OpenRouter-only discounts live under `[openrouter]`, and a
-bare model name is used only when every provider prices it identically.
+A small hand-verified `OVERRIDES` list in `scripts/update_prices.py` pins the
+few first-party entries where models.dev disagrees with the provider's
+official pricing page.
+
+Matching is provider-aware: `anthropic/claude-opus-5` from any gateway
+resolves to Anthropic's rate, dated release suffixes fall back to the base
+model, and a bare model name is used only when every provider prices it
+identically — with resellers included, most common names are ambiguous and
+correctly refuse to guess, so provider-qualified ids are preferred.
 
 ### Editing prices
 
@@ -59,8 +63,8 @@ Check any lookup with:
 python -m oc_usage.pricing anthropic claude-opus-5
 ```
 
-The full bundled file (fields, matching rules, per-provider sources) documents
-itself at the top of `prices.toml`.
+The generated file documents itself at the top of `prices.toml`; regenerate
+locally with `python scripts/update_prices.py`.
 
 ## Development
 
