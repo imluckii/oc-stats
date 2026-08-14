@@ -21,9 +21,9 @@ from oc_usage.render import (
 
 def _rows():
     return [
-        UsageRow("p1", "gpt-4o", "high", 10, 100, 0, 5, 2, 0.0, 1_000),
-        UsageRow("p1", "gpt-4o", "high", 20, 200, 0, 6, 3, 1.5, 2_000),
-        UsageRow("p2", "gpt-4o-mini", "low", 5, 0, 0, 1, 0, 0.0, 3_000),
+        UsageRow("openai", "gpt-4o", "high", 10, 100, 0, 5, 2, 0.0, 1_000),
+        UsageRow("openai", "gpt-4o", "high", 20, 200, 0, 6, 3, 1.5, 2_000),
+        UsageRow("openai", "gpt-4o-mini", "low", 5, 0, 0, 1, 0, 0.0, 3_000),
     ]
 
 
@@ -94,8 +94,8 @@ def test_json_models_include_variant():
     report = aggregate(_rows())
     data = json.loads(render_json(report))
     variants = {(m["provider"], m["model"], m["variant"]) for m in data["models"]}
-    assert ("p1", "gpt-4o", "high") in variants
-    assert ("p2", "gpt-4o-mini", "low") in variants
+    assert ("openai", "gpt-4o", "high") in variants
+    assert ("openai", "gpt-4o-mini", "low") in variants
 
 
 def test_json_span_iso8601():
@@ -188,7 +188,7 @@ def test_rich_report_shows_unavailable_for_unknown_model():
 
 
 def test_rich_report_shows_estimated_cost():
-    report = aggregate([UsageRow("p", "gpt-4o", "", 1_000_000, 0, 0, 0, 0, 2.5, 1)])
+    report = aggregate([UsageRow("openai", "gpt-4o", "", 1_000_000, 0, 0, 0, 0, 2.5, 1)])
     out = _capture(report, NON_TTY_WIDTH)
     assert "$2.50" in out
     assert "Estimated cost" in out
@@ -224,8 +224,8 @@ def test_rich_ascii_mode_uses_ascii_chrome_and_escapes_labels():
 def test_rich_report_marks_unknown_provider_as_unpriced():
     report = aggregate(
         [
-            UsageRow("p1", "gpt-4o", "", 10, 0, 0, 1, 0, 2.5, 1),
-            UsageRow("p2", "unknown", "", 10, 0, 0, 1, 0, 0.0, 2),
+            UsageRow("openai", "gpt-4o", "", 10, 0, 0, 1, 0, 2.5, 1),
+            UsageRow("acme", "unknown", "", 10, 0, 0, 1, 0, 0.0, 2),
         ]
     )
     out = _capture(report, NON_TTY_WIDTH)

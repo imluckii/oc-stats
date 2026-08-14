@@ -11,10 +11,10 @@ Matching order (case-insensitive, first hit wins):
     1. exact ``(provider, model)``
     2. ``vendor/model`` ids — ``anthropic/claude-opus-5`` under any provider
        matches the ``anthropic`` entry ``claude-opus-5``
-    3. aliases declared on an entry
-    4. the bare model name (with dated suffixes like ``-20241120`` stripped),
-       but only when every provider in the merged list prices that model
-       identically (ambiguity ⇒ no estimate)
+    3. the same two looksups with dated release suffixes (``-20241120``,
+       ``-2026-04``) stripped from the model name
+    4. the bare model name, but only when every provider in the merged list
+       prices that model identically (ambiguity ⇒ no estimate)
 
 Models with a ``[long_context]`` table bill requests whose cached+uncached
 input exceeds ``threshold`` tokens at the higher tier.
@@ -140,16 +140,23 @@ class Pricing:
         """Resolve pricing for a ``(provider, model)`` pair, or ``None``."""
         provider = provider.strip().lower()
         model = model.strip().lower()
-        price = self._by_provider.get(provider, {}).get(model)
-        if price is not None:
-            return price
-        if "/" in model:  # gateway ids like "anthropic/claude-opus-5"
-            vendor, rest = model.split("/", 1)
-            price = self._by_provider.get(vendor, {}).get(rest)
+        # Try the exact name, then the dated-suffix-stripped name
+        # (gpt-4o-20241120 → gpt-4o), each against the provider's own table,
+        # any "vendor/" gateway prefix, and finally an unambiguous global
+        # name (rare now that resellers are included — most common names
+        # differ per provider and correctly refuse to guess).
+        for candidate in (model, _DATED_SUFFIX.sub("", model)):
+            price = self._by_provider.get(provider, {}).get(candidate)
             if price is not None:
                 return price
-            model = rest
-        for candidate in (model, _DATED_SUFFIX.sub("", model)):
+            if "/" in candidate:  # gateway ids like "anthropic/claude-opus-5"
+                vendor, rest = candidate.split("/", 1)
+                price = self._by_provider.get(vendor, {}).get(rest)
+                if price is not None:
+                    return price
+                price = self._by_provider.get(provider, {}).get(rest)
+                if price is not None:
+                    return price
             options = self._global.get(candidate)
             if options is not None and len(options) == 1:
                 return next(iter(options))

@@ -61,7 +61,7 @@ def test_bundled_file_loads_and_is_sane():
         ("groq", "llama-3.3-70b-versatile", (0.59, 0.79, 0, 0)),
         ("cohere", "command-r-08-2024", (0.15, 0.6, 0, 0)),
         ("perplexity", "sonar-pro", (3, 15, 0, 0)),
-        ("alibaba", "qwen3.7-plus", (0.4, 1.6, 0.04, 0.5)),
+        ("alibaba", "qwen3.7-plus", (0.5, 3, 0.05, 0.625)),
         ("opencode", "gpt-5.6-terra", (2, 12, 0.2, 2.5)),
     ],
 )
@@ -113,8 +113,13 @@ def test_dated_suffix_falls_back_to_base_model():
 
 
 def test_global_unique_model_name_resolves():
-    price = load_bundled().lookup("custom-gateway", "gpt-4o-mini")
-    assert price is not None and price.rates.input == 0.15
+    # With resellers included, common names (gpt-4o-mini) are priced
+    # differently across providers and must refuse to guess. A genuinely
+    # unique name still resolves from any provider string.
+    pricing = load_bundled()
+    assert pricing.lookup("custom-gateway", "gpt-4o-mini") is None
+    price = pricing.lookup("custom-gateway", "big-pickle")
+    assert price is not None and price.rates.input == 0
 
 
 def test_global_ambiguous_model_name_is_rejected():
