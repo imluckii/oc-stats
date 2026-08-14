@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "oc-stats"
-version = "0.4.0"
+version = "0.5.0"
 description = "Minimal OpenCode usage stats."
 readme = "README.md"
 license = { text = "MIT" }
