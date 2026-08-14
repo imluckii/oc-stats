@@ -1,0 +1,2513 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  oc-usage price list
+#
+#  Everything here is OPTIONAL for you. oc-usage ships with this file bundled
+#  inside the package and uses it only to ESTIMATE costs for models whose
+#  cost OpenCode did not record. Recorded costs always win.
+#
+#  HOW TO CUSTOMIZE (you only need the entries you want to change):
+#    1. Create this file (it may contain ONLY the entries you edit):
+#         Linux : ~/.config/oc-usage/prices.toml
+#         macOS : ~/.config/oc-usage/prices.toml
+#         or set $XDG_CONFIG_HOME, or point OC_USAGE_PRICES at any file
+#    2. Copy the [provider."model"] block you want from below and edit the
+#       numbers. Your file is merged over this one.
+#
+#  PRICES: US dollars per 1,000,000 tokens (that is what providers publish).
+#    input       — required, non-cached input tokens
+#    output      — required, output tokens (reasoning tokens are billed as
+#                  output by every provider here, so they use this rate too)
+#    cache_read  — optional, cached input tokens (0 if omitted)
+#    cache_write — optional, writing to the prompt cache (0 if omitted)
+#    aliases     — optional, other model-id spellings that use this price
+#
+#    Some models bill long requests at a higher rate. Add a sub-table:
+#      [openai."gpt-5.6-sol".long_context]
+#      threshold = 272000        # input + cache tokens that switch the tier
+#      input = 10                # same fields as above
+#      output = 45
+#
+#  HOW MODELS ARE MATCHED (first hit wins):
+#    1. exact provider + model (case-insensitive)
+#    2. "vendor/model" ids: a model like anthropic/claude-opus-5 also matches
+#       the "anthropic" provider entry claude-opus-5 (OpenRouter-style ids)
+#    3. aliases listed on an entry
+#    4. model name alone, if every provider in this file prices it identically
+#
+#  VERIFIED: 2026-08-14 against each provider's official pricing page.
+#  Sources noted per section. Anything unverifiable was left out on purpose —
+#  add it yourself rather than trusting a guess.
+# ═══════════════════════════════════════════════════════════════════════════
+
+schema = 1
+updated = "2026-08-14"
+
+
+# ── anthropic ─────────────────────────────────────────────────────────
+[anthropic]
+
+[anthropic."claude-mythos-5"]
+input = 10
+cache_read = 1
+cache_write = 12.5
+output = 50
+
+[anthropic."claude-fable-5"]
+input = 10
+cache_read = 1
+cache_write = 12.5
+output = 50
+
+[anthropic."claude-opus-5"]  # also: claude-opus-5-fast-std
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+aliases = ["claude-opus-5-fast-std"]
+
+[anthropic."claude-opus-5-fast"]
+input = 10
+cache_read = 1
+cache_write = 12.5
+output = 50
+
+[anthropic."claude-opus-4-8"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[anthropic."claude-opus-4-8-fast"]
+input = 10
+cache_read = 1
+cache_write = 12.5
+output = 50
+
+[anthropic."claude-opus-4-7"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[anthropic."claude-opus-4-6"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[anthropic."claude-opus-4-5"]  # also: claude-opus-4-5-20251101
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+aliases = ["claude-opus-4-5-20251101"]
+
+[anthropic."claude-opus-4-1"]
+input = 15
+cache_read = 1.5
+cache_write = 18.75
+output = 75
+
+[anthropic."claude-opus-4"]
+input = 15
+cache_read = 1.5
+cache_write = 18.75
+output = 75
+
+[anthropic."claude-sonnet-5"]
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 10
+
+[anthropic."claude-sonnet-4-6"]
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
+
+[anthropic."claude-sonnet-4-5"]  # also: claude-sonnet-4-5-20250929
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
+aliases = ["claude-sonnet-4-5-20250929"]
+
+[anthropic."claude-sonnet-4"]  # also: claude-sonnet-4-20250514
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
+aliases = ["claude-sonnet-4-20250514"]
+
+[anthropic."claude-haiku-4-5"]  # also: claude-haiku-4-5-20251001
+input = 1
+cache_read = 0.1
+cache_write = 1.25
+output = 5
+aliases = ["claude-haiku-4-5-20251001"]
+
+[anthropic."claude-3-5-haiku"]  # also: claude-3-5-haiku-20241022
+input = 0.8
+cache_read = 0.08
+cache_write = 1
+output = 4
+aliases = ["claude-3-5-haiku-20241022"]
+
+[anthropic."claude-3-5-sonnet"]  # also: claude-3-5-sonnet-20241022
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
+aliases = ["claude-3-5-sonnet-20241022"]
+
+[anthropic."claude-3-opus"]
+input = 15
+cache_read = 1.5
+cache_write = 18.75
+output = 75
+
+
+# ── openai ────────────────────────────────────────────────────────────
+[openai]
+
+[openai."gpt-5.6-sol"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 30
+[openai."gpt-5.6-sol".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 10
+cache_read = 1
+cache_write = 12.5
+output = 45
+
+[openai."gpt-5.6-terra"]
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 12
+[openai."gpt-5.6-terra".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 4
+cache_read = 0.4
+cache_write = 5
+output = 18
+
+[openai."gpt-5.6-luna"]
+input = 0.2
+cache_read = 0.02
+cache_write = 0.25
+output = 1.2
+[openai."gpt-5.6-luna".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 0.4
+cache_read = 0.04
+cache_write = 0.5
+output = 1.8
+
+[openai."gpt-5.6-cyber"]
+input = 12.5
+cache_read = 1.25
+cache_write = 15.625
+output = 75
+
+[openai."gpt-5.5"]
+input = 5
+cache_read = 0.5
+output = 30
+[openai."gpt-5.5".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 10
+cache_read = 1
+output = 45
+
+[openai."gpt-5.5-pro"]
+input = 30
+output = 180
+[openai."gpt-5.5-pro".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 60
+output = 270
+
+[openai."gpt-5.5-cyber"]
+input = 12.5
+cache_read = 1.25
+output = 75
+
+[openai."gpt-5.4"]
+input = 2.5
+cache_read = 0.25
+output = 15
+[openai."gpt-5.4".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 5
+cache_read = 0.5
+output = 22.5
+
+[openai."gpt-5.4-pro"]
+input = 30
+output = 180
+[openai."gpt-5.4-pro".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 60
+output = 270
+
+[openai."gpt-5.4-mini"]
+input = 0.75
+cache_read = 0.075
+output = 4.5
+
+[openai."gpt-5.4-nano"]
+input = 0.2
+cache_read = 0.02
+output = 1.25
+
+[openai."gpt-5.3-codex"]
+input = 1.75
+cache_read = 0.175
+output = 14
+
+[openai."gpt-5.2"]
+input = 1.75
+cache_read = 0.175
+output = 14
+
+[openai."gpt-5.2-pro"]
+input = 21
+output = 168
+
+[openai."gpt-5.1"]
+input = 1.25
+cache_read = 0.125
+output = 10
+
+[openai."gpt-5"]
+input = 1.25
+cache_read = 0.125
+output = 10
+
+[openai."gpt-5-mini"]
+input = 0.25
+cache_read = 0.025
+output = 2
+
+[openai."gpt-5-nano"]
+input = 0.05
+cache_read = 0.005
+output = 0.4
+
+[openai."gpt-5-pro"]
+input = 15
+output = 120
+
+[openai."gpt-chat-latest"]
+input = 5
+cache_read = 0.5
+output = 30
+
+[openai."gpt-4.1"]
+input = 2
+cache_read = 0.5
+output = 8
+
+[openai."gpt-4.1-mini"]
+input = 0.4
+cache_read = 0.1
+output = 1.6
+
+[openai."gpt-4.1-nano"]
+input = 0.1
+cache_read = 0.025
+output = 0.4
+
+[openai."gpt-4o"]  # also: gpt-4o-2024-08-06, gpt-4o-2024-11-20
+input = 2.5
+cache_read = 1.25
+output = 10
+aliases = ["gpt-4o-2024-08-06", "gpt-4o-2024-11-20"]
+
+[openai."gpt-4o-2024-05-13"]
+input = 5
+output = 15
+
+[openai."gpt-4o-mini"]  # also: gpt-4o-mini-2024-07-18
+input = 0.15
+cache_read = 0.075
+output = 0.6
+aliases = ["gpt-4o-mini-2024-07-18"]
+
+[openai."o1"]
+input = 15
+cache_read = 7.5
+output = 60
+
+[openai."o1-pro"]
+input = 150
+output = 600
+
+[openai."o3"]
+input = 2
+cache_read = 0.5
+output = 8
+
+[openai."o3-pro"]
+input = 20
+output = 80
+
+[openai."o3-mini"]  # also: o3-mini-high
+input = 1.1
+cache_read = 0.55
+output = 4.4
+aliases = ["o3-mini-high"]
+
+[openai."o4-mini"]  # also: o4-mini-high
+input = 1.1
+cache_read = 0.275
+output = 4.4
+aliases = ["o4-mini-high"]
+
+[openai."gpt-4-turbo"]  # also: gpt-4-turbo-2024-04-09, gpt-4-turbo-preview
+input = 10
+output = 30
+aliases = ["gpt-4-turbo-2024-04-09", "gpt-4-turbo-preview"]
+
+[openai."gpt-4"]  # also: gpt-4-0613
+input = 30
+output = 60
+aliases = ["gpt-4-0613"]
+
+[openai."gpt-3.5-turbo"]  # also: gpt-3.5-turbo-0125
+input = 0.5
+output = 1.5
+aliases = ["gpt-3.5-turbo-0125"]
+
+[openai."gpt-3.5-turbo-1106"]
+input = 1
+output = 2
+
+[openai."gpt-3.5-turbo-16k"]
+input = 3
+output = 4
+
+[openai."gpt-3.5-turbo-instruct"]
+input = 1.5
+output = 2
+
+[openai."davinci-002"]
+input = 2
+output = 2
+
+[openai."babbage-002"]
+input = 0.4
+output = 0.4
+
+[openai."gpt-5-search-api"]
+input = 1.25
+cache_read = 0.125
+output = 10
+
+[openai."text-embedding-3-small"]
+input = 0.02
+output = 0
+
+[openai."text-embedding-3-large"]
+input = 0.13
+output = 0
+
+[openai."text-embedding-ada-002"]
+input = 0.1
+output = 0
+
+
+# ── google ────────────────────────────────────────────────────────────
+[google]
+
+[google."gemini-3.7-flash"]
+input = 0.75
+cache_read = 0.075
+output = 3.75
+
+[google."gemini-3.6-flash"]
+input = 1.5
+cache_read = 0.15
+output = 7.5
+
+[google."gemini-3.5-flash"]
+input = 1.5
+cache_read = 0.15
+output = 9
+
+[google."gemini-3.5-flash-lite"]
+input = 0.3
+cache_read = 0.03
+output = 2.5
+
+[google."gemini-3.1-pro-preview"]  # also: gemini-3.1-pro-preview-customtools
+input = 2
+cache_read = 0.2
+output = 12
+aliases = ["gemini-3.1-pro-preview-customtools"]
+[google."gemini-3.1-pro-preview".long_context]  # billed when input+cache > 200000 tokens
+threshold = 200000
+input = 4
+cache_read = 0.4
+output = 18
+
+[google."gemini-3.1-flash-lite"]  # also: gemini-3.1-flash-lite-preview
+input = 0.25
+cache_read = 0.025
+output = 1.5
+aliases = ["gemini-3.1-flash-lite-preview"]
+
+[google."gemini-3-flash"]  # also: gemini-3-flash-preview
+input = 0.5
+cache_read = 0.05
+output = 3
+aliases = ["gemini-3-flash-preview"]
+
+[google."gemini-2.5-pro"]  # also: gemini-2.5-pro-preview, gemini-2.5-pro-preview-05-06
+input = 1.25
+cache_read = 0.125
+output = 10
+aliases = ["gemini-2.5-pro-preview", "gemini-2.5-pro-preview-05-06"]
+[google."gemini-2.5-pro".long_context]  # billed when input+cache > 200000 tokens
+threshold = 200000
+input = 2.5
+cache_read = 0.25
+output = 15
+
+[google."gemini-2.5-flash"]
+input = 0.3
+cache_read = 0.03
+output = 2.5
+
+[google."gemini-2.5-flash-lite"]
+input = 0.1
+cache_read = 0.01
+output = 0.4
+
+[google."gemini-2.0-flash"]
+input = 0.1
+output = 0.4
+
+[google."gemini-flash-latest"]
+input = 1.5
+cache_read = 0.15
+output = 9
+
+[google."gemini-flash-lite-latest"]
+input = 0.3
+cache_read = 0.03
+output = 2.5
+
+
+# ── xai ───────────────────────────────────────────────────────────────
+[xai]
+
+[xai."grok-4.6"]
+input = 2
+cache_read = 0.5
+output = 6
+[xai."grok-4.6".long_context]  # billed when input+cache > 200000 tokens
+threshold = 200000
+input = 4
+cache_read = 1
+output = 12
+
+[xai."grok-4.5"]
+input = 2
+cache_read = 0.3
+output = 6
+[xai."grok-4.5".long_context]  # billed when input+cache > 200000 tokens
+threshold = 200000
+input = 4
+cache_read = 0.6
+output = 12
+
+[xai."grok-4.3"]
+input = 1.25
+cache_read = 0.2
+output = 2.5
+[xai."grok-4.3".long_context]  # billed when input+cache > 200000 tokens
+threshold = 200000
+input = 2.5
+cache_read = 0.4
+output = 5
+
+[xai."grok-4.20"]  # also: grok-4.20-0309-reasoning, grok-4.20-0309-non-reasoning, grok-4.20-multi-agent-0309, grok-4.20-multi-agent
+input = 1.25
+cache_read = 0.2
+output = 2.5
+aliases = ["grok-4.20-0309-reasoning", "grok-4.20-0309-non-reasoning", "grok-4.20-multi-agent-0309", "grok-4.20-multi-agent"]
+[xai."grok-4.20".long_context]  # billed when input+cache > 200000 tokens
+threshold = 200000
+input = 2.5
+cache_read = 0.4
+output = 5
+
+[xai."grok-build-0.1"]
+input = 1
+cache_read = 0.2
+output = 2
+
+
+# ── deepseek ──────────────────────────────────────────────────────────
+[deepseek]
+[xai."grok-build-0.1".long_context]  # billed when input+cache > 200000 tokens
+threshold = 200000
+input = 2
+cache_read = 0.4
+output = 4
+
+[deepseek."deepseek-v4-flash"]  # also: deepseek-v4-flash-0731
+input = 0.22
+cache_read = 0.007
+output = 0.66
+aliases = ["deepseek-v4-flash-0731"]
+
+[deepseek."deepseek-v4-pro"]  # also: deepseek-v4-pro-0813
+input = 0.66
+cache_read = 0.022
+output = 1.98
+aliases = ["deepseek-v4-pro-0813"]
+
+
+# ── mistral ───────────────────────────────────────────────────────────
+[mistral]
+
+[mistral."mistral-large-latest"]  # also: mistral-large-2512
+input = 0.5
+cache_read = 0.05
+output = 1.5
+aliases = ["mistral-large-2512"]
+
+[mistral."mistral-medium-latest"]  # also: mistral-medium-2604
+input = 1.5
+cache_read = 0.15
+output = 7.5
+aliases = ["mistral-medium-2604"]
+
+[mistral."mistral-small-latest"]  # also: mistral-small-2603
+input = 0.15
+cache_read = 0.015
+output = 0.6
+aliases = ["mistral-small-2603"]
+
+[mistral."ministral-14b-latest"]
+input = 0.2
+cache_read = 0.02
+output = 0.2
+
+[mistral."ministral-8b-latest"]
+input = 0.15
+cache_read = 0.015
+output = 0.15
+
+[mistral."ministral-3b-latest"]
+input = 0.1
+cache_read = 0.01
+output = 0.1
+
+[mistral."codestral-latest"]  # also: codestral-2508
+input = 0.3
+cache_read = 0.03
+output = 0.9
+aliases = ["codestral-2508"]
+
+[mistral."zai-glm-5-2"]
+input = 1.4
+cache_read = 0.14
+output = 4.4
+
+
+# ── moonshotai ────────────────────────────────────────────────────────
+[moonshotai]
+
+[moonshotai."kimi-k3"]
+input = 3
+cache_read = 0.3
+output = 15
+
+[moonshotai."kimi-k2.7-code"]
+input = 0.95
+cache_read = 0.19
+output = 4
+
+[moonshotai."kimi-k2.7-code-highspeed"]
+input = 1.9
+cache_read = 0.38
+output = 8
+
+[moonshotai."kimi-k2.6"]
+input = 0.95
+cache_read = 0.16
+output = 4
+
+[moonshotai."kimi-k2-thinking"]  # via OpenRouter listing (Moonshot page dropped it)
+input = 0.6
+cache_read = 0.15
+output = 2.5
+
+
+# ── zai ───────────────────────────────────────────────────────────────
+[zai]
+
+[zai."glm-5.2"]
+input = 1.4
+cache_read = 0.26
+output = 4.4
+
+[zai."glm-5.1"]
+input = 1.4
+cache_read = 0.26
+output = 4.4
+
+[zai."glm-5"]
+input = 1
+cache_read = 0.2
+output = 3.2
+
+[zai."glm-5-turbo"]
+input = 1.2
+cache_read = 0.24
+output = 4
+
+[zai."glm-4.7"]
+input = 0.6
+cache_read = 0.11
+output = 2.2
+
+[zai."glm-4.7-flashx"]
+input = 0.07
+cache_read = 0.01
+output = 0.4
+
+[zai."glm-4.6"]
+input = 0.6
+cache_read = 0.11
+output = 2.2
+
+[zai."glm-4.5"]
+input = 0.6
+cache_read = 0.11
+output = 2.2
+
+[zai."glm-4.5-x"]
+input = 2.2
+cache_read = 0.45
+output = 8.9
+
+[zai."glm-4.5-air"]
+input = 0.2
+cache_read = 0.03
+output = 1.1
+
+[zai."glm-4.5-airx"]
+input = 1.1
+cache_read = 0.22
+output = 4.5
+
+[zai."glm-4-32b-0414-128k"]
+input = 0.1
+output = 0.1
+
+[zai."glm-4.7-flash"]
+input = 0
+cache_read = 0
+output = 0
+
+[zai."glm-4.5-flash"]
+input = 0
+cache_read = 0
+output = 0
+
+
+# ── minimax ───────────────────────────────────────────────────────────
+[minimax]
+
+[minimax."minimax-m3"]
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+[minimax."minimax-m2.7"]
+input = 0.3
+cache_read = 0.06
+cache_write = 0.375
+output = 1.2
+
+[minimax."minimax-m2.7-highspeed"]
+input = 0.6
+cache_read = 0.06
+cache_write = 0.375
+output = 2.4
+
+[minimax."minimax-m2.5"]
+input = 0.3
+cache_read = 0.03
+cache_write = 0.375
+output = 1.2
+
+[minimax."minimax-m2.5-highspeed"]
+input = 0.6
+cache_read = 0.03
+cache_write = 0.375
+output = 2.4
+
+[minimax."minimax-m2.1"]
+input = 0.3
+cache_read = 0.03
+cache_write = 0.375
+output = 1.2
+
+[minimax."minimax-m2.1-highspeed"]
+input = 0.6
+cache_read = 0.03
+cache_write = 0.375
+output = 2.4
+
+[minimax."minimax-m2"]
+input = 0.3
+output = 1.2
+
+
+# ── groq ──────────────────────────────────────────────────────────────
+[groq]
+
+[groq."llama-3.1-8b-instant"]
+input = 0.05
+output = 0.08
+
+[groq."llama-3.3-70b-versatile"]
+input = 0.59
+output = 0.79
+
+[groq."openai/gpt-oss-120b"]
+input = 0.15
+cache_read = 0.075
+output = 0.6
+
+[groq."openai/gpt-oss-20b"]
+input = 0.075
+cache_read = 0.0375
+output = 0.3
+
+[groq."openai/gpt-oss-safeguard-20b"]
+input = 0.075
+output = 0.3
+
+[groq."meta-llama/llama-4-scout-17b-16e-instruct"]
+input = 0.11
+output = 0.34
+
+[groq."qwen/qwen3-32b"]
+input = 0.29
+output = 0.59
+
+[groq."moonshotai/kimi-k2-instruct-0905"]
+input = 1
+cache_read = 0.5
+output = 3
+
+
+# ── cohere ────────────────────────────────────────────────────────────
+[cohere]
+
+[cohere."command-a-03-2025"]
+input = 2.5
+output = 10
+
+[cohere."command-a-plus-05-2026"]
+input = 2.5
+output = 10
+
+[cohere."command-r-plus-08-2024"]
+input = 2.5
+output = 10
+
+[cohere."command-r-08-2024"]
+input = 0.15
+output = 0.6
+
+[cohere."command-r7b-12-2024"]
+input = 0.0375
+output = 0.15
+
+
+# ── perplexity ────────────────────────────────────────────────────────
+[perplexity]
+
+[perplexity."sonar"]
+input = 1
+output = 1
+
+[perplexity."sonar-pro"]
+input = 3
+output = 15
+
+[perplexity."sonar-pro-search"]
+input = 3
+output = 15
+
+[perplexity."sonar-reasoning-pro"]
+input = 2
+output = 8
+
+[perplexity."sonar-deep-research"]
+input = 2
+output = 8
+
+
+# ── alibaba ───────────────────────────────────────────────────────────
+[alibaba]
+
+[alibaba."qwen3.8-max"]
+input = 2
+cache_read = 0.25
+cache_write = 2.5
+output = 6
+
+[alibaba."qwen3.7-max"]  # also: qwen3.7-max-2026-05-20, qwen3.7-max-2026-06-08
+input = 2.5
+cache_read = 0.5
+cache_write = 3.125
+output = 7.5
+aliases = ["qwen3.7-max-2026-05-20", "qwen3.7-max-2026-06-08"]
+
+[alibaba."qwen3.7-plus"]  # also: qwen3.7-plus-2026-05-26
+input = 0.4
+cache_read = 0.04
+cache_write = 0.5
+output = 1.6
+aliases = ["qwen3.7-plus-2026-05-26"]
+
+[alibaba."qwen3.6-plus"]  # also: qwen3.6-plus-2026-04-02
+input = 0.5
+cache_read = 0.05
+cache_write = 0.625
+output = 3
+aliases = ["qwen3.6-plus-2026-04-02"]
+
+[alibaba."qwen3.6-max-preview"]
+input = 1.3
+cache_read = 0.13
+cache_write = 1.625
+output = 7.8
+
+[alibaba."qwen3.5-plus"]  # also: qwen3.5-plus-20260420
+input = 0.2
+cache_read = 0.02
+cache_write = 0.25
+output = 1.2
+aliases = ["qwen3.5-plus-20260420"]
+
+[alibaba."qwen3-coder-plus"]
+input = 1
+cache_read = 0.1
+cache_write = 1.25
+output = 5
+
+
+# ── opencode ──────────────────────────────────────────────────────────
+[opencode]
+
+[opencode."big-pickle"]
+input = 0
+cache_read = 0
+output = 0
+
+[opencode."deepseek-v4-flash-free"]
+input = 0
+cache_read = 0
+output = 0
+
+[opencode."mimo-v2.5-free"]
+input = 0
+cache_read = 0
+output = 0
+
+[opencode."hy3-free"]
+input = 0
+cache_read = 0
+output = 0
+
+[opencode."laguna-s-2.1-free"]
+input = 0
+cache_read = 0
+output = 0
+
+[opencode."nemotron-3-ultra-free"]
+input = 0
+cache_read = 0
+output = 0
+
+[opencode."nemotron-3.5-lightning-free"]
+input = 0
+cache_read = 0
+output = 0
+
+[opencode."ling-3.0-tiny-free"]
+input = 0
+cache_read = 0
+output = 0
+
+[opencode."longcat-2.0-free"]
+input = 0
+cache_read = 0
+output = 0
+
+[opencode."north-mini-code-free"]
+input = 0
+cache_read = 0
+output = 0
+
+[opencode."minimax-m3"]
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+[opencode."minimax-m2.7"]
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+[opencode."minimax-m2.5"]
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+[opencode."minimax-m2.1"]
+input = 0.3
+cache_read = 0.03
+output = 1.2
+
+[opencode."glm-5.2"]
+input = 1.4
+cache_read = 0.26
+output = 4.4
+
+[opencode."glm-5.1"]
+input = 1.4
+cache_read = 0.26
+output = 4.4
+
+[opencode."glm-5"]
+input = 1
+cache_read = 0.2
+output = 3.2
+
+[opencode."glm-4.7"]
+input = 0.6
+cache_read = 0.1
+output = 2.2
+
+[opencode."glm-4.6"]
+input = 0.6
+cache_read = 0.1
+output = 2.2
+
+[opencode."glm-4.7-free"]
+input = 0
+cache_read = 0
+output = 0
+
+[opencode."glm-5-free"]
+input = 0
+cache_read = 0
+output = 0
+
+[opencode."kimi-k3"]
+input = 3
+cache_read = 0.3
+output = 15
+
+[opencode."kimi-k2.7-code"]
+input = 0.95
+cache_read = 0.19
+output = 4
+
+[opencode."kimi-k2.6"]
+input = 0.95
+cache_read = 0.16
+output = 4
+
+[opencode."kimi-k2.5"]
+input = 0.6
+cache_read = 0.1
+output = 3
+
+[opencode."qwen3.7-max"]
+input = 2.5
+cache_read = 0.5
+cache_write = 3.125
+output = 7.5
+
+[opencode."qwen3.7-plus"]
+input = 0.4
+cache_read = 0.04
+cache_write = 0.5
+output = 1.6
+
+[opencode."qwen3.6-plus"]
+input = 0.5
+cache_read = 0.05
+cache_write = 0.625
+output = 3
+
+[opencode."qwen3.5-plus"]
+input = 0.2
+cache_read = 0.02
+cache_write = 0.25
+output = 1.2
+
+[opencode."deepseek-v4-pro"]
+input = 1.74
+cache_read = 0.145
+output = 3.48
+
+[opencode."deepseek-v4-flash"]
+input = 0.14
+cache_read = 0.028
+output = 0.28
+
+[opencode."claude-fable-5"]
+input = 10
+cache_read = 1
+cache_write = 12.5
+output = 50
+
+[opencode."claude-opus-5"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[opencode."claude-opus-4-8"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[opencode."claude-opus-4-7"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[opencode."claude-opus-4-6"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[opencode."claude-opus-4-5"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[opencode."claude-opus-4-1"]
+input = 15
+cache_read = 1.5
+cache_write = 18.75
+output = 75
+
+[opencode."claude-sonnet-5"]
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 10
+
+[opencode."claude-sonnet-4-6"]
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
+
+[opencode."claude-sonnet-4-5"]
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
+[opencode."claude-sonnet-4-5".long_context]  # billed when input+cache > 200000 tokens
+threshold = 200000
+input = 6
+cache_read = 0.6
+cache_write = 7.5
+output = 22.5
+
+[opencode."claude-sonnet-4"]
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
+
+[opencode."claude-haiku-4-5"]
+input = 1
+cache_read = 0.1
+cache_write = 1.25
+output = 5
+
+[opencode."claude-3-5-haiku"]
+input = 0.8
+cache_read = 0.08
+cache_write = 1
+output = 4
+
+[opencode."gemini-3.7-flash"]
+input = 1.5
+cache_read = 0.15
+output = 7.5
+
+[opencode."gemini-3.6-flash"]
+input = 1.5
+cache_read = 0.15
+output = 7.5
+
+[opencode."gemini-3.5-flash"]
+input = 1.5
+cache_read = 0.15
+output = 9
+
+[opencode."gemini-3.5-flash-lite"]
+input = 0.3
+cache_read = 0.03
+output = 2.5
+
+[opencode."gemini-3.1-pro"]
+input = 2
+cache_read = 0.2
+output = 12
+[opencode."gemini-3.1-pro".long_context]  # billed when input+cache > 200000 tokens
+threshold = 200000
+input = 4
+cache_read = 0.4
+output = 18
+
+[opencode."gemini-3-flash"]
+input = 0.5
+cache_read = 0.05
+output = 3
+
+[opencode."grok-4.6"]
+input = 2
+cache_read = 0.5
+output = 6
+[opencode."grok-4.6".long_context]  # billed when input+cache > 200000 tokens
+threshold = 200000
+input = 4
+cache_read = 1
+output = 12
+
+[opencode."grok-4.5"]
+input = 2
+cache_read = 0.3
+output = 6
+[opencode."grok-4.5".long_context]  # billed when input+cache > 200000 tokens
+threshold = 200000
+input = 4
+cache_read = 0.6
+output = 12
+
+[opencode."grok-build-0.1"]
+input = 1
+cache_read = 0.2
+output = 2
+
+[opencode."muse-spark-1.2"]
+input = 1.25
+cache_read = 0.15
+output = 4.25
+
+[opencode."gpt-5.6-sol"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 30
+[opencode."gpt-5.6-sol".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 10
+cache_read = 1
+cache_write = 12.5
+output = 45
+
+[opencode."gpt-5.6-terra"]
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 12
+[opencode."gpt-5.6-terra".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 4
+cache_read = 0.4
+cache_write = 5
+output = 18
+
+[opencode."gpt-5.6-luna"]
+input = 0.2
+cache_read = 0.02
+cache_write = 0.25
+output = 1.2
+[opencode."gpt-5.6-luna".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 0.4
+cache_read = 0.04
+cache_write = 0.5
+output = 1.8
+
+[opencode."gpt-5.5"]
+input = 5
+cache_read = 0.5
+output = 30
+[opencode."gpt-5.5".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 10
+cache_read = 1
+output = 45
+
+[opencode."gpt-5.5-pro"]
+input = 30
+cache_read = 30
+output = 180
+[opencode."gpt-5.5-pro".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 60
+cache_read = 30
+output = 270
+
+[opencode."gpt-5.4"]
+input = 2.5
+cache_read = 0.25
+output = 15
+[opencode."gpt-5.4".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 5
+cache_read = 0.5
+output = 22.5
+
+[opencode."gpt-5.4-pro"]
+input = 30
+cache_read = 30
+output = 180
+[opencode."gpt-5.4-pro".long_context]  # billed when input+cache > 272000 tokens
+threshold = 272000
+input = 60
+cache_read = 30
+output = 270
+
+[opencode."gpt-5.4-mini"]
+input = 0.75
+cache_read = 0.075
+output = 4.5
+
+[opencode."gpt-5.4-nano"]
+input = 0.2
+cache_read = 0.02
+output = 1.25
+
+[opencode."gpt-5.3-codex"]
+input = 1.75
+cache_read = 0.175
+output = 14
+
+[opencode."gpt-5.3-codex-spark"]
+input = 1.75
+cache_read = 0.175
+output = 14
+
+[opencode."gpt-5.2"]
+input = 1.75
+cache_read = 0.175
+output = 14
+
+[opencode."gpt-5.2-codex"]
+input = 1.75
+cache_read = 0.175
+output = 14
+
+[opencode."gpt-5.1"]
+input = 1.07
+cache_read = 0.107
+output = 8.5
+
+[opencode."gpt-5.1-codex"]
+input = 1.07
+cache_read = 0.107
+output = 8.5
+
+[opencode."gpt-5.1-codex-max"]
+input = 1.25
+cache_read = 0.125
+output = 10
+
+[opencode."gpt-5.1-codex-mini"]
+input = 0.25
+cache_read = 0.025
+output = 2
+
+[opencode."gpt-5"]
+input = 1.07
+cache_read = 0.107
+output = 8.5
+
+[opencode."gpt-5-codex"]
+input = 1.07
+cache_read = 0.107
+output = 8.5
+
+[opencode."gpt-5-nano"]
+input = 0.05
+cache_read = 0.005
+output = 0.4
+
+
+# ── amazon-bedrock ────────────────────────────────────────────────────
+[amazon-bedrock]
+
+[amazon-bedrock."anthropic.claude-fable-5"]
+input = 10
+cache_read = 1
+cache_write = 12.5
+output = 50
+
+[amazon-bedrock."anthropic.claude-opus-5"]  # also: claude-opus-5-fast-std
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+aliases = ["claude-opus-5-fast-std"]
+
+[amazon-bedrock."anthropic.claude-opus-4-8"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[amazon-bedrock."anthropic.claude-opus-4-7"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[amazon-bedrock."anthropic.claude-opus-4-6-v1"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[amazon-bedrock."anthropic.claude-opus-4-5-20251101-v1:0"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[amazon-bedrock."anthropic.claude-opus-4-1-20250805-v1:0"]
+input = 15
+cache_read = 1.5
+cache_write = 18.75
+output = 75
+
+[amazon-bedrock."anthropic.claude-sonnet-5"]
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 10
+
+[amazon-bedrock."anthropic.claude-sonnet-4-6"]
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
+
+[amazon-bedrock."anthropic.claude-sonnet-4-5-20250929-v1:0"]  # also: claude-sonnet-4-5-20250929
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
+aliases = ["claude-sonnet-4-5-20250929"]
+
+[amazon-bedrock."anthropic.claude-haiku-4-5-20251001-v1:0"]  # also: claude-haiku-4-5-20251001
+input = 1
+cache_read = 0.1
+cache_write = 1.25
+output = 5
+aliases = ["claude-haiku-4-5-20251001"]
+
+[amazon-bedrock."amazon.nova-micro-v1:0"]
+input = 0.035
+cache_read = 0.00875
+output = 0.14
+
+[amazon-bedrock."amazon.nova-lite-v1:0"]
+input = 0.06
+cache_read = 0.015
+output = 0.24
+
+[amazon-bedrock."amazon.nova-pro-v1:0"]
+input = 0.8
+cache_read = 0.2
+output = 3.2
+
+[amazon-bedrock."amazon.nova-premier-v1:0"]
+input = 2.5
+cache_read = 0.625
+output = 12.5
+
+[amazon-bedrock."meta.llama3-1-8b-instruct-v1:0"]
+input = 0.22
+output = 0.22
+
+[amazon-bedrock."meta.llama3-3-70b-instruct-v1:0"]
+input = 0.72
+output = 0.72
+
+[amazon-bedrock."meta.llama3-1-70b-instruct-v1:0"]
+input = 0.72
+output = 0.72
+
+[amazon-bedrock."meta.llama4-scout-17b-instruct-v1:0"]
+input = 0.17
+output = 0.66
+
+[amazon-bedrock."meta.llama4-maverick-17b-instruct-v1:0"]
+input = 0.24
+output = 0.97
+
+[amazon-bedrock."openai.gpt-oss-120b"]  # also: openai.gpt-oss-120b-1:0
+input = 0.15
+output = 0.6
+aliases = ["openai.gpt-oss-120b-1:0"]
+
+[amazon-bedrock."openai.gpt-oss-20b"]  # also: openai.gpt-oss-20b-1:0
+input = 0.07
+output = 0.3
+aliases = ["openai.gpt-oss-20b-1:0"]
+
+[amazon-bedrock."openai.gpt-5.6-sol"]
+input = 5.5
+cache_read = 0.55
+cache_write = 6.875
+output = 33
+
+[amazon-bedrock."openai.gpt-5.6-terra"]
+input = 2.2
+cache_read = 0.22
+cache_write = 2.75
+output = 13.2
+
+[amazon-bedrock."openai.gpt-5.6-luna"]
+input = 0.22
+cache_read = 0.022
+cache_write = 0.275
+output = 1.32
+
+[amazon-bedrock."openai.gpt-5.5"]
+input = 5.5
+cache_read = 0.55
+output = 33
+
+[amazon-bedrock."openai.gpt-5.4"]
+input = 2.75
+cache_read = 0.275
+output = 16.5
+
+[amazon-bedrock."xai.grok-4.3"]
+input = 1.25
+cache_read = 0.2
+output = 2.5
+
+[amazon-bedrock."zai.glm-4.7"]
+input = 0.6
+output = 2.2
+
+[amazon-bedrock."zai.glm-4.7-flash"]
+input = 0.07
+output = 0.4
+
+[amazon-bedrock."zai.glm-5"]
+input = 1
+output = 3.2
+
+[amazon-bedrock."mistral.mistral-large-3-675b-instruct"]
+input = 0.5
+output = 1.5
+
+[amazon-bedrock."mistral.ministral-3-14b-instruct"]
+input = 0.2
+output = 0.2
+
+[amazon-bedrock."mistral.ministral-3-8b-instruct"]
+input = 0.15
+output = 0.15
+
+[amazon-bedrock."mistral.ministral-3-3b-instruct"]
+input = 0.1
+output = 0.1
+
+[amazon-bedrock."minimax.minimax-m2"]
+input = 0.3
+output = 1.2
+
+[amazon-bedrock."minimax.minimax-m2.1"]
+input = 0.3
+output = 1.2
+
+[amazon-bedrock."minimax.minimax-m2.5"]
+input = 0.3
+output = 1.2
+
+[amazon-bedrock."qwen.qwen3-coder-480b-a35b-v1:0"]  # also: qwen.qwen3-coder-next
+input = 0.22
+output = 1.8
+aliases = ["qwen.qwen3-coder-next"]
+
+[amazon-bedrock."qwen.qwen3-coder-30b-a3b-v1:0"]
+input = 0.15
+output = 0.6
+
+[amazon-bedrock."qwen.qwen3-32b-v1:0"]
+input = 0.15
+output = 0.6
+
+[amazon-bedrock."qwen.qwen3-next-80b-a3b"]
+input = 0.14
+output = 1.4
+
+
+# ── togetherai ────────────────────────────────────────────────────────
+[togetherai]
+
+[togetherai."moonshotai/Kimi-K3"]
+input = 3
+cache_read = 0.3
+output = 15
+
+[togetherai."moonshotai/Kimi-K2.7-Code"]
+input = 0.95
+cache_read = 0.19
+output = 4
+
+[togetherai."zai-org/GLM-5.2"]
+input = 1.4
+cache_read = 0.26
+output = 4.4
+
+[togetherai."zai-org/GLM-5.1"]
+input = 1.4
+cache_read = 0.26
+output = 4.4
+
+[togetherai."zai-org/GLM-5"]
+input = 1
+output = 3.2
+
+[togetherai."deepseek-ai/DeepSeek-V4-Flash-0731"]
+input = 0.14
+cache_read = 0.028
+output = 0.28
+
+[togetherai."MiniMaxAI/MiniMax-M2.5"]
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+[togetherai."MiniMaxAI/MiniMax-M2.7"]
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+[togetherai."MiniMaxAI/MiniMax-M3"]
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+
+# ── fireworks-ai ──────────────────────────────────────────────────────
+[fireworks-ai]
+
+[fireworks-ai."accounts/fireworks/models/kimi-k3"]
+input = 3
+cache_read = 0.3
+output = 15
+
+[fireworks-ai."accounts/fireworks/models/kimi-k2p7-code"]
+input = 0.95
+cache_read = 0.19
+output = 4
+
+[fireworks-ai."accounts/fireworks/models/kimi-k2p6"]
+input = 0.95
+cache_read = 0.16
+output = 4
+
+[fireworks-ai."accounts/fireworks/models/glm-5p2"]
+input = 1.4
+cache_read = 0.14
+output = 4.4
+
+[fireworks-ai."accounts/fireworks/models/minimax-m2p7"]
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+[fireworks-ai."accounts/fireworks/models/minimax-m3"]
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+[fireworks-ai."accounts/fireworks/models/muse-glimmer-30b"]
+input = 0.35
+cache_read = 0.04
+output = 1.5
+
+
+# ── meta ──────────────────────────────────────────────────────────────
+[meta]
+
+[meta."muse-spark-1.2"]
+input = 1.25
+cache_read = 0.15
+output = 4.25
+
+[meta."muse-spark-1.1"]
+input = 1.25
+cache_read = 0.15
+output = 4.25
+
+
+# ── openrouter ──────────────────────────────────────────────────────
+# Only OpenRouter routes whose price DIFFERS from the first-party price
+# above (identical routes are resolved automatically). Source:
+# openrouter.ai/api/v1/models live on 2026-08-14; ":batch"/":free"
+# variants excluded (free variants are $0 on OpenRouter).
+[openrouter]
+
+[openrouter."amazon/nova-2-lite-v1"]
+input = 0.3
+output = 2.5
+
+[openrouter."amazon/nova-lite-v1"]
+input = 0.06
+output = 0.24
+
+[openrouter."amazon/nova-micro-v1"]
+input = 0.035
+output = 0.14
+
+[openrouter."amazon/nova-premier-v1"]
+input = 2.5
+cache_read = 0.625
+output = 12.5
+
+[openrouter."amazon/nova-pro-v1"]
+input = 0.8
+output = 3.2
+
+[openrouter."anthropic/claude-3-haiku"]
+input = 0.25
+cache_read = 0.03
+cache_write = 0.3
+output = 1.25
+
+[openrouter."anthropic/claude-haiku-4.5"]
+input = 1
+cache_read = 0.1
+cache_write = 1.25
+output = 5
+
+[openrouter."anthropic/claude-opus-4.1"]
+input = 15
+cache_read = 1.5
+cache_write = 18.75
+output = 75
+
+[openrouter."anthropic/claude-opus-4.5"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[openrouter."anthropic/claude-opus-4.6"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[openrouter."anthropic/claude-opus-4.7"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[openrouter."anthropic/claude-opus-4.7-fast"]
+input = 30
+cache_read = 3
+cache_write = 37.5
+output = 150
+
+[openrouter."anthropic/claude-opus-4.8"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+[openrouter."anthropic/claude-opus-4.8-fast"]
+input = 10
+cache_read = 1
+cache_write = 12.5
+output = 50
+
+[openrouter."anthropic/claude-sonnet-4.5"]
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
+
+[openrouter."anthropic/claude-sonnet-4.6"]
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
+
+[openrouter."cohere/command-a"]
+input = 2.5
+output = 10
+
+[openrouter."deepseek/deepseek-chat"]
+input = 0.2574
+output = 1.0287
+
+[openrouter."deepseek/deepseek-chat-v3-0324"]
+input = 0.27
+cache_read = 0.135
+output = 1.12
+
+[openrouter."deepseek/deepseek-chat-v3.1"]
+input = 0.25
+cache_read = 0.13
+output = 0.95
+
+[openrouter."deepseek/deepseek-r1"]
+input = 0.7
+output = 2.5
+
+[openrouter."deepseek/deepseek-r1-0528"]
+input = 0.5
+cache_read = 0.35
+output = 2.15
+
+[openrouter."deepseek/deepseek-r1-distill-llama-70b"]
+input = 0.8
+output = 0.8
+
+[openrouter."deepseek/deepseek-v3.1-terminus"]
+input = 0.27
+cache_read = 0.13
+output = 0.95
+
+[openrouter."deepseek/deepseek-v3.2"]
+input = 0.269
+cache_read = 0.1345
+output = 0.4
+
+[openrouter."deepseek/deepseek-v3.2-exp"]
+input = 0.27
+output = 0.41
+
+[openrouter."deepseek/deepseek-v4-flash"]
+input = 0.14
+cache_read = 0.028
+output = 0.28
+
+[openrouter."deepseek/deepseek-v4-flash-0731"]
+input = 0.14
+cache_read = 0.028
+output = 0.28
+
+[openrouter."deepseek/deepseek-v4-pro"]
+input = 1.168
+cache_read = 0.09855
+output = 2.336
+
+[openrouter."deepseek/deepseek-v4-pro-0813"]
+input = 0.435
+cache_read = 0.003625
+output = 0.87
+
+[openrouter."google/gemini-2.5-flash"]
+input = 0.3
+cache_read = 0.03
+cache_write = 0.0833333333
+output = 2.5
+
+[openrouter."google/gemini-2.5-flash-image"]
+input = 0.3
+cache_read = 0.03
+cache_write = 0.0833333333
+output = 2.5
+
+[openrouter."google/gemini-2.5-flash-lite"]
+input = 0.1
+cache_read = 0.01
+cache_write = 0.0833333333
+output = 0.4
+
+[openrouter."google/gemini-2.5-pro"]
+input = 1.25
+cache_read = 0.125
+cache_write = 0.375
+output = 10
+
+[openrouter."google/gemini-2.5-pro-preview"]
+input = 1.25
+cache_read = 0.125
+cache_write = 0.375
+output = 10
+
+[openrouter."google/gemini-2.5-pro-preview-05-06"]
+input = 1.25
+cache_read = 0.125
+cache_write = 0.375
+output = 10
+
+[openrouter."google/gemini-3-flash-preview"]
+input = 0.5
+cache_read = 0.05
+cache_write = 0.0833333333
+output = 3
+
+[openrouter."google/gemini-3-pro-image"]
+input = 2
+cache_read = 0.2
+cache_write = 0.375
+output = 12
+
+[openrouter."google/gemini-3-pro-image-preview"]
+input = 2
+cache_read = 0.2
+cache_write = 0.375
+output = 12
+
+[openrouter."google/gemini-3.1-flash-image"]
+input = 0.5
+output = 3
+
+[openrouter."google/gemini-3.1-flash-image-preview"]
+input = 0.5
+output = 3
+
+[openrouter."google/gemini-3.1-flash-lite"]
+input = 0.25
+cache_read = 0.025
+cache_write = 0.0833333333
+output = 1.5
+
+[openrouter."google/gemini-3.1-flash-lite-image"]
+input = 0.25
+output = 1.5
+
+[openrouter."google/gemini-3.1-flash-lite-preview"]
+input = 0.25
+cache_read = 0.025
+cache_write = 0.0833333333
+output = 1.5
+
+[openrouter."google/gemini-3.1-pro-preview"]
+input = 2
+cache_read = 0.2
+cache_write = 0.375
+output = 12
+
+[openrouter."google/gemini-3.1-pro-preview-customtools"]
+input = 2
+cache_read = 0.2
+cache_write = 0.375
+output = 12
+
+[openrouter."google/gemini-3.5-flash"]
+input = 1.5
+cache_read = 0.15
+cache_write = 0.0833333333
+output = 9
+
+[openrouter."google/gemini-3.5-flash-lite"]
+input = 0.3
+cache_read = 0.03
+cache_write = 0.0833333333
+output = 2.5
+
+[openrouter."google/gemini-3.6-flash"]
+input = 0.75
+cache_read = 0.075
+cache_write = 0.0416666667
+output = 3.75
+
+[openrouter."google/gemini-3.7-flash"]
+input = 0.375
+cache_read = 0.0375
+cache_write = 0.0208333333
+output = 1.875
+
+[openrouter."google/gemma-2-27b-it"]
+input = 0.65
+output = 0.65
+
+[openrouter."google/gemma-3-12b-it"]
+input = 0.05
+output = 0.15
+
+[openrouter."google/gemma-3-27b-it"]
+input = 0.08
+cache_read = 0.04
+output = 0.45
+
+[openrouter."google/gemma-3-4b-it"]
+input = 0.05
+output = 0.1
+
+[openrouter."google/gemma-3n-e4b-it"]
+input = 0.06
+output = 0.12
+
+[openrouter."google/gemma-4-26b-a4b-it"]
+input = 0.12
+cache_read = 0.05
+output = 0.4
+
+[openrouter."google/gemma-4-31b-it"]
+input = 0.1
+cache_read = 0.1
+output = 0.34
+
+[openrouter."meta-llama/llama-3.1-70b-instruct"]
+input = 0.4
+output = 0.4
+
+[openrouter."meta-llama/llama-3.1-8b-instruct"]
+input = 0.05
+cache_read = 0.025
+output = 0.08
+
+[openrouter."meta-llama/llama-3.2-1b-instruct"]
+input = 0.027
+output = 0.201
+
+[openrouter."meta-llama/llama-3.2-3b-instruct"]
+input = 0.05
+output = 0.33
+
+[openrouter."meta-llama/llama-3.3-70b-instruct"]
+input = 0.1
+output = 0.32
+
+[openrouter."meta-llama/llama-4-maverick"]
+input = 0.2
+output = 0.8
+
+[openrouter."meta-llama/llama-4-scout"]
+input = 0.1
+output = 0.3
+
+[openrouter."meta-llama/llama-guard-4-12b"]
+input = 0.18
+output = 0.18
+
+[openrouter."minimax/minimax-01"]
+input = 0.2
+output = 1.1
+
+[openrouter."minimax/minimax-m1"]
+input = 0.55
+output = 2.2
+
+[openrouter."minimax/minimax-m2"]
+input = 0.255
+output = 1.02
+
+[openrouter."minimax/minimax-m2-her"]
+input = 0.3
+cache_read = 0.03
+output = 1.2
+
+[openrouter."minimax/minimax-m2.1"]
+input = 0.3
+cache_read = 0.03
+output = 1.2
+
+[openrouter."minimax/minimax-m2.5"]
+input = 0.22
+cache_read = 0.05
+output = 0.9
+
+[openrouter."minimax/minimax-m2.7"]
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+[openrouter."mistralai/ministral-14b-2512"]
+input = 0.2
+cache_read = 0.02
+output = 0.2
+
+[openrouter."mistralai/ministral-3b-2512"]
+input = 0.1
+cache_read = 0.01
+output = 0.1
+
+[openrouter."mistralai/ministral-8b-2512"]
+input = 0.15
+cache_read = 0.015
+output = 0.15
+
+[openrouter."mistralai/mistral-large"]
+input = 2
+cache_read = 0.2
+output = 6
+
+[openrouter."mistralai/mistral-large-2407"]
+input = 2
+cache_read = 0.2
+output = 6
+
+[openrouter."mistralai/mistral-medium-3"]
+input = 0.4
+cache_read = 0.04
+output = 2
+
+[openrouter."mistralai/mistral-medium-3-5"]
+input = 1.5
+output = 7.5
+
+[openrouter."mistralai/mistral-medium-3.1"]
+input = 0.4
+cache_read = 0.04
+output = 2
+
+[openrouter."mistralai/mistral-nemo"]
+input = 0.019
+output = 0.03
+
+[openrouter."mistralai/mistral-saba"]
+input = 0.2
+cache_read = 0.02
+output = 0.6
+
+[openrouter."mistralai/mistral-small-24b-instruct-2501"]
+input = 0.05
+output = 0.08
+
+[openrouter."mistralai/mistral-small-3.1-24b-instruct"]
+input = 0.351
+output = 0.555
+
+[openrouter."mistralai/mistral-small-3.2-24b-instruct"]
+input = 0.09375
+output = 0.25
+
+[openrouter."mistralai/mixtral-8x22b-instruct"]
+input = 2
+cache_read = 0.2
+output = 6
+
+[openrouter."mistralai/voxtral-small-24b-2507"]
+input = 0.1
+cache_read = 0.01
+output = 0.3
+
+[openrouter."moonshotai/kimi-k2"]
+input = 0.57
+output = 2.3
+
+[openrouter."moonshotai/kimi-k2-0905"]
+input = 0.6
+output = 2.5
+
+[openrouter."moonshotai/kimi-k2-thinking"]
+input = 0.6
+cache_read = 0.15
+output = 2.5
+
+[openrouter."moonshotai/kimi-k2.5"]
+input = 0.57
+cache_read = 0.095
+output = 2.85
+
+[openrouter."moonshotai/kimi-k2.7-code"]
+input = 0.71
+cache_read = 0.15
+output = 3.5
+
+[openrouter."nvidia/nemotron-3-nano-30b-a3b"]
+input = 0.05
+cache_read = 0.025
+output = 0.2
+
+[openrouter."nvidia/nemotron-3-super-120b-a12b"]
+input = 0.085
+output = 0.4
+
+[openrouter."nvidia/nemotron-3-ultra-550b-a55b"]
+input = 0.6
+cache_read = 0.2
+output = 3.6
+
+[openrouter."nvidia/nemotron-3.5-lightning"]
+input = 0.1
+cache_read = 0.05
+output = 0.25
+
+[openrouter."openai/gpt-3.5-turbo-0613"]
+input = 1
+output = 2
+
+[openrouter."openai/gpt-5-image"]
+input = 10
+cache_read = 1.25
+output = 10
+
+[openrouter."openai/gpt-5-image-mini"]
+input = 2.5
+cache_read = 0.25
+output = 2
+
+[openrouter."openai/gpt-5.1-codex"]
+input = 1.25
+cache_read = 0.13
+output = 10
+
+[openrouter."openai/gpt-5.1-codex-mini"]
+input = 0.25
+cache_read = 0.03
+output = 2
+
+[openrouter."openai/gpt-5.2-chat"]
+input = 1.75
+cache_read = 0.175
+output = 14
+
+[openrouter."openai/gpt-5.4-image-2"]
+input = 8
+cache_read = 2
+output = 15
+
+[openrouter."openai/gpt-5.6-luna"]
+input = 0.1
+cache_read = 0.01
+cache_write = 0.125
+output = 0.6
+
+[openrouter."openai/gpt-5.6-luna-pro"]
+input = 0.1
+cache_read = 0.01
+cache_write = 0.125
+output = 0.6
+
+[openrouter."openai/gpt-5.6-sol-pro"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 30
+
+[openrouter."openai/gpt-5.6-terra"]
+input = 1
+cache_read = 0.1
+cache_write = 1.25
+output = 6
+
+[openrouter."openai/gpt-5.6-terra-pro"]
+input = 1
+cache_read = 0.1
+cache_write = 1.25
+output = 6
+
+[openrouter."openai/gpt-audio"]
+input = 2.5
+output = 10
+
+[openrouter."openai/gpt-audio-mini"]
+input = 0.6
+output = 2.4
+
+[openrouter."openai/gpt-oss-120b"]
+input = 0.03
+cache_read = 0.03
+output = 0.17
+
+[openrouter."openai/gpt-oss-20b"]
+input = 0.03
+cache_read = 0.03
+output = 0.13
+
+[openrouter."openai/gpt-oss-safeguard-20b"]
+input = 0.075
+cache_read = 0.0375
+output = 0.3
+
+[openrouter."qwen/qwen-2.5-72b-instruct"]
+input = 0.36
+output = 0.4
+
+[openrouter."qwen/qwen-2.5-7b-instruct"]
+input = 0.1
+output = 0.2
+
+[openrouter."qwen/qwen-2.5-coder-32b-instruct"]
+input = 0.66
+output = 1
+
+[openrouter."qwen/qwen-plus"]
+input = 0.26
+cache_read = 0.052
+cache_write = 0.325
+output = 0.78
+
+[openrouter."qwen/qwen-plus-2025-07-28"]
+input = 0.26
+output = 0.78
+
+[openrouter."qwen/qwen-plus-2025-07-28:thinking"]
+input = 0.4
+cache_write = 0.5
+output = 1.2
+
+[openrouter."qwen/qwen2.5-vl-72b-instruct"]
+input = 0.25
+output = 0.75
+
+[openrouter."qwen/qwen3-14b"]
+input = 0.12
+output = 0.24
+
+[openrouter."qwen/qwen3-235b-a22b"]
+input = 0.455
+output = 1.82
+
+[openrouter."qwen/qwen3-235b-a22b-2507"]
+input = 0.09
+output = 0.55
+
+[openrouter."qwen/qwen3-235b-a22b-thinking-2507"]
+input = 0.23
+output = 2.3
+
+[openrouter."qwen/qwen3-30b-a3b"]
+input = 0.12
+output = 0.5
+
+[openrouter."qwen/qwen3-30b-a3b-instruct-2507"]
+input = 0.04815
+output = 0.19305
+
+[openrouter."qwen/qwen3-30b-a3b-thinking-2507"]
+input = 0.2
+output = 2.4
+
+[openrouter."qwen/qwen3-32b"]
+input = 0.08
+output = 0.28
+
+[openrouter."qwen/qwen3-8b"]
+input = 0.117
+output = 0.455
+
+[openrouter."qwen/qwen3-coder"]
+input = 0.3
+cache_read = 0.1
+output = 1
+
+[openrouter."qwen/qwen3-coder-30b-a3b-instruct"]
+input = 0.07
+output = 0.28
+
+[openrouter."qwen/qwen3-coder-flash"]
+input = 0.195
+cache_read = 0.039
+cache_write = 0.24375
+output = 0.975
+
+[openrouter."qwen/qwen3-coder-next"]
+input = 0.12
+cache_read = 0.07
+output = 0.8
+
+[openrouter."qwen/qwen3-coder-plus"]
+input = 0.65
+cache_read = 0.13
+cache_write = 0.8125
+output = 3.25
+
+[openrouter."qwen/qwen3-max"]
+input = 0.78
+cache_read = 0.156
+cache_write = 0.975
+output = 3.9
+
+[openrouter."qwen/qwen3-max-thinking"]
+input = 0.78
+output = 3.9
+
+[openrouter."qwen/qwen3-next-80b-a3b-instruct"]
+input = 0.1
+cache_read = 0.07
+output = 1.1
+
+[openrouter."qwen/qwen3-next-80b-a3b-thinking"]
+input = 0.15
+output = 1.2
+
+[openrouter."qwen/qwen3-vl-235b-a22b-instruct"]
+input = 0.26
+output = 1.04
+
+[openrouter."qwen/qwen3-vl-235b-a22b-thinking"]
+input = 0.4
+output = 4
+
+[openrouter."qwen/qwen3-vl-30b-a3b-instruct"]
+input = 0.13
+output = 0.52
+
+[openrouter."qwen/qwen3-vl-30b-a3b-thinking"]
+input = 0.2
+output = 2.4
+
+[openrouter."qwen/qwen3-vl-32b-instruct"]
+input = 0.104
+output = 0.416
+
+[openrouter."qwen/qwen3-vl-8b-instruct"]
+input = 0.117
+output = 0.455
+
+[openrouter."qwen/qwen3-vl-8b-thinking"]
+input = 0.18
+output = 2.1
+
+[openrouter."qwen/qwen3.5-122b-a10b"]
+input = 0.29
+output = 2.4
+
+[openrouter."qwen/qwen3.5-27b"]
+input = 0.195
+output = 1.56
+
+[openrouter."qwen/qwen3.5-35b-a3b"]
+input = 0.225
+cache_read = 0.225
+output = 1.8
+
+[openrouter."qwen/qwen3.5-397b-a17b"]
+input = 0.39
+output = 2.34
+
+[openrouter."qwen/qwen3.5-9b"]
+input = 0.1
+output = 0.15
+
+[openrouter."qwen/qwen3.5-flash-02-23"]
+input = 0.065
+output = 0.26
+
+[openrouter."qwen/qwen3.5-plus-02-15"]
+input = 0.26
+output = 1.56
+
+[openrouter."qwen/qwen3.5-plus-20260420"]
+input = 0.3
+cache_write = 0.375
+output = 1.8
+
+[openrouter."qwen/qwen3.6-27b"]
+input = 0.6
+cache_read = 0.12
+output = 3.6
+
+[openrouter."qwen/qwen3.6-35b-a3b"]
+input = 0.15
+cache_read = 0.05
+output = 1
+
+[openrouter."qwen/qwen3.6-flash"]
+input = 0.1875
+cache_write = 0.234375
+output = 1.125
+
+[openrouter."qwen/qwen3.6-max-preview"]
+input = 1.027
+cache_write = 1.28375
+output = 6.162
+
+[openrouter."qwen/qwen3.6-plus"]
+input = 0.325
+cache_write = 0.40625
+output = 1.95
+
+[openrouter."qwen/qwen3.7-flash"]
+input = 0.03
+cache_read = 0.006
+cache_write = 0.038
+output = 0.13
+
+[openrouter."qwen/qwen3.7-max"]
+input = 1.475
+cache_read = 0.295
+cache_write = 1.84375
+output = 4.425
+
+[openrouter."qwen/qwen3.7-plus"]
+input = 0.32
+cache_read = 0.064
+cache_write = 0.4
+output = 1.28
+
+[openrouter."qwen/qwen3.8-2.4t-a95b"]
+input = 2
+cache_read = 0.25
+output = 6
+
+[openrouter."z-ai/glm-4.5-air"]
+input = 0.13
+cache_read = 0.025
+output = 0.85
+
+[openrouter."z-ai/glm-4.5v"]
+input = 0.6
+cache_read = 0.11
+output = 1.8
+
+[openrouter."z-ai/glm-4.6"]
+input = 0.55
+cache_read = 0.11
+output = 2.2
+
+[openrouter."z-ai/glm-4.6v"]
+input = 0.3
+cache_read = 0.055
+output = 0.9
+
+[openrouter."z-ai/glm-4.7"]
+input = 0.4
+cache_read = 0.08
+output = 1.75
+
+[openrouter."z-ai/glm-4.7-flash"]
+input = 0.06
+cache_read = 0.01
+output = 0.4
+
+[openrouter."z-ai/glm-5"]
+input = 0.6
+cache_read = 0.12
+output = 1.92
+
+[openrouter."z-ai/glm-5.2"]
+input = 0.63
+cache_read = 0.0945
+output = 1.98
+
+[openrouter."z-ai/glm-5v-turbo"]
+input = 1.2
+cache_read = 0.24
+output = 4

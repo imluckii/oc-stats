@@ -17,6 +17,16 @@ from tests.helpers import (
 __all__ = ["sample_specs", "fake_service", "client"]
 
 
+@pytest.fixture(autouse=True)
+def _isolated_pricing_env(monkeypatch, tmp_path):
+    """Keep the developer's own price overrides out of test results."""
+    monkeypatch.delenv("OC_USAGE_PRICES", raising=False)
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+    from oc_usage import pricing
+
+    monkeypatch.setattr(pricing, "_default", None)
+
+
 @pytest.fixture()
 def sample_specs() -> list[RowSpec]:
     # provider,         model,         variant,  inp,   cr,   cw, out, reas, cost,   created
