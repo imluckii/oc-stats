@@ -70,6 +70,55 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "output": 1.5,
         "cache_read": 0.05,
     },
+    # OpenAI "fast" service-tier variants (platform.openai.com/docs/pricing,
+    # Fast mode table, checked 2026-08-14). models.dev does not list them.
+    ("openai", "gpt-5.6-sol-fast"): {
+        "input": 10,
+        "output": 60,
+        "cache_read": 1,
+        "cache_write": 12.5,
+        "long_context": {
+            "threshold": 272000,
+            "input": 20,
+            "output": 90,
+            "cache_read": 2,
+            "cache_write": 25,
+        },
+    },
+    ("openai", "gpt-5.6-terra-fast"): {
+        "input": 4,
+        "output": 24,
+        "cache_read": 0.4,
+        "cache_write": 5,
+        "long_context": {
+            "threshold": 272000,
+            "input": 8,
+            "output": 36,
+            "cache_read": 0.8,
+            "cache_write": 10,
+        },
+    },
+    ("openai", "gpt-5.6-luna-fast"): {
+        "input": 0.4,
+        "output": 2.4,
+        "cache_read": 0.04,
+        "cache_write": 0.5,
+        "long_context": {
+            "threshold": 272000,
+            "input": 0.8,
+            "output": 3.6,
+            "cache_read": 0.08,
+            "cache_write": 1,
+        },
+    },
+    # GLM-5.3 released 2026-08-14: Z.AI's pricing page does not list it yet;
+    # pinned from OpenCode Go's published listing (same rates as GLM-5.2).
+    # Re-check docs.z.ai and drop this override once they publish it.
+    ("zai", "glm-5.3"): {
+        "input": 1.4,
+        "output": 4.4,
+        "cache_read": 0.26,
+    },
 }
 
 HEADER = """\

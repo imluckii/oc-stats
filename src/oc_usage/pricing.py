@@ -8,10 +8,12 @@ changed. Models whose pricing could not be verified are deliberately absent —
 they get no estimate rather than a guess.
 
 Matching order (case-insensitive, first hit wins):
-    1. exact ``(provider, model)``
+    1. exact ``(provider, model)``, with custom provider ids falling back to
+       their vendor prefix (``openai-anchit`` → ``openai``;
+       ``zai-coding-plan-cn`` → ``zai-coding-plan`` → ``zai``)
     2. ``vendor/model`` ids — ``anthropic/claude-opus-5`` under any provider
        matches the ``anthropic`` entry ``claude-opus-5``
-    3. the same two looksups with dated release suffixes (``-20241120``,
+    3. the same two lookups with dated release suffixes (``-20241120``,
        ``-2026-04``) stripped from the model name
     4. the bare model name, but only when every provider in the merged list
        prices that model identically (ambiguity ⇒ no estimate)
@@ -136,27 +138,44 @@ class Pricing:
             for model, price in models.items():
                 self._global.setdefault(model, set()).add(price)
 
+    def _provider_candidates(self, provider: str) -> list[str]:
+        """Provider buckets to try, longest first.
+
+        OpenCode lets users name custom providers freely, and subscriptions
+        get their own gateway ids — ``openai-anchit``, ``zai-coding-plan-cn``.
+        After the exact id, progressively trim trailing hyphen segments so a
+        custom id falls back to the vendor table it was derived from
+        (``openai-anchit`` → ``openai``; ``zai-coding-plan-cn`` →
+        ``zai-coding-plan`` → ``zai``).
+        """
+        parts = provider.split("-")
+        return ["-".join(parts[:i]) for i in range(len(parts), 0, -1)]
+
     def lookup(self, provider: str, model: str) -> ModelPrice | None:
         """Resolve pricing for a ``(provider, model)`` pair, or ``None``."""
         provider = provider.strip().lower()
         model = model.strip().lower()
         # Try the exact name, then the dated-suffix-stripped name
-        # (gpt-4o-20241120 → gpt-4o), each against the provider's own table,
-        # any "vendor/" gateway prefix, and finally an unambiguous global
-        # name (rare now that resellers are included — most common names
-        # differ per provider and correctly refuse to guess).
+        # (gpt-4o-20241120 → gpt-4o), each against the provider's own table
+        # (and trimmed vendor prefixes for custom provider ids), any
+        # "vendor/" gateway prefix in the model, and finally an unambiguous
+        # global name (rare now that resellers are included — most common
+        # names differ per provider and correctly refuse to guess).
         for candidate in (model, _DATED_SUFFIX.sub("", model)):
-            price = self._by_provider.get(provider, {}).get(candidate)
-            if price is not None:
-                return price
-            if "/" in candidate:  # gateway ids like "anthropic/claude-opus-5"
-                vendor, rest = candidate.split("/", 1)
-                price = self._by_provider.get(vendor, {}).get(rest)
-                if price is not None:
-                    return price
-                price = self._by_provider.get(provider, {}).get(rest)
-                if price is not None:
-                    return price
+            for bucket_id in self._provider_candidates(provider):
+                bucket = self._by_provider.get(bucket_id)
+                if bucket is not None:
+                    price = bucket.get(candidate)
+                    if price is not None:
+                        return price
+                    if "/" in candidate:  # gateway ids like "anthropic/claude-opus-5"
+                        vendor, rest = candidate.split("/", 1)
+                        price = bucket.get(rest)
+                        if price is not None:
+                            return price
+                        price = self._by_provider.get(vendor, {}).get(rest)
+                        if price is not None:
+                            return price
             options = self._global.get(candidate)
             if options is not None and len(options) == 1:
                 return next(iter(options))

@@ -95,6 +95,37 @@ def test_gateway_slash_id_matches_first_party():
     assert rates is not None and rates.rates.input == 5
 
 
+def test_custom_provider_id_falls_back_to_vendor_prefix():
+    # OpenCode lets users rename providers ("openai-anchit"); trimming the
+    # custom suffix reaches the vendor table with full cache fidelity.
+    price = load_bundled().lookup("openai-anchit", "gpt-5.6-sol")
+    assert price is not None
+    assert price.rates.input == 5
+    assert price.rates.cache_write == 6.25
+
+
+def test_coding_plan_prefix_trims_step_by_step():
+    # "zai-coding-plan-cn" → "zai-coding-plan" (exact gateway) before "zai".
+    pricing = load_bundled()
+    assert pricing.lookup("zai-coding-plan", "glm-4.7") is not None
+    # glm-5.3 is pinned on the zai table; the bare name stays ambiguous
+    # because coding-plan gateways list it at 0.
+    assert pricing.lookup("zai", "glm-5.3").rates.input == 1.4
+    assert pricing.lookup("nobody", "glm-5.3") is None  # ambiguous, refuses
+
+
+def test_new_release_models_are_priced():
+    pricing = load_bundled()
+    sol_fast = pricing.lookup("openai", "gpt-5.6-sol-fast")
+    assert sol_fast is not None
+    assert (sol_fast.rates.input, sol_fast.rates.output) == (10, 60)
+    # Custom provider ids reach the fast variants too.
+    assert pricing.lookup("openai-anchit", "gpt-5.6-sol-fast") is not None
+    # opencode-go models (MiniMax M3, GLM-5.3) come straight from models.dev.
+    assert pricing.lookup("opencode-go", "minimax-m3").rates.input == 0.3
+    assert pricing.lookup("opencode-go", "glm-5.3").rates.input == 1.4
+
+
 def test_openrouter_section_wins_for_its_own_ids():
     # OpenRouter prices glm-5.2 cheaper than Z.AI's own list; that difference
     # is exactly why the openrouter section exists.
