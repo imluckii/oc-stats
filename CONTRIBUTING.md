@@ -25,8 +25,14 @@ pytest -q
   fixture in `tests/helpers.py` and a test in `tests/test_service.py`.
 - **Never estimate tokens.** Every token count must trace back to a recorded
   field. If a field is missing, treat it as `0` and document it.
+- **Never invent prices.** Estimated *cost* is allowed only via
+  `src/oc_usage/prices.toml`, and every entry there must be verifiable against
+  the provider's official pricing page on the day it is added — when in doubt,
+  skip the model and say so in the PR. Update the `updated` field when prices
+  change, and cite the source in the section comment.
 - **Fail loudly, never silently report zero.** An incompatible API, invalid JSON,
-  or a missing executable must raise, not produce an empty report.
+  a missing executable, or a broken price file must raise, not produce an empty
+  report.
 - **No real session data in tests or docs.** Fixtures and README samples must be
   synthetic, and message **content** must never appear in reports.
 - Use [Conventional Commits](https://www.conventionalcommits.org/) with a scope,
