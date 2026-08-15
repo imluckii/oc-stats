@@ -2247,22 +2247,17 @@ cache_write = 0
 output = 0
 
 ["alibaba-coding-plan"."qwen3-coder-plus"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 1
+output = 5
 
 ["alibaba-coding-plan"."qwen3-max-2026-01-23"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 1.2002
+cache_read = 0.6001
+output = 6.001
 
 ["alibaba-coding-plan"."qwen3.5-plus"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.4
+output = 2.4
 
 ["alibaba-coding-plan"."qwen3.6-flash"]
 input = 0.1875
@@ -2270,10 +2265,17 @@ cache_write = 0.234375
 output = 1.125
 
 ["alibaba-coding-plan"."qwen3.6-plus"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.5
+cache_read = 0.05
+cache_write = 0.625
+output = 3
+
+["alibaba-coding-plan"."qwen3.6-plus".long_context]  # > 256000 input+cache tokens
+threshold = 256000
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 6
 
 ["alibaba-coding-plan"."qwen3.7-max"]
 input = 2.5
@@ -2282,10 +2284,17 @@ cache_write = 3.125
 output = 7.5
 
 ["alibaba-coding-plan"."qwen3.7-plus"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.5
+cache_read = 0.05
+cache_write = 0.625
+output = 3
+
+["alibaba-coding-plan"."qwen3.7-plus".long_context]  # > 256000 input+cache tokens
+threshold = 256000
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 6
 
 # ── alibaba-coding-plan-cn ── source: models.dev
 ["alibaba-coding-plan-cn"]
@@ -2321,22 +2330,17 @@ cache_write = 0
 output = 0
 
 ["alibaba-coding-plan-cn"."qwen3-coder-plus"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 1
+output = 5
 
 ["alibaba-coding-plan-cn"."qwen3-max-2026-01-23"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 1.2002
+cache_read = 0.6001
+output = 6.001
 
 ["alibaba-coding-plan-cn"."qwen3.5-plus"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.4
+output = 2.4
 
 ["alibaba-coding-plan-cn"."qwen3.6-flash"]
 input = 0.1875
@@ -2344,10 +2348,17 @@ cache_write = 0.234375
 output = 1.125
 
 ["alibaba-coding-plan-cn"."qwen3.6-plus"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.5
+cache_read = 0.05
+cache_write = 0.625
+output = 3
+
+["alibaba-coding-plan-cn"."qwen3.6-plus".long_context]  # > 256000 input+cache tokens
+threshold = 256000
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 6
 
 ["alibaba-coding-plan-cn"."qwen3.7-max"]
 input = 2.5
@@ -2356,10 +2367,17 @@ cache_write = 3.125
 output = 7.5
 
 ["alibaba-coding-plan-cn"."qwen3.7-plus"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.5
+cache_read = 0.05
+cache_write = 0.625
+output = 3
+
+["alibaba-coding-plan-cn"."qwen3.7-plus".long_context]  # > 256000 input+cache tokens
+threshold = 256000
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 6
 
 # ── alibaba-token-plan ── source: models.dev
 ["alibaba-token-plan"]
@@ -2381,10 +2399,9 @@ cache_write = 0
 output = 0
 
 ["alibaba-token-plan"."deepseek-v4-flash-0731"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.2
+cache_read = 0.04
+output = 0.4
 
 ["alibaba-token-plan"."deepseek-v4-pro"]
 input = 0
@@ -2405,10 +2422,10 @@ cache_write = 0
 output = 0
 
 ["alibaba-token-plan"."glm-5.2"]
-input = 0
-cache_read = 0
+input = 1.4
+cache_read = 0.28
 cache_write = 0
-output = 0
+output = 4.4
 
 ["alibaba-token-plan"."happyhorse-1.1-i2v"]
 input = 0
@@ -2449,34 +2466,47 @@ input = 0
 output = 0
 
 ["alibaba-token-plan"."qwen3.6-flash"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.1875
+cache_write = 0.234375
+output = 1.125
 
 ["alibaba-token-plan"."qwen3.6-plus"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.5
+cache_read = 0.05
+cache_write = 0.625
+output = 3
+
+["alibaba-token-plan"."qwen3.6-plus".long_context]  # > 256000 input+cache tokens
+threshold = 256000
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 6
 
 ["alibaba-token-plan"."qwen3.7-max"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 2.5
+cache_read = 0.5
+cache_write = 3.125
+output = 7.5
 
 ["alibaba-token-plan"."qwen3.7-plus"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.5
+cache_read = 0.05
+cache_write = 0.625
+output = 3
+
+["alibaba-token-plan"."qwen3.7-plus".long_context]  # > 256000 input+cache tokens
+threshold = 256000
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 6
 
 ["alibaba-token-plan"."qwen3.8-max"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 2
+cache_read = 0.25
+cache_write = 2.5
+output = 6
 
 ["alibaba-token-plan"."qwen3.8-max-preview"]
 input = 0
@@ -2512,10 +2542,9 @@ cache_write = 0
 output = 0
 
 ["alibaba-token-plan-cn"."deepseek-v4-flash-0731"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.2
+cache_read = 0.04
+output = 0.4
 
 ["alibaba-token-plan-cn"."deepseek-v4-pro"]
 input = 0
@@ -2536,10 +2565,10 @@ cache_write = 0
 output = 0
 
 ["alibaba-token-plan-cn"."glm-5.2"]
-input = 0
-cache_read = 0
+input = 1.4
+cache_read = 0.28
 cache_write = 0
-output = 0
+output = 4.4
 
 ["alibaba-token-plan-cn"."happyhorse-1.1-i2v"]
 input = 0
@@ -2580,34 +2609,47 @@ input = 0
 output = 0
 
 ["alibaba-token-plan-cn"."qwen3.6-flash"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.1875
+cache_write = 0.234375
+output = 1.125
 
 ["alibaba-token-plan-cn"."qwen3.6-plus"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.5
+cache_read = 0.05
+cache_write = 0.625
+output = 3
+
+["alibaba-token-plan-cn"."qwen3.6-plus".long_context]  # > 256000 input+cache tokens
+threshold = 256000
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 6
 
 ["alibaba-token-plan-cn"."qwen3.7-max"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 2.5
+cache_read = 0.5
+cache_write = 3.125
+output = 7.5
 
 ["alibaba-token-plan-cn"."qwen3.7-plus"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.5
+cache_read = 0.05
+cache_write = 0.625
+output = 3
+
+["alibaba-token-plan-cn"."qwen3.7-plus".long_context]  # > 256000 input+cache tokens
+threshold = 256000
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 6
 
 ["alibaba-token-plan-cn"."qwen3.8-max"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 2
+cache_read = 0.25
+cache_write = 2.5
+output = 6
 
 ["alibaba-token-plan-cn"."qwen3.8-max-preview"]
 input = 0
@@ -11541,8 +11583,9 @@ cache_read = 0.11
 output = 2.2
 
 ["huggingface"."zai-org/GLM-4.7-Flash"]
-input = 0
-output = 0
+input = 0.06
+cache_read = 0.01
+output = 0.4
 
 ["huggingface"."zai-org/GLM-5"]
 input = 1
@@ -11713,8 +11756,9 @@ input = 0
 output = 0
 
 ["iflowcn"."kimi-k2-0905"]
-input = 0
-output = 0
+input = 0.5
+cache_read = 0.4
+output = 2
 
 ["iflowcn"."qwen3-235b"]
 input = 0
@@ -12695,8 +12739,9 @@ input = 0.15
 output = 1.5
 
 ["jiekou"."xiaomimimo/mimo-v2-flash"]
-input = 0
-output = 0
+input = 0.1
+cache_read = 0.3
+output = 0.3
 
 ["jiekou"."zai-org/glm-4.5"]
 input = 0.6
@@ -12754,8 +12799,9 @@ input = 0
 output = 0
 
 ["kenari"."gemini-3-1-flash-lite"]
-input = 0
-output = 0
+input = 0.25
+cache_read = 0.025
+output = 1.5
 
 ["kenari"."gemma-4-31b-it"]
 input = 0
@@ -12766,36 +12812,66 @@ input = 0
 output = 0
 
 ["kenari"."glm-5-1"]
-input = 0
-output = 0
+input = 0.825
+cache_read = 0.165
+output = 3.301
+
+["kenari"."glm-5-1".long_context]  # > 32000 input+cache tokens
+threshold = 32000
+input = 1.1
+cache_read = 0.22
+output = 3.851
 
 ["kenari"."glm-5-2"]
 input = 0
 output = 0
 
 ["kenari"."gpt-5-4-mini"]
-input = 0
-output = 0
+input = 0.75
+cache_read = 0.075
+output = 4.5
 
 ["kenari"."gpt-5-5"]
 input = 0
 output = 0
 
 ["kenari"."gpt-5-6-luna"]
-input = 0
-output = 0
+input = 1
+cache_read = 0.1
+output = 6
+
+["kenari"."gpt-5-6-luna".long_context]  # > 272000 input+cache tokens
+threshold = 272000
+input = 2
+cache_read = 0.2
+output = 9
 
 ["kenari"."gpt-5-6-sol"]
-input = 0
-output = 0
+input = 5
+cache_read = 0.5
+output = 30
+
+["kenari"."gpt-5-6-sol".long_context]  # > 272000 input+cache tokens
+threshold = 272000
+input = 10
+cache_read = 1
+output = 45
 
 ["kenari"."gpt-5-6-terra"]
-input = 0
-output = 0
+input = 2.5
+cache_read = 0.25
+output = 15
+
+["kenari"."gpt-5-6-terra".long_context]  # > 272000 input+cache tokens
+threshold = 272000
+input = 5
+cache_read = 0.5
+output = 22.5
 
 ["kenari"."gpt-image-2"]
-input = 0
-output = 0
+input = 5
+cache_read = 1.25
+output = 30
 
 ["kenari"."gpt-oss-120b"]
 input = 0
@@ -12810,8 +12886,15 @@ input = 0
 output = 0
 
 ["kenari"."grok-build-0-1"]
-input = 0
-output = 0
+input = 1
+cache_read = 0.2
+output = 2
+
+["kenari"."grok-build-0-1".long_context]  # > 200000 input+cache tokens
+threshold = 200000
+input = 2
+cache_read = 0.4
+output = 4
 
 ["kenari"."kimi-k2-6"]
 input = 0
@@ -12834,12 +12917,14 @@ input = 0
 output = 0
 
 ["kenari"."mimo-v2-5"]
-input = 0
-output = 0
+input = 0.7
+cache_read = 0.014
+output = 1.4
 
 ["kenari"."mimo-v2-5-pro"]
-input = 0
-output = 0
+input = 2.175
+cache_read = 0.018
+output = 4.35
 
 ["kenari"."mimo-v2-5:free"]
 input = 0
@@ -12866,8 +12951,15 @@ input = 0
 output = 0
 
 ["kenari"."qwen3-7-plus"]
-input = 0
-output = 0
+input = 0.4
+cache_read = 0.4
+output = 1.6
+
+["kenari"."qwen3-7-plus".long_context]  # > 256000 input+cache tokens
+threshold = 256000
+input = 1.2
+cache_read = 1.2
+output = 4.8
 
 # ── kilo ── source: models.dev
 ["kilo"]
@@ -14616,10 +14708,8 @@ output = 0
 ["kuae-cloud-coding-plan"]
 
 ["kuae-cloud-coding-plan"."GLM-4.7"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 3.5
+output = 14
 
 # ── lilac ── source: models.dev
 ["lilac"]
@@ -14678,8 +14768,8 @@ output = 0
 ["llmgateway"]
 
 ["llmgateway"."auto"]
-input = 0
-output = 0
+input = 0.85
+output = 1.55
 
 ["llmgateway"."claude-3-opus"]
 input = 15
@@ -15816,8 +15906,8 @@ input = 0.02
 output = 0.04
 
 ["meganova"."mistralai/Mistral-Small-3.2-24B-Instruct-2506"]
-input = 0
-output = 0
+input = 0.33
+output = 0.33
 
 ["meganova"."moonshotai/Kimi-K2-Thinking"]
 input = 0.6
@@ -16833,87 +16923,97 @@ output = 2.4
 ["minimax-cn-coding-plan"]
 
 ["minimax-cn-coding-plan"."MiniMax-M2"]
-input = 0
-output = 0
+input = 0.3
+output = 1.2
 
 ["minimax-cn-coding-plan"."MiniMax-M2.1"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.3
+cache_read = 0.03
+cache_write = 0.375
+output = 1.2
 
 ["minimax-cn-coding-plan"."MiniMax-M2.5"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.3
+cache_read = 0.03
+cache_write = 0.375
+output = 1.2
 
 ["minimax-cn-coding-plan"."MiniMax-M2.5-highspeed"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.6
+cache_read = 0.06
+cache_write = 0.375
+output = 2.4
 
 ["minimax-cn-coding-plan"."MiniMax-M2.7"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.3
+cache_read = 0.06
+cache_write = 0.375
+output = 1.2
 
 ["minimax-cn-coding-plan"."MiniMax-M2.7-highspeed"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.6
+cache_read = 0.06
+cache_write = 0.375
+output = 2.4
 
 ["minimax-cn-coding-plan"."MiniMax-M3"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+["minimax-cn-coding-plan"."MiniMax-M3".long_context]  # > 512000 input+cache tokens
+threshold = 512000
+input = 0.6
+cache_read = 0.12
+output = 2.4
 
 # ── minimax-coding-plan ── source: models.dev
 ["minimax-coding-plan"]
 
 ["minimax-coding-plan"."MiniMax-M2"]
-input = 0
-output = 0
+input = 0.3
+output = 1.2
 
 ["minimax-coding-plan"."MiniMax-M2.1"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.3
+cache_read = 0.03
+cache_write = 0.375
+output = 1.2
 
 ["minimax-coding-plan"."MiniMax-M2.5"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.3
+cache_read = 0.03
+cache_write = 0.375
+output = 1.2
 
 ["minimax-coding-plan"."MiniMax-M2.5-highspeed"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.6
+cache_read = 0.06
+cache_write = 0.375
+output = 2.4
 
 ["minimax-coding-plan"."MiniMax-M2.7"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.3
+cache_read = 0.06
+cache_write = 0.375
+output = 1.2
 
 ["minimax-coding-plan"."MiniMax-M2.7-highspeed"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.6
+cache_read = 0.06
+cache_write = 0.375
+output = 2.4
 
 ["minimax-coding-plan"."MiniMax-M3"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+["minimax-coding-plan"."MiniMax-M3".long_context]  # > 512000 input+cache tokens
+threshold = 512000
+input = 0.6
+cache_read = 0.12
+output = 2.4
 
 # ── mistral ── source: models.dev
 ["mistral"]
@@ -21596,16 +21696,16 @@ input = 0
 output = 0
 
 ["nvidia"."google/gemma-3-4b-it"]
-input = 0
-output = 0
+input = 0.05
+output = 0.1
 
 ["nvidia"."google/gemma-3n-e2b-it"]
 input = 0
 output = 0
 
 ["nvidia"."google/gemma-3n-e4b-it"]
-input = 0
-output = 0
+input = 0.06
+output = 0.12
 
 ["nvidia"."google/gemma-4-31b-it"]
 input = 0
@@ -21632,24 +21732,25 @@ input = 0
 output = 0
 
 ["nvidia"."meta/llama-3.2-11b-vision-instruct"]
-input = 0
-output = 0
+input = 0.055
+output = 0.055
 
 ["nvidia"."meta/llama-3.2-1b-instruct"]
-input = 0
-output = 0
+input = 0.01
+output = 0.01
 
 ["nvidia"."meta/llama-3.2-3b-instruct"]
-input = 0
-output = 0
+input = 0.02
+output = 0.02
 
 ["nvidia"."meta/llama-3.2-90b-vision-instruct"]
 input = 0
 output = 0
 
 ["nvidia"."meta/llama-3.3-70b-instruct"]
-input = 0
-output = 0
+input = 0.22
+cache_read = 0.11
+output = 0.5
 
 ["nvidia"."meta/llama-4-maverick-17b-128e-instruct"]
 input = 0
@@ -21676,24 +21777,27 @@ input = 0
 output = 0
 
 ["nvidia"."minimaxai/minimax-m3"]
-input = 0
-output = 0
+input = 0.28
+cache_read = 0.05
+output = 1.1
 
 ["nvidia"."mistralai/magistral-small-2506"]
 input = 0
 output = 0
 
 ["nvidia"."mistralai/ministral-14b-instruct-2512"]
-input = 0
-output = 0
+input = 0.1
+cache_read = 0.05
+output = 0.4
 
 ["nvidia"."mistralai/mistral-7b-instruct-v0.3"]
 input = 0
 output = 0
 
 ["nvidia"."mistralai/mistral-large-3-675b-instruct-2512"]
-input = 0
-output = 0
+input = 1
+cache_read = 0.5
+output = 3
 
 ["nvidia"."mistralai/mistral-medium-3-instruct"]
 input = 0
@@ -21708,12 +21812,14 @@ input = 0
 output = 0
 
 ["nvidia"."mistralai/mistral-small-4-119b-2603"]
-input = 0
-output = 0
+input = 0.4
+cache_read = 0.2
+output = 1.4
 
 ["nvidia"."mistralai/mixtral-8x22b-instruct"]
-input = 0
-output = 0
+input = 2
+cache_read = 0.2
+output = 6
 
 ["nvidia"."mistralai/mixtral-8x7b-instruct"]
 input = 0
@@ -21808,8 +21914,9 @@ input = 0
 output = 0
 
 ["nvidia"."nvidia/nemotron-3-nano-omni-30b-a3b-reasoning"]
-input = 0
-output = 0
+input = 0.105
+cache_read = 0.0525
+output = 0.42
 
 ["nvidia"."nvidia/nemotron-3-super-120b-a12b"]
 input = 0.2
@@ -21833,8 +21940,8 @@ input = 0
 output = 0
 
 ["nvidia"."nvidia/nemotron-nano-12b-v2-vl"]
-input = 0
-output = 0
+input = 0.2
+output = 0.6
 
 ["nvidia"."nvidia/nemotron-voicechat"]
 input = 0
@@ -21933,8 +22040,9 @@ input = 0
 output = 0
 
 ["nvidia"."stepfun-ai/step-3.5-flash"]
-input = 0
-output = 0
+input = 0.1
+cache_read = 0.05
+output = 0.3
 
 ["nvidia"."stepfun-ai/step-3.7-flash"]
 input = 0
@@ -27092,8 +27200,9 @@ cache_read = 0.16
 output = 13
 
 ["poe"."openai/gpt-5.3-codex-spark"]
-input = 0
-output = 0
+input = 1.75
+cache_read = 0.175
+output = 14
 
 ["poe"."openai/gpt-5.3-instant"]
 input = 1.6
@@ -27212,10 +27321,9 @@ output = 1.5
 ["poolside"]
 
 ["poolside"."poolside/laguna-m.1"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.2
+cache_read = 0.1
+output = 0.4
 
 ["poolside"."poolside/laguna-s-2.1"]
 input = 0
@@ -27381,8 +27489,9 @@ input = 0
 output = 0
 
 ["regolo-ai"."deepseek-ocr-2"]
-input = 0
-output = 0
+input = 0.8897
+cache_read = 0.0924
+output = 1.4675
 
 ["regolo-ai"."faster-whisper-large-v3"]
 input = 0
@@ -28790,25 +28899,22 @@ output = 0
 ["tencent-token-plan"]
 
 ["tencent-token-plan"."hy3"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.14
+cache_read = 0.035
+output = 0.58
 
 # ── tencent-tokenhub ── source: models.dev
 ["tencent-tokenhub"]
 
 ["tencent-tokenhub"."hy3"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.14
+cache_read = 0.035
+output = 0.58
 
 ["tencent-tokenhub"."hy3-preview"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.17
+cache_read = 0.051
+output = 0.566661
 
 # ── tensorx ── source: models.dev
 ["tensorx"]
@@ -29207,46 +29313,39 @@ output = 15
 ["umans-ai-coding-plan"]
 
 ["umans-ai-coding-plan"."umans-coder"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.95
+cache_read = 0.19
+output = 4
 
 ["umans-ai-coding-plan"."umans-deepseek-v4-flash-0731"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.14
+cache_read = 0.028
+output = 0.28
 
 ["umans-ai-coding-plan"."umans-flash"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.15
+cache_read = 0.05
+output = 1
 
 ["umans-ai-coding-plan"."umans-glm-5.1"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 1.4
+cache_read = 0.29
+output = 4.4
 
 ["umans-ai-coding-plan"."umans-glm-5.2"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 1.4
+cache_read = 0.26
+output = 4.4
 
 ["umans-ai-coding-plan"."umans-kimi-k2.7"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 0.95
+cache_read = 0.19
+output = 4
 
 ["umans-ai-coding-plan"."umans-kimi-k3"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 3
+cache_read = 0.3
+output = 15
 
 ["umans-ai-coding-plan"."umans-qwen3.6-35b-a3b"]
 input = 0
@@ -31527,23 +31626,23 @@ output = 2.61
 ["xiaomi-token-plan-ams"]
 
 ["xiaomi-token-plan-ams"."mimo-v2-pro"]
-input = 0
-cache_read = 0
-output = 0
+input = 0.435
+cache_read = 0.0036
+output = 0.87
 
 ["xiaomi-token-plan-ams"."mimo-v2-tts"]
 input = 0
 output = 0
 
 ["xiaomi-token-plan-ams"."mimo-v2.5"]
-input = 0
-cache_read = 0
-output = 0
+input = 0.14
+cache_read = 0.0028
+output = 0.28
 
 ["xiaomi-token-plan-ams"."mimo-v2.5-pro"]
-input = 0
-cache_read = 0
-output = 0
+input = 0.435
+cache_read = 0.0036
+output = 0.87
 
 ["xiaomi-token-plan-ams"."mimo-v2.5-tts"]
 input = 0
@@ -31561,23 +31660,23 @@ output = 0
 ["xiaomi-token-plan-cn"]
 
 ["xiaomi-token-plan-cn"."mimo-v2-pro"]
-input = 0
-cache_read = 0
-output = 0
+input = 0.435
+cache_read = 0.0036
+output = 0.87
 
 ["xiaomi-token-plan-cn"."mimo-v2-tts"]
 input = 0
 output = 0
 
 ["xiaomi-token-plan-cn"."mimo-v2.5"]
-input = 0
-cache_read = 0
-output = 0
+input = 0.14
+cache_read = 0.0028
+output = 0.28
 
 ["xiaomi-token-plan-cn"."mimo-v2.5-pro"]
-input = 0
-cache_read = 0
-output = 0
+input = 0.435
+cache_read = 0.0036
+output = 0.87
 
 ["xiaomi-token-plan-cn"."mimo-v2.5-tts"]
 input = 0
@@ -31595,23 +31694,23 @@ output = 0
 ["xiaomi-token-plan-sgp"]
 
 ["xiaomi-token-plan-sgp"."mimo-v2-pro"]
-input = 0
-cache_read = 0
-output = 0
+input = 0.435
+cache_read = 0.0036
+output = 0.87
 
 ["xiaomi-token-plan-sgp"."mimo-v2-tts"]
 input = 0
 output = 0
 
 ["xiaomi-token-plan-sgp"."mimo-v2.5"]
-input = 0
-cache_read = 0
-output = 0
+input = 0.14
+cache_read = 0.0028
+output = 0.28
 
 ["xiaomi-token-plan-sgp"."mimo-v2.5-pro"]
-input = 0
-cache_read = 0
-output = 0
+input = 0.435
+cache_read = 0.0036
+output = 0.87
 
 ["xiaomi-token-plan-sgp"."mimo-v2.5-tts"]
 input = 0
@@ -31786,22 +31885,22 @@ output = 4.4
 ["zai-coding-plan"]
 
 ["zai-coding-plan"."glm-4.7"]
-input = 0
-cache_read = 0
+input = 0.6
+cache_read = 0.11
 cache_write = 0
-output = 0
+output = 2.2
 
 ["zai-coding-plan"."glm-5-turbo"]
-input = 0
-cache_read = 0
+input = 1.2
+cache_read = 0.24
 cache_write = 0
-output = 0
+output = 4
 
 ["zai-coding-plan"."glm-5.2"]
-input = 0
-cache_read = 0
+input = 1.4
+cache_read = 0.26
 cache_write = 0
-output = 0
+output = 4.4
 
 ["zai-coding-plan"."glm-5.2-highspeed"]
 input = 0
@@ -31810,10 +31909,9 @@ cache_write = 0
 output = 0
 
 ["zai-coding-plan"."glm-5.3"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 1.4
+cache_read = 0.26
+output = 4.4
 
 # ── zeldoc ── source: models.dev
 ["zeldoc"]
@@ -32601,10 +32699,10 @@ input = 0.3
 output = 0.9
 
 ["zhipuai-coding-plan"."glm-4.7"]
-input = 0
-cache_read = 0
+input = 0.6
+cache_read = 0.11
 cache_write = 0
-output = 0
+output = 2.2
 
 ["zhipuai-coding-plan"."glm-5-turbo"]
 input = 0
@@ -32613,16 +32711,16 @@ cache_write = 0
 output = 0
 
 ["zhipuai-coding-plan"."glm-5.1"]
-input = 0
-cache_read = 0
+input = 1.4
+cache_read = 0.26
 cache_write = 0
-output = 0
+output = 4.4
 
 ["zhipuai-coding-plan"."glm-5.2"]
-input = 0
-cache_read = 0
+input = 1.4
+cache_read = 0.26
 cache_write = 0
-output = 0
+output = 4.4
 
 ["zhipuai-coding-plan"."glm-5.2-highspeed"]
 input = 0
@@ -32631,13 +32729,21 @@ cache_write = 0
 output = 0
 
 ["zhipuai-coding-plan"."glm-5.3"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
+input = 1.4
+cache_read = 0.26
+output = 4.4
 
 ["zhipuai-coding-plan"."glm-5v-turbo"]
-input = 0
-cache_read = 0
+input = 5
+cache_read = 1.2
 cache_write = 0
-output = 0
+output = 22
+
+# ── cursor-acp ── source: models.dev
+["cursor-acp"]
+# verified - see OVERRIDES in scripts/update_prices.py
+
+["cursor-acp"."cursor-grok-4.5-high-fast"]
+input = 2
+cache_read = 0.3
+output = 6

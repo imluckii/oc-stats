@@ -36,7 +36,11 @@ Models without published pricing get no estimate rather than a guess.
 
 A small hand-verified `OVERRIDES` list in `scripts/update_prices.py` pins the
 few first-party entries where models.dev disagrees with the provider's
-official pricing page.
+official pricing page (OpenAI fast-tier variants, day-one releases, Cursor's
+grok variant). Subscription gateways (`zai-coding-plan`,
+`minimax-coding-plan`, …) are listed at $0/token by models.dev; the generator
+backfills them with the underlying model's first-party API list price, while
+genuinely free tiers keep their $0.
 
 Matching is provider-aware: `anthropic/claude-opus-5` from any gateway
 resolves to Anthropic's rate, dated release suffixes fall back to the base

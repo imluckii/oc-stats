@@ -108,10 +108,9 @@ def test_coding_plan_prefix_trims_step_by_step():
     # "zai-coding-plan-cn" → "zai-coding-plan" (exact gateway) before "zai".
     pricing = load_bundled()
     assert pricing.lookup("zai-coding-plan", "glm-4.7") is not None
-    # glm-5.3 is pinned on the zai table; the bare name stays ambiguous
-    # because coding-plan gateways list it at 0.
+    # glm-5.3 is pinned on the zai table and inherited by the coding plan.
     assert pricing.lookup("zai", "glm-5.3").rates.input == 1.4
-    assert pricing.lookup("nobody", "glm-5.3") is None  # ambiguous, refuses
+    assert pricing.lookup("zai-coding-plan", "glm-5.3").rates.input == 1.4
 
 
 def test_new_release_models_are_priced():
@@ -124,6 +123,27 @@ def test_new_release_models_are_priced():
     # opencode-go models (MiniMax M3, GLM-5.3) come straight from models.dev.
     assert pricing.lookup("opencode-go", "minimax-m3").rates.input == 0.3
     assert pricing.lookup("opencode-go", "glm-5.3").rates.input == 1.4
+
+
+def test_subscription_gateways_inherit_vendor_api_rates():
+    # models.dev lists coding plans at $0/token; the generator backfills the
+    # vendor's real API list price instead of estimating $0.
+    pricing = load_bundled()
+    glm52 = pricing.lookup("zai-coding-plan", "glm-5.2").rates
+    assert (glm52.input, glm52.output, glm52.cache_read) == (1.4, 4.4, 0.26)
+    glm53 = pricing.lookup("zai-coding-plan", "glm-5.3").rates
+    assert (glm53.input, glm53.output) == (1.4, 4.4)  # via the zai override
+    m3 = pricing.lookup("minimax-coding-plan", "MiniMax-M2.5").rates
+    assert (m3.input, m3.output) == (0.3, 1.2)
+    # Genuinely free tiers keep their $0.
+    assert pricing.lookup("opencode", "big-pickle").rates.input == 0
+
+
+def test_cursor_variant_priced_at_underlying_model_rate():
+    # Cursor publishes no token pricing; the override uses grok-4.5's
+    # published API rate for the underlying model.
+    r = load_bundled().lookup("cursor-acp", "cursor-grok-4.5-high-fast").rates
+    assert (r.input, r.output, r.cache_read) == (2, 6, 0.3)
 
 
 def test_openrouter_section_wins_for_its_own_ids():

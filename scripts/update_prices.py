@@ -119,6 +119,14 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "output": 4.4,
         "cache_read": 0.26,
     },
+    # Cursor serves xAI's grok-4.5 under its own variant name and publishes no
+    # token pricing (subscription product). Priced at the underlying model's
+    # API rate (docs.x.ai, checked 2026-08-14): $2 in / $0.30 cached / $6 out.
+    ("cursor-acp", "cursor-grok-4.5-high-fast"): {
+        "input": 2,
+        "output": 6,
+        "cache_read": 0.3,
+    },
 }
 
 HEADER = """\
@@ -265,7 +273,67 @@ def build_tables(catalog: dict) -> dict[str, dict[str, dict]]:
         # Full replacement (like user overrides): verified values win and any
         # stale generated fields — tiers included — are dropped.
         bucket[model] = dict(override)
+
+    fill_subscription_prices(tables)
     return tables
+
+
+def _entry_key(entry: dict) -> tuple:
+    return (
+        entry["input"],
+        entry["output"],
+        entry.get("cache_read", 0),
+        entry.get("cache_write", 0),
+        json.dumps(entry.get("long_context"), sort_keys=True),
+    )
+
+
+def fill_subscription_prices(tables: dict[str, dict[str, dict]]) -> int:
+    """Reprice $0 subscription-gateway entries at the vendor's API rate.
+
+    models.dev lists coding-plan gateways (``zai-coding-plan``,
+    ``minimax-coding-plan``, …) at $0/token because they are subscription
+    products. That shadows the real per-token price of the same model from
+    the first-party API, so every all-zero entry is backfilled from the same
+    model under a hyphen-prefix of the provider (``zai-coding-plan`` →
+    ``zai``) or, failing that, an unambiguous non-zero listing elsewhere.
+    Genuinely free models (``big-pickle``, ``*-free`` tiers with no paid
+    counterpart) keep their $0.
+    """
+    filled = 0
+    for provider, models in tables.items():
+        zero = [m for m, e in models.items() if e["input"] == 0 and e["output"] == 0]
+        if not zero:
+            continue
+        parts = provider.split("-")
+        prefixes = ["-".join(parts[:i]) for i in range(len(parts) - 1, 0, -1)]
+        for model in zero:
+            price = None
+            for prefix in prefixes:
+                candidate = tables.get(prefix, {}).get(model)
+                if candidate and (candidate["input"] or candidate["output"]):
+                    price = candidate
+                    break
+            if price is None:
+                nonzero = {
+                    _entry_key(e): e
+                    for other, ms in tables.items()
+                    for name, e in ms.items()
+                    if name == model and (e["input"] or e["output"])
+                }
+                if len(nonzero) == 1:
+                    price = next(iter(nonzero.values()))
+            if price is not None:
+                models[model] = deepcopy_entry(price)
+                filled += 1
+    return filled
+
+
+def deepcopy_entry(entry: dict) -> dict:
+    copy = dict(entry)
+    if "long_context" in copy:
+        copy["long_context"] = dict(copy["long_context"])
+    return copy
 
 
 def render(tables: dict[str, dict[str, dict]]) -> str:
@@ -300,6 +368,9 @@ def main(argv: list[str] | None = None) -> int:
     tables = build_tables(fetch(SOURCE))
     text = render(tables)
     models_n = sum(len(b) for b in tables.values())
+    zero_left = sum(
+        1 for ms in tables.values() for e in ms.values() if e["input"] == 0 and e["output"] == 0
+    )
 
     if args.check:
         current = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
@@ -315,7 +386,10 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     OUTPUT.write_text(text, encoding="utf-8")
-    print(f"wrote {OUTPUT}: {models_n} models, {len(tables)} providers")
+    print(
+        f"wrote {OUTPUT}: {models_n} models, {len(tables)} providers "
+        f"({zero_left} priced at $0 - genuinely free tiers)"
+    )
     return 0
 
 
