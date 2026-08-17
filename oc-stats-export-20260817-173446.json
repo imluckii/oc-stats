@@ -1,0 +1,112 @@
+{
+  "range": "today",
+  "sort": "provider",
+  "totals": {
+    "input": 58000,
+    "cache_read": 1340000,
+    "cache_write": 0,
+    "output": 25200,
+    "reasoning": 8800,
+    "estimated_cost": 0.17928,
+    "priced_turns": 4,
+    "turns": 12
+  },
+  "by_provider": {
+    "(unknown)": {
+      "input": 58000,
+      "cache_read": 1340000,
+      "cache_write": 0,
+      "output": 25200,
+      "reasoning": 8800,
+      "estimated_cost": 0.17928,
+      "priced_turns": 4,
+      "turns": 12
+    }
+  },
+  "by_model": {
+    "(unknown)/gpt-5.6-sol/": {
+      "input": 36000,
+      "cache_read": 840000,
+      "cache_write": 0,
+      "output": 12000,
+      "reasoning": 4800,
+      "estimated_cost": 0.0,
+      "priced_turns": 0,
+      "turns": 4
+    },
+    "(unknown)/glm-5.3/": {
+      "input": 16000,
+      "cache_read": 380000,
+      "cache_write": 0,
+      "output": 10000,
+      "reasoning": 3200,
+      "estimated_cost": 0.17928,
+      "priced_turns": 4,
+      "turns": 4
+    },
+    "(unknown)/glm-5.2/": {
+      "input": 6000,
+      "cache_read": 120000,
+      "cache_write": 0,
+      "output": 3200,
+      "reasoning": 800,
+      "estimated_cost": 0.0,
+      "priced_turns": 0,
+      "turns": 4
+    }
+  },
+  "daily": {
+    "2026-08-17": {
+      "input": 58000,
+      "cache_read": 1340000,
+      "cache_write": 0,
+      "output": 25200,
+      "reasoning": 8800,
+      "estimated_cost": 0.17928,
+      "priced_turns": 4,
+      "turns": 12
+    }
+  },
+  "hourly": {
+    "4": {
+      "input": 14500,
+      "cache_read": 335000,
+      "cache_write": 0,
+      "output": 6300,
+      "reasoning": 2200,
+      "estimated_cost": 0.04482,
+      "priced_turns": 1,
+      "turns": 3
+    },
+    "8": {
+      "input": 14500,
+      "cache_read": 335000,
+      "cache_write": 0,
+      "output": 6300,
+      "reasoning": 2200,
+      "estimated_cost": 0.04482,
+      "priced_turns": 1,
+      "turns": 3
+    },
+    "12": {
+      "input": 14500,
+      "cache_read": 335000,
+      "cache_write": 0,
+      "output": 6300,
+      "reasoning": 2200,
+      "estimated_cost": 0.04482,
+      "priced_turns": 1,
+      "turns": 3
+    },
+    "17": {
+      "input": 14500,
+      "cache_read": 335000,
+      "cache_write": 0,
+      "output": 6300,
+      "reasoning": 2200,
+      "estimated_cost": 0.04482,
+      "priced_turns": 1,
+      "turns": 3
+    }
+  }
+}
