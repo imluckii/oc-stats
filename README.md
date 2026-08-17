@@ -14,6 +14,7 @@ standard first-party API list prices; subscription charges may differ.
 ```bash
 oc-stats          # Rich terminal report
 oc-stats --json   # machine-readable output
+oc-stats tui      # interactive TUI (needs the tui extra)
 oc-stats --db "C:\Users\Anchit\.local\share\opencode\opencode.db"
 ```
 
@@ -24,6 +25,35 @@ Requires Python 3.10+. V1 and V2 database schemas are supported; service fallbac
 requires OpenCode V2 (`opencode2` or `opencode`) on `PATH`.
 Database access is read-only. If no local database exists, the tool falls back to
 read-only requests through OpenCode's built-in `api` command.
+
+## TUI
+
+Install with the extra and run:
+
+```bash
+pipx install --force "oc-stats[tui] @ git+https://github.com/imluckii/oc-stats.git"
+oc-stats tui
+```
+
+Five tabs: **Overview** (totals, top models, share of cost), **Models** (full
+per-model table), **Daily** and **Hourly** breakdowns, and **Stats** (cache hit
+rate, provider splits, busiest day/hour, unpriced turn ratio). Costs come from
+the same `prices.toml` catalog as the report.
+
+Keys:
+
+- `←`/`→` or `Tab`/`Shift+Tab` switch tabs
+- `c` / `t` / `p` sort models by cost / tokens / provider
+- `d` cycles the date range: all time → today → 7 days → 30 days
+- `i` toggles full/compact number formatting
+- `r` refreshes now; `R` toggles auto-refresh (default off); `+`/`-` adjusts
+  the interval in 30s steps (30–600s)
+- `e` exports the current view as JSON to `./oc-stats-export-<ts>.json`
+- `q` quits
+
+Preferences (active tab, sort, number format, refresh interval) persist to
+`~/.config/oc-usage/tui.toml`. Day/hour grouping uses IST by default; set
+`OC_STATS_TZ=UTC` to override.
 
 ## Prices
 

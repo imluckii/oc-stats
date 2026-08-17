@@ -46,6 +46,7 @@ def build_parser() -> argparse.ArgumentParser:
             "Examples:\n"
             "  oc-stats          # show the report\n"
             "  oc-stats --json   # machine-readable JSON\n"
+            "  oc-stats tui      # interactive TUI (needs oc-stats[tui])\n"
             "\n"
             "In OpenCode's shell mode:  !oc-stats\n"
         ),
@@ -58,6 +59,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="database path; repeat to merge multiple databases",
     )
     ap.add_argument("--json", action="store_true", help="emit JSON to stdout")
+    subparsers = ap.add_subparsers(dest="command")
+    tui = subparsers.add_parser("tui", help="interactive TUI (requires textual)")
+    tui.add_argument(
+        "--db",
+        type=Path,
+        action="append",
+        metavar="PATH",
+        help="database path; repeat to merge multiple databases",
+    )
     ap.add_argument(
         "--version",
         action="version",
@@ -84,8 +94,50 @@ def _err(message: str) -> None:
         sys.stderr.write(safe)
 
 
+def load_rows(dbs: list[Path] | None):
+    """Discover/validate databases and load rows.
+
+    Returns ``(rows, source)``. Mirrors the data path used by the report
+    mode: explicit --db paths, discovery otherwise, service fallback last.
+    """
+    explicit = dbs is not None
+    databases = [path.expanduser() for path in dbs] if explicit else discover_databases()
+    for database in databases:
+        if not database.is_file():
+            raise DatabaseError(f"database not found: {database}")
+    rows, used_databases = load_databases(databases, skip_errors=not explicit)
+    if used_databases:
+        count = len(used_databases)
+        source = f"{count} local OpenCode database{'s' if count != 1 else ''}"
+    else:
+        rows = list(ServiceClient().rows())
+        source = "OpenCode service"
+    return rows, source
+
+
+def run_tui(dbs: list[Path] | None) -> int:
+    try:
+        from oc_usage.tui import OcStatsApp
+    except ImportError:
+        _err(
+            "the TUI needs textual: pipx install --force "
+            "'oc-stats[tui]' (or pip install oc-stats[tui])"
+        )
+        return 1
+
+    def loader():
+        return load_rows(dbs)
+
+    OcStatsApp(loader).run()
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+
+    if args.command == "tui":
+        return run_tui(args.db)
+
     console = make_console()
     loading = (
         console.status("Reading OpenCode usage...", spinner="line")
@@ -95,22 +147,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         with loading:
-            explicit_databases = args.db is not None
-            databases = (
-                [path.expanduser() for path in args.db]
-                if explicit_databases
-                else discover_databases()
-            )
-            for database in databases:
-                if not database.is_file():
-                    raise DatabaseError(f"database not found: {database}")
-            rows, used_databases = load_databases(databases, skip_errors=not explicit_databases)
-            if used_databases:
-                count = len(used_databases)
-                source = f"{count} local OpenCode database{'s' if count != 1 else ''}"
-            else:
-                rows = list(ServiceClient().rows())
-                source = "OpenCode service"
+            rows, source = load_rows(args.db)
     except ExecutableNotFoundError as exc:
         _err(str(exc))
         return 1
