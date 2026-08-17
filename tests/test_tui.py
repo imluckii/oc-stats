@@ -83,12 +83,12 @@ async def test_sort_keys_reorder_models(rows):
         app.action_sort("provider")
         await pilot.pause()
         first = app.query_one("#models-table").get_row_at(0)
-        assert first[0] == "openai"  # alphabetical first
+        assert str(first[0].plain) == "openai"  # alphabetical first
         app.action_sort("tokens")
         await pilot.pause()
         first = app.query_one("#models-table").get_row_at(0)
         # glm-5.3 aggregates two rows (800 tokens) vs gpt-5.6-sol's single 650
-        assert first[1] == "glm-5.3"
+        assert str(first[1].plain) == "glm-5.3"
 
 
 async def test_refresh_calls_loader_again(rows):
