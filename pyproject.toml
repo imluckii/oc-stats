@@ -48,10 +48,15 @@ Changelog = "https://github.com/imluckii/oc-stats/releases"
 oc-stats = "oc_usage.cli:main"
 
 [project.optional-dependencies]
+tui = [
+    "textual>=0.60",
+]
 dev = [
     "pytest>=8",
+    "pytest-asyncio>=0.23",
     "ruff>=0.6",
     "build>=1.2",
+    "textual>=0.60",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -80,3 +85,4 @@ line-ending = "lf"
 minversion = "8.0"
 testpaths = ["tests"]
 addopts = "-ra"
+asyncio_mode = "auto"
