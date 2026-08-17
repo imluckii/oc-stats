@@ -57,12 +57,20 @@ def load_prefs() -> TuiPrefs:
     return prefs
 
 
+def _toml_value(value: object) -> str:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, str):
+        return f'"{value}"'
+    return repr(value)
+
+
 def save_prefs(prefs: TuiPrefs) -> None:
     """Write preferences as a small TOML file, best-effort."""
     path = prefs.path()
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        lines = [f"{key} = {value!r}" for key, value in asdict(prefs).items()]
+        lines = [f"{key} = {_toml_value(value)}" for key, value in asdict(prefs).items()]
         path.write_text("\n".join(lines) + "\n")
     except OSError:
         pass  # preferences are cosmetic; never crash the TUI over them
