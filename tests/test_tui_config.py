@@ -38,10 +38,7 @@ def test_malformed_toml_gives_defaults(tmp_path: Path, monkeypatch):
 def test_unknown_values_fall_back(tmp_path: Path, monkeypatch):
     config = tmp_path / "tui.toml"
     config.write_text(
-        'active_tab = "leaderboard"\n'
-        'sort_key = "vibes"\n'
-        "full_numbers = 3\n"
-        "refresh_interval_s = 5\n"
+        'active_tab = "leaderboard"\nsort_key = "vibes"\nfull_numbers = 3\nrefresh_interval_s = 5\n'
     )
     monkeypatch.setenv("OC_STATS_TUI_CONFIG", str(config))
     prefs = load_prefs()
