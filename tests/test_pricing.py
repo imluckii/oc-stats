@@ -339,3 +339,37 @@ def test_free_models_estimate_to_zero_and_count_as_priced():
     assert report.totals.estimate_complete is True
     assert report.totals.estimated_cost == 0.0
     assert report.totals.priced_turns == 1
+
+
+def test_dated_suffix_variants_fall_back_to_base_model():
+    pricing = load_bundled()
+    # YYYYMM: glm-5-2026-04 → glm-5
+    assert pricing.lookup("zai", "glm-5-2026-04") is not None
+    # YYYY: kimi-k2-0905 → kimi-k2
+    assert pricing.lookup("moonshot", "kimi-k2-0905") is not None
+
+
+def test_non_finite_prices_are_rejected():
+    import pytest
+
+    from oc_usage.pricing import Pricing, PricingError
+
+    with pytest.raises(PricingError, match="finite"):
+        Pricing([("openai", {"m": {"input": float("nan"), "output": 1}})])
+    with pytest.raises(PricingError, match="finite"):
+        Pricing([("openai", {"m": {"input": 1, "output": float("inf")}})])
+    with pytest.raises(PricingError, match="finite"):
+        Pricing(
+            [
+                (
+                    "openai",
+                    {
+                        "m": {
+                            "input": 1,
+                            "output": 1,
+                            "long_context": {"threshold": float("nan"), "input": 2, "output": 2},
+                        }
+                    },
+                )
+            ]
+        )

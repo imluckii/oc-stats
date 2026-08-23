@@ -24,6 +24,7 @@ input exceeds ``threshold`` tokens at the higher tier.
 
 from __future__ import annotations
 
+import math
 import os
 import re
 import sys
@@ -49,7 +50,7 @@ TOKENS_PER_UNIT = 1_000_000
 APP_DIR = "oc-usage"
 PRICE_FILE = "prices.toml"
 # Trailing release-date suffixes: gpt-4o-20241120, kimi-k2-0905, glm-5-2026-04.
-_DATED_SUFFIX = re.compile(r"-(?:\d{8}|\d{4}-\d{2}-\d{2})$")
+_DATED_SUFFIX = re.compile(r"-(?:\d{8}|\d{4}-\d{2}-\d{2}|\d{4}-\d{2}|\d{4})$")
 
 
 class PricingError(RuntimeError):
@@ -88,8 +89,9 @@ def _rates_from(raw: object, where: str) -> Rates:
         raise PricingError(f"{where}: missing required key '{exc.args[0]}'") from exc
     except (TypeError, ValueError) as exc:
         raise PricingError(f"{where}: prices must be numbers") from exc
-    if min(r.input, r.output, r.cache_read, r.cache_write) < 0:
-        raise PricingError(f"{where}: prices must not be negative")
+    values = (r.input, r.output, r.cache_read, r.cache_write)
+    if min(values) < 0 or not all(math.isfinite(v) for v in values):
+        raise PricingError(f"{where}: prices must be finite and not negative")
     return r
 
 
@@ -101,14 +103,19 @@ def _model_price_from(raw: dict, where: str) -> ModelPrice:
     if not isinstance(long_raw, dict):
         raise PricingError(f"{where}: long_context must be a table")
     where += ".long_context"
+    if "threshold" not in long_raw:
+        raise PricingError(f"{where}: missing required key 'threshold'")
     try:
-        threshold = int(long_raw["threshold"])
-    except KeyError as exc:
-        raise PricingError(f"{where}: missing required key 'threshold'") from exc
+        threshold_number = float(long_raw["threshold"])
     except (TypeError, ValueError) as exc:
-        raise PricingError(f"{where}: threshold must be an integer") from exc
-    if threshold <= 0:
-        raise PricingError(f"{where}: threshold must be positive")
+        raise PricingError(f"{where}: threshold must be a number") from exc
+    if (
+        not math.isfinite(threshold_number)
+        or threshold_number <= 0
+        or threshold_number != int(threshold_number)
+    ):
+        raise PricingError(f"{where}: threshold must be a positive finite integer")
+    threshold = int(threshold_number)
     return ModelPrice(rates, (threshold, _rates_from(long_raw, where)))
 
 
