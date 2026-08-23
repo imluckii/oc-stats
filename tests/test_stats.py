@@ -127,3 +127,15 @@ class TestBusiest:
         ]
         day, _hour = busiest(rows, tz=IST)
         assert day is not None and day[1] == rows[1].total
+
+
+class TestCacheHitRateWithWrites:
+    def test_writes_count_in_the_denominator(self):
+        from oc_usage.models import UsageRow, aggregate
+
+        rows = [
+            UsageRow("p", "m", "", 10, 30, 60, 5, 0, 0.0, 1),
+        ]
+        rate = cache_hit_rate(aggregate(rows).totals)
+        # 30 / (10 + 30 + 60): writes were prompt tokens that were not hits.
+        assert rate is not None and abs(rate - 0.3) < 1e-9

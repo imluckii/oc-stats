@@ -224,7 +224,7 @@ def _build_header(report: Report, fmt_num, *, ascii: bool = False) -> Panel:
     return Panel(
         Align.left(body, vertical="middle"),
         title=Text(
-            "  *  OpenCode Usage - All Time  " if ascii else "  ◇  OpenCode Usage · All Time  ",
+            "  *  OpenCode Usage - Retained  " if ascii else "  ◇  OpenCode Usage · Retained  ",
             style="bold white on blue",
         ),
         title_align="left",
@@ -236,7 +236,9 @@ def _build_header(report: Report, fmt_num, *, ascii: bool = False) -> Panel:
 
 def _build_totals(report: Report, fmt_num, *, ascii: bool = False) -> Table.grid:  # type: ignore[valid-type]
     totals = report.totals
-    all_input = totals.input + totals.cache_read
+    # Fresh input, cache reads, and cache writes are disjoint prompt buckets;
+    # all three count toward "percent of input" and the cache hit rate.
+    all_input = totals.input + totals.cache_read + totals.cache_write
 
     # Value field width: widest of all numeric values we'll show, so the grid
     # right-aligns cleanly without manual ANSI padding. Cost strings are
@@ -246,6 +248,7 @@ def _build_totals(report: Report, fmt_num, *, ascii: bool = False) -> Table.grid
         len(fmt_num(totals.cache_read)),
         len(fmt_num(totals.input)),
         len(money(totals.estimated_cost)),
+        len(money(totals.recorded_cost)),
     )
 
     t: Table = Table.grid(padding=(0, 2))
@@ -265,10 +268,20 @@ def _build_totals(report: Report, fmt_num, *, ascii: bool = False) -> Table.grid
         )
 
     row("Input (non-cache)", fmt_num(totals.input), f"{pct(totals.input, all_input):.0f}% of input")
-    row("Cache", fmt_num(totals.cache_read), "cached", value_style="bold green")
+    row("Cache Read", fmt_num(totals.cache_read), "cached", value_style="bold green")
+    if totals.cache_write:
+        row("Cache Write", fmt_num(totals.cache_write), "written, not hit")
     row("Output", fmt_num(totals.output))
     row("Reasoning", fmt_num(totals.reasoning), end=True)
     row("Total", fmt_num(totals.total), "", label_style="bold", value_style="bold white")
+    if totals.recorded_cost:
+        row(
+            "Recorded cost",
+            money(totals.recorded_cost),
+            "as recorded by OpenCode",
+            label_style="bold cyan",
+            value_style="bold cyan",
+        )
     if totals.priced_turns:
         annotation = "current API list rates"
         if not totals.estimate_complete:
@@ -293,7 +306,7 @@ def _build_totals(report: Report, fmt_num, *, ascii: bool = False) -> Table.grid
 
 def _build_cache(report: Report, fmt_num, *, ascii: bool = False) -> Table:
     totals = report.totals
-    all_input = totals.input + totals.cache_read
+    all_input = totals.input + totals.cache_read + totals.cache_write
     hit = pct(totals.cache_read, all_input)
 
     t: Table = Table.grid(padding=(0, 1))
@@ -325,7 +338,7 @@ def _build_providers(
         ("Provider", "left", ""),
         ("Turns", "right", ""),
         ("Input", "right", ""),
-        ("Cache", "right", "green"),
+        ("CacheR", "right", "green"),
         ("Output", "right", ""),
         ("Reasoning", "right", ""),
         ("Total", "right", "bold"),
@@ -380,7 +393,7 @@ def _build_models(
             ("Model", "left", ""),
             ("Turns", "right", ""),
             ("Input", "right", ""),
-            ("Cache", "right", "green"),
+            ("CacheR", "right", "green"),
             ("Output", "right", ""),
             ("Reasoning", "right", ""),
             ("Total", "right", ""),
@@ -404,7 +417,7 @@ def _build_models(
             cache.append(fmt_num(bucket.cache_read), style="green")
             cache.append(" (", style="dim")
             cache.append(
-                f"{pct(bucket.cache_read, bucket.input + bucket.cache_read):.1f}%",
+                f"{pct(bucket.cache_read, bucket.input + bucket.cache_read + bucket.cache_write):.1f}%",
                 style="dim",
             )
             cache.append(")", style="dim")
@@ -464,6 +477,7 @@ def _pack(bucket: Bucket) -> dict[str, int | float | bool | None]:
         "cache_read": bucket.cache_read,
         "cache_write": bucket.cache_write,
         "total": bucket.total,
+        "recorded_cost": round(bucket.recorded_cost, 6),
         "estimated_cost": round(bucket.estimated_cost, 6) if bucket.priced_turns else None,
         "estimate_complete": bucket.estimate_complete,
     }

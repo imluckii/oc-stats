@@ -2,10 +2,13 @@
 
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 from oc_usage.models import UsageRow
 from oc_usage.timegroups import (
     DateRange,
     daily_buckets,
+    day_key,
     filter_range,
     hour_key,
     hourly_buckets,
@@ -108,3 +111,33 @@ class TestKeys:
         rng = DateRange.ALL
         seen = [rng := rng.next for _ in range(4)]
         assert seen == [DateRange.TODAY, DateRange.D7, DateRange.D30, DateRange.ALL]
+
+
+class TestTimezoneOverride:
+    def test_iana_zone_name_is_honoured(self):
+        from zoneinfo import ZoneInfo
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setenv("OC_STATS_TZ", "America/New_York")
+            from oc_usage.timegroups import get_tz, tz_label
+
+            tz = get_tz()
+            assert isinstance(tz, ZoneInfo) and str(tz) == "America/New_York"
+            assert tz_label() == "America/New_York"
+            # 04:00 UTC on Jun 16 is still Jun 15 in New York.
+            assert day_key(1_750_014_400_000, tz) == "2025-06-15"
+            assert day_key(1_750_014_400_000, IST) == "2025-06-16"
+
+    def test_unresolvable_zone_falls_back_to_ist(self):
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setenv("OC_STATS_TZ", "Mars/Olympus_Mons")
+            from oc_usage.timegroups import get_tz
+
+            assert get_tz() == IST
+
+    def test_default_label(self):
+        with pytest.MonkeyPatch.context() as mp:
+            mp.delenv("OC_STATS_TZ", raising=False)
+            from oc_usage.timegroups import tz_label
+
+            assert tz_label() == "IST"

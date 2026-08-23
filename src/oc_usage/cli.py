@@ -40,13 +40,14 @@ PROG = "oc-stats"
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(
         prog=PROG,
-        description=("All-time OpenCode token usage from your local OpenCode V2 data."),
+        description=("Retained OpenCode token usage from local databases or the running service."),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
             "  oc-stats          # show the report\n"
             "  oc-stats --json   # machine-readable JSON\n"
             "  oc-stats tui      # interactive TUI (needs oc-stats[tui])\n"
+            "  oc-stats --db PATH tui   # TUI over an explicit database\n"
             "\n"
             "In OpenCode's shell mode:  !oc-stats\n"
         ),
@@ -56,18 +57,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         action="append",
         metavar="PATH",
-        help="database path; repeat to merge multiple databases",
+        help="database path; repeat to merge multiple databases "
+        "(must come before the tui subcommand)",
     )
     ap.add_argument("--json", action="store_true", help="emit JSON to stdout")
     subparsers = ap.add_subparsers(dest="command")
-    tui = subparsers.add_parser("tui", help="interactive TUI (requires textual)")
-    tui.add_argument(
-        "--db",
-        type=Path,
-        action="append",
-        metavar="PATH",
-        help="database path; repeat to merge multiple databases",
-    )
+    subparsers.add_parser("tui", help="interactive TUI (requires textual)")
     ap.add_argument(
         "--version",
         action="version",

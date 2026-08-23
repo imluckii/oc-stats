@@ -251,3 +251,18 @@ def test_python_m_module_help():
     assert result.returncode == 0
     assert "OpenCode token usage" in result.stdout
     assert "--db" in result.stdout
+
+
+def test_db_before_tui_subcommand_is_kept():
+    # ``--db`` is a global option; it must survive when placed before ``tui``
+    # instead of being silently overwritten by the subparser default.
+    args = cli.build_parser().parse_args(["--db", "custom.db", "tui"])
+    assert args.command == "tui"
+    assert [path.name for path in args.db] == ["custom.db"]
+
+
+def test_json_includes_recorded_cost(monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    assert main(["--json"]) == 0
+    totals = json.loads(capsys.readouterr().out)["totals"]
+    assert totals["recorded_cost"] == pytest.approx(0.5123)

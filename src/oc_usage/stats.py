@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from datetime import timezone
+from datetime import tzinfo
 
 from oc_usage.models import Bucket, Report, UsageRow
 from oc_usage.timegroups import daily_buckets, hourly_buckets
@@ -13,8 +13,12 @@ _BAR_CELLS = 5
 
 
 def cache_hit_rate(bucket: Bucket) -> float | None:
-    """cache_read / (input + cache_read), or None when nothing was read."""
-    denom = bucket.input + bucket.cache_read
+    """cache_read / (input + cache_read + cache_write), or None without input.
+
+    Cache writes are prompt tokens that were *not* served from cache, so they
+    belong in the denominator: leaving them out would overstate hit rate.
+    """
+    denom = bucket.input + bucket.cache_read + bucket.cache_write
     if denom == 0:
         return None
     return bucket.cache_read / denom
@@ -58,7 +62,7 @@ def unpriced_ratio(report: Report) -> float | None:
 
 
 def busiest(
-    rows: Iterable[UsageRow], *, tz: timezone
+    rows: Iterable[UsageRow], *, tz: tzinfo
 ) -> tuple[tuple[str, int] | None, tuple[int, int] | None]:
     """(busiest (day, tokens), busiest (hour, tokens)) or (None, None)."""
     daily = daily_buckets(rows, tz=tz)

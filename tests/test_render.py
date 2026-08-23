@@ -156,11 +156,14 @@ def test_rich_report_shows_model_hit_percentage_inside_cache_column():
     report = aggregate([UsageRow("p", "m", "", 10, 1_234, 5_678, 9, 2, 0.0, 1_000)])
     for width in (NON_TTY_WIDTH, 200):
         out = _capture(report, width)
-        assert "Cache Read" not in out
-        assert "Cache Write" not in out
-        assert "Cache Hit" not in out
+        # The per-model table keeps a single CacheR column; its hit percentage
+        # counts cache writes in the denominator (writes were not hits).
+        assert "CacheR" in out
         assert fmt_full(1_234) in out
-        assert "1,234 (99.2%)" in out
+        assert "1,234 (17.8%)" in out
+        # Totals expose cache writes so the listed components add up.
+        assert "Cache Write" in out
+        assert fmt_full(5_678) in out
 
 
 def test_rich_report_inlines_gray_variant_in_model_cell():
@@ -255,3 +258,22 @@ def test_make_console_tty_keeps_color_on(monkeypatch):
     monkeypatch.setattr(sys, "stdout", FakeTTY())
     console = make_console()
     assert console.no_color is False  # color stays on for a real TTY
+
+
+def test_rich_report_shows_recorded_cost_row():
+    report = aggregate(_rows())  # carries $1.50 of recorded cost
+    out = _capture(report, NON_TTY_WIDTH)
+    assert "Recorded cost" in out
+    assert "$1.50" in out
+
+
+def test_rich_report_title_says_retained():
+    out = _capture(aggregate(_rows()), NON_TTY_WIDTH)
+    assert "Retained" in out
+    assert "All Time" not in out
+
+
+def test_cache_write_row_hidden_when_zero():
+    report = aggregate(_rows())  # no cache writes in the fixture
+    out = _capture(report, NON_TTY_WIDTH)
+    assert "Cache Write" not in out
