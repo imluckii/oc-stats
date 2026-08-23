@@ -1,30 +1,62 @@
 # oc-stats
 
-Minimal all-time usage stats for OpenCode.
+Minimal retained-usage stats for OpenCode.
 
 ```bash
 pipx install git+https://github.com/imluckii/oc-stats.git
 oc-stats
 ```
 
-`oc-stats` reads assistant-message usage from the local OpenCode database and
-groups tokens by provider, model, and variant. Cost is estimated from current
-standard first-party API list prices; subscription charges may differ.
+`oc-stats` reads usage from the local OpenCode databases and groups tokens by
+provider, model, and variant. Cost is estimated from current standard
+first-party API list prices; subscription charges may differ.
 
 ```bash
 oc-stats          # Rich terminal report
 oc-stats --json   # machine-readable output
 oc-stats tui      # interactive TUI (needs the tui extra)
 oc-stats --db "C:\Users\Anchit\.local\share\opencode\opencode.db"
+oc-stats --db PATH tui   # --db is global and must precede the subcommand
 ```
 
-All discovered databases are merged automatically. Repeating `--db` merges
-explicit paths; messages copied between databases are deduplicated by ID.
+All discovered databases are merged automatically — every `opencode*.db`
+directly under the data root (channel databases like `opencode-beta.db`
+included; `.bak` files and snapshot folders are ignored). Repeating `--db`
+merges explicit paths; messages copied between databases are deduplicated by
+ID.
 
-Requires Python 3.10+. V1 and V2 database schemas are supported; service fallback
-requires OpenCode V2 (`opencode2` or `opencode`) on `PATH`.
-Database access is read-only. If no local database exists, the tool falls back to
-read-only requests through OpenCode's built-in `api` command.
+Requires Python 3.10+. V1 and V2 database schemas are supported, including
+mixed databases that carry both tables; service fallback requires OpenCode V2
+(`opencode2` or `opencode`) on `PATH`. Database access is read-only. If no
+local database exists, the tool falls back to read-only requests through
+OpenCode's built-in `api` command.
+
+## What is counted
+
+Assistant messages provide the per-model detail, and OpenCode's per-session
+usage ledger keeps the totals honest:
+
+- **Sub-agents count.** Child sessions (`parentID`) are real separately-billed
+  model calls and are included like any other session.
+- **Fork copies don't count.** OpenCode forks copy the parent transcript into
+  the fork with fresh message IDs and a zeroed usage ledger. Those rows are
+  context, not new calls, and are excluded (a copied row always predates the
+  fork's creation).
+- **Internal usage is reconciled.** Title generation, compaction, and requests
+  removed by a committed revert are added to the session ledger without a
+  retained assistant message. The positive difference appears as one
+  `(unattributed)` / `(internal usage)` row per session, carrying the cost
+  OpenCode recorded for it.
+- **Deleted sessions are gone.** OpenCode cascades session deletion, so every
+  number is *retained* usage, not all-time usage.
+- **Failed turns with recorded tokens count; turns without a token object
+  count as unaccounted** (they mark the estimate incomplete instead of
+  silently pricing at $0).
+
+Two costs are reported: **recorded cost** (what OpenCode billed at request
+time, summed from its own data) and **estimated cost** (today's list prices
+from the bundled catalog). They differ by design — subscriptions and gateways
+record $0 or their own rates.
 
 ## TUI
 
@@ -53,7 +85,7 @@ Keys:
 
 Preferences (active tab, sort, number format, refresh interval) persist to
 `~/.config/oc-usage/tui.toml`. Day/hour grouping uses IST by default; set
-`OC_STATS_TZ=UTC` to override.
+`OC_STATS_TZ` to any IANA zone name (or `UTC`) to override.
 
 ## Prices
 
