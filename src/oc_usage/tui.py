@@ -44,6 +44,11 @@ def fmt_hour(hour: int) -> str:
     return f"{hour:02d}:00"
 
 
+def est_cost(bucket: Bucket) -> str:
+    """Money label for the estimate, or ``n/a`` when nothing could be priced."""
+    return money(bucket.estimated_cost) if bucket.priced_turns else "n/a"
+
+
 class TotalsBlock(Static):
     def on_mount(self) -> None:
         self.set_interval(0.5, self.refresh)
@@ -84,33 +89,36 @@ def _totals_renderable(totals: Bucket, source: str, app: OcStatsApp) -> Table:
             (f"reasoning {fmt_full(totals.reasoning)}", "magenta"),
         ),
     )
-    grid.add_row(
-        label("cost"),
-        Text.assemble(
-            (money(totals.estimated_cost), "bold yellow"),
-            "   ",
-            ("cache hit", "dim"),
-            (f" {fmt_pct(rate)}", rate_style),
-            "   ",
-            ("turns", "dim"),
-            f" {fmt_full(totals.turns)}",
-            "   ",
-            ("avg/day", "dim"),
-            f" {fmt_compact(per_day)}",
-        ),
+    cost_line = Text.assemble(
+        (f"est {est_cost(totals)}", "bold yellow" if totals.priced_turns else "dim"),
+        "   ",
+        ("cache hit", "dim"),
+        (f" {fmt_pct(rate)}", rate_style),
+        "   ",
+        ("turns", "dim"),
+        f" {fmt_full(totals.turns)}",
+        "   ",
+        ("avg/day", "dim"),
+        f" {fmt_compact(per_day)}",
     )
+    if totals.recorded_cost:
+        cost_line.append("   ")
+        cost_line.append("recorded", "dim")
+        cost_line.append(f" {money(totals.recorded_cost)}", "cyan")
+    grid.add_row(label("cost"), cost_line)
     grid.add_row(label("source"), Text(source, style="dim"))
     return grid
 
 
 def _totals_text(totals: Bucket, source: str) -> str:
     rate = cache_hit_rate(totals)
+    recorded = f"   recorded  {money(totals.recorded_cost)}" if totals.recorded_cost else ""
     return (
         f"tokens  {fmt_full(totals.total)}  "
         f"(in {fmt_full(totals.input)} · cache r {fmt_full(totals.cache_read)} · "
         f"cache w {fmt_full(totals.cache_write)} · out {fmt_full(totals.output)} · "
         f"reasoning {fmt_full(totals.reasoning)})\n"
-        f"cost    {money(totals.estimated_cost)}   "
+        f"cost    est {est_cost(totals)}{recorded}   "
         f"cache hit  {fmt_pct(rate)}   turns  {fmt_full(totals.turns)}\n"
         f"source  {source}"
     )
@@ -187,7 +195,7 @@ def _stats_renderable(report: Report | None, rows: list[UsageRow], tz_name: str)
                 (" · ", "dim"),
                 f"{fmt_pct(token_share):>6} tokens",
                 (" · ", "dim"),
-                (money(bucket.estimated_cost), "bold yellow"),
+                (est_cost(bucket), "bold yellow" if bucket.priced_turns else "dim"),
             ),
         )
     return grid
@@ -216,7 +224,10 @@ class CostChart(Static):
             share = bucket.estimated_cost / peak
             grid.add_row(
                 Text(day[5:], style="dim"),
-                Text(bar(share, cells=24) + f"  {money(bucket.estimated_cost)}", style="yellow"),
+                Text(
+                    bar(share, cells=24) + f"  {est_cost(bucket)}",
+                    style="yellow" if bucket.priced_turns else "dim",
+                ),
             )
         return grid
 
@@ -323,7 +334,9 @@ class OcStatsApp(App):
         return filter_range(self.rows, self.range, tz=report_tz())
 
     def oc_stats_tz_name(self) -> str:
-        return report_tz().tzname(None) or "IST"
+        from oc_usage.timegroups import tz_label
+
+        return tz_label()
 
     def oc_stats_span_days(self) -> int:
         """Days between first and last visible row, at least 1."""
@@ -411,7 +424,7 @@ class OcStatsApp(App):
         overview.clear(columns=True)
         self._col(overview, "Model", "left", "bold")
         self._col(overview, "Provider", "left", "dim")
-        self._col(overview, "Cost", "right", "yellow")
+        self._col(overview, "Est cost", "right", "yellow")
         self._col(overview, "Share of cost", "left", "cyan")
         self._col(overview, "Tokens", "right", "cyan")
 
@@ -426,7 +439,7 @@ class OcStatsApp(App):
         self._col(models, "Output", "right", "")
         self._col(models, "Reasoning", "right", "")
         self._col(models, "Total", "right", "bold")
-        self._col(models, "Cost", "right", "yellow")
+        self._col(models, "Est cost", "right", "yellow")
         self._col(models, "Priced", "center", "")
 
         daily = self.query_one("#daily-table", DataTable)
@@ -438,7 +451,7 @@ class OcStatsApp(App):
         self._col(daily, "Output", "right", "")
         self._col(daily, "Reasoning", "right", "")
         self._col(daily, "Total", "right", "bold")
-        self._col(daily, "Cost", "right", "yellow")
+        self._col(daily, "Est cost", "right", "yellow")
         self._col(daily, "Turns", "right", "")
 
         hourly = self.query_one("#hourly-table", DataTable)
@@ -450,7 +463,7 @@ class OcStatsApp(App):
         self._col(hourly, "Output", "right", "")
         self._col(hourly, "Reasoning", "right", "")
         self._col(hourly, "Total", "right", "bold")
-        self._col(hourly, "Cost", "right", "yellow")
+        self._col(hourly, "Est cost", "right", "yellow")
         self._col(hourly, "Turns", "right", "")
 
     # ------------------------------------------------------------------
@@ -485,7 +498,7 @@ class OcStatsApp(App):
             table.add_row(
                 Text(model, style="bold"),
                 Text(provider, style="dim"),
-                Text(money(bucket.estimated_cost), style="yellow"),
+                Text(est_cost(bucket), style="yellow" if bucket.priced_turns else "dim"),
                 Text(bar(share, cells=10) + f" {fmt_pct(share)}", style="cyan"),
                 Text(self._num(bucket.total), style="cyan"),
             )
@@ -511,7 +524,10 @@ class OcStatsApp(App):
                 self._num(bucket.output),
                 self._num(bucket.reasoning),
                 Text(self._num(bucket.total), style="bold"),
-                Text(money(bucket.estimated_cost), style="yellow"),
+                Text(
+                    est_cost(bucket),
+                    style="yellow" if bucket.priced_turns else "dim",
+                ),
                 Text(
                     "yes" if bucket.estimate_complete else "partial",
                     style="green" if bucket.estimate_complete else "yellow",
@@ -532,7 +548,7 @@ class OcStatsApp(App):
                 self._num(bucket.output),
                 self._num(bucket.reasoning),
                 Text(self._num(bucket.total), style="bold"),
-                Text(money(bucket.estimated_cost), style="yellow"),
+                Text(est_cost(bucket), style="yellow" if bucket.priced_turns else "dim"),
                 str(bucket.turns),
             )
 
@@ -552,7 +568,7 @@ class OcStatsApp(App):
                 self._num(bucket.output),
                 self._num(bucket.reasoning),
                 Text(self._num(bucket.total), style="bold"),
-                Text(money(bucket.estimated_cost), style="yellow"),
+                Text(est_cost(bucket), style="yellow" if bucket.priced_turns else "dim"),
                 str(bucket.turns),
             )
 
@@ -655,22 +671,41 @@ class OcStatsApp(App):
         if self.report is None:
             return
         visible = self._visible_report()
+
+        def pack(bucket: Bucket) -> dict[str, object]:
+            return {
+                "turns": bucket.turns,
+                "input": bucket.input,
+                "cache_read": bucket.cache_read,
+                "cache_write": bucket.cache_write,
+                "output": bucket.output,
+                "reasoning": bucket.reasoning,
+                "total": bucket.total,
+                "recorded_cost": round(bucket.recorded_cost, 6),
+                "estimated_cost": round(bucket.estimated_cost, 6) if bucket.priced_turns else None,
+                "estimate_complete": bucket.estimate_complete,
+            }
+
+        by_model: dict[str, dict[str, dict[str, dict[str, object]]]] = {}
+        for (provider, model, variant), bucket in visible.by_model.items():
+            by_model.setdefault(provider, {}).setdefault(model, {})[variant] = pack(bucket)
+
         payload = {
+            "source": self.report.source,
+            "timezone": self.oc_stats_tz_name(),
             "range": self.range.value,
             "sort": self.sort,
-            "totals": visible.totals.__dict__,
-            "by_provider": {name: bucket.__dict__ for name, bucket in visible.by_provider.items()},
-            "by_model": {
-                "/".join(key): bucket.__dict__ for key, bucket in visible.by_model.items()
-            },
+            "totals": pack(visible.totals),
+            "by_provider": {name: pack(bucket) for name, bucket in visible.by_provider.items()},
+            "by_model": by_model,
             "daily": {
-                day: bucket.__dict__
+                day: pack(bucket)
                 for day, bucket in daily_buckets(
                     self.oc_stats_visible_rows(), tz=report_tz()
                 ).items()
             },
             "hourly": {
-                str(hour): bucket.__dict__
+                str(hour): pack(bucket)
                 for hour, bucket in hourly_buckets(
                     self.oc_stats_visible_rows(), tz=report_tz()
                 ).items()
