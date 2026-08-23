@@ -178,3 +178,75 @@ def test_model_key_includes_variant():
 def test_cache_write_is_tracked_separately():
     report = aggregate([_row(cache_write=250), _row(cache_write=10)])
     assert report.totals.cache_write == 260
+
+
+def test_recorded_cost_accumulates_alongside_estimate():
+    report = aggregate(
+        [
+            _row(provider="openai", model="gpt-4o", cost=0.5),
+            _row(provider="openai", model="gpt-4o", cost=1.25),
+        ]
+    )
+    assert report.totals.recorded_cost == 1.75
+    assert report.by_provider["openai"].recorded_cost == 1.75
+
+
+def test_turn_without_tokens_is_not_priced_even_for_a_priced_model():
+    # Zero components from a missing token object mean "unaccounted", not free.
+    report = aggregate([_row(provider="openai", model="gpt-4o", tokens_known=False)])
+    assert report.totals.turns == 1
+    assert report.totals.priced_turns == 0
+    assert report.totals.estimate_complete is False
+
+
+def test_reconcile_ledger_reports_internal_usage():
+    from oc_usage.models import INTERNAL_USAGE, UNATTRIBUTED, SessionLedger, reconcile_ledger
+
+    ledger = SessionLedger(
+        input=100,
+        cache_read=40,
+        cache_write=0,
+        output=10,
+        reasoning=5,
+        cost=0.30,
+        time_created=T0,
+    )
+    row = reconcile_ledger((40, 0, 0, 4, 1, 0.05), ledger)
+    assert row is not None
+    assert (row.provider, row.model) == (UNATTRIBUTED, INTERNAL_USAGE)
+    assert (row.input, row.cache_read, row.output, row.reasoning) == (60, 40, 6, 4)
+    assert row.cost == 0.25
+    assert row.time_created == T0
+    assert row.tokens_known is True
+
+
+def test_reconcile_ledger_clamps_messages_exceeding_the_ledger():
+    # Legacy sessions can carry messages without a populated ledger; the
+    # negative difference must not subtract from totals.
+    from oc_usage.models import SessionLedger, reconcile_ledger
+
+    ledger = SessionLedger(
+        input=0, cache_read=0, cache_write=0, output=0, reasoning=0, cost=0.0, time_created=T0
+    )
+    assert reconcile_ledger((100, 0, 0, 10, 0, 0.0), ledger) is None
+
+
+def test_reconcile_ledger_none_when_messages_cover_the_ledger():
+    from oc_usage.models import SessionLedger, reconcile_ledger
+
+    ledger = SessionLedger(
+        input=10, cache_read=5, cache_write=0, output=2, reasoning=1, cost=0.02, time_created=T0
+    )
+    assert reconcile_ledger((10, 5, 0, 2, 1, 0.02), ledger) is None
+
+
+def test_reconcile_ledger_emits_cost_only_difference():
+    from oc_usage.models import SessionLedger, reconcile_ledger
+
+    ledger = SessionLedger(
+        input=10, cache_read=0, cache_write=0, output=2, reasoning=0, cost=0.9, time_created=T0
+    )
+    row = reconcile_ledger((10, 0, 0, 2, 0, 0.1), ledger)
+    assert row is not None
+    assert row.total == 0
+    assert row.cost == 0.8
