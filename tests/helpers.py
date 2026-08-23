@@ -79,7 +79,7 @@ class FakeService:
 
     def __init__(
         self,
-        sessions: Iterable[str],
+        sessions: Iterable[str | dict[str, Any]],
         messages_by_session: dict[str, list[dict[str, Any]]],
         *,
         page_size: int = 1000,
@@ -122,7 +122,10 @@ class FakeService:
 
     def _page(self, path: str, query: dict[str, list[str]]) -> dict[str, Any]:
         if path == "/api/session":
-            items = [{"id": sid} for sid in self.sessions]
+            items = [
+                session if isinstance(session, dict) else {"id": session}
+                for session in self.sessions
+            ]
         else:
             # /api/session/{id}/message — the id is URL-encoded in the path.
             prefix = "/api/session/"

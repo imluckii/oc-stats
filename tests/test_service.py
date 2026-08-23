@@ -507,3 +507,59 @@ def test_make_session_helper_passes_extra_fields():
     session = make_session("s1", title="anything", cost=0)
     assert session["id"] == "s1"
     assert session["title"] == "anything"
+
+
+def test_session_ledger_difference_becomes_unattributed_row():
+    session = make_session(
+        "s1",
+        time={"created": T0},
+        tokens={"input": 20, "output": 5, "reasoning": 0, "cache": {"read": 0, "write": 0}},
+        cost=0.5,
+    )
+    messages = [assistant_message("m1", ("openai", "gpt-4o", "", 10, 0, 0, 5, 0, 0.1, T0))]
+    fake = FakeService([session], {"s1": messages})
+    rows = list(ServiceClient(executable="opencode2", runner=fake).rows())
+    assert len(rows) == 2
+    internal = rows[1]
+    assert internal.provider == "(unattributed)"
+    assert internal.input == 10
+    assert internal.cost == 0.4
+    assert internal.time_created == T0
+
+
+def test_session_ledger_covered_by_messages_adds_no_row():
+    session = make_session(
+        "s1",
+        time={"created": T0},
+        tokens={"input": 10, "output": 5, "reasoning": 0, "cache": {"read": 0, "write": 0}},
+        cost=0.1,
+    )
+    messages = [assistant_message("m1", ("openai", "gpt-4o", "", 10, 0, 0, 5, 0, 0.1, T0))]
+    fake = FakeService([session], {"s1": messages})
+    rows = list(ServiceClient(executable="opencode2", runner=fake).rows())
+    assert len(rows) == 1
+
+
+def test_fork_copied_history_is_skipped():
+    fork = make_session(
+        "sf",
+        fork={"sessionID": "sp", "boundary": {"messageID": "x", "type": "before"}},
+        time={"created": T0 + 10_000},
+    )
+    messages = {
+        "sf": [
+            assistant_message("copy", ("openai", "gpt-4o", "", 100, 0, 0, 10, 0, 0.0, T0)),
+            assistant_message("own", ("openai", "gpt-4o", "", 5, 0, 0, 1, 0, 0.0, T0 + 20_000)),
+        ]
+    }
+    fake = FakeService([fork], messages)
+    rows = list(ServiceClient(executable="opencode2", runner=fake).rows())
+    assert [row.input for row in rows] == [5]
+
+
+def test_missing_tokens_marks_row_not_known():
+    message = assistant_message("a0", ("openai", "gpt-4o", "", 1, 0, 0, 1, 0, 0.0, T0))
+    del message["tokens"]
+    fake = FakeService(["s1"], {"s1": [message]})
+    rows = list(ServiceClient(executable="opencode2", runner=fake).rows())
+    assert rows[0].tokens_known is False

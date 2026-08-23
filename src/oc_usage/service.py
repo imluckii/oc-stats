@@ -15,7 +15,10 @@ opaque ``cursor`` returned as ``cursor.next`` (``cursor`` must not be combined
 with ``order``). We request ascending order and walk ``cursor.next`` until it is
 absent. Only ``type == "assistant"`` messages are counted; each carries its own
 ``model`` / ``tokens`` / ``cost`` / ``time`` record, so sessions that switch
-model, provider, or variant mid-stream aggregate exactly.
+model, provider, or variant mid-stream aggregate exactly. Each session object
+also carries OpenCode's aggregate usage ledger, which is reconciled against the
+counted messages so title generation, compaction, and reverted requests are not
+lost (see :func:`ServiceClient.rows`).
 
 Subprocess invocation always uses an argv list (never ``shell=True``).
 """
@@ -32,7 +35,7 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from typing import Any
 
-from oc_usage.models import UsageRow
+from oc_usage.models import SessionLedger, UsageRow, reconcile_ledger
 
 # Executable lookup order. OpenCode V2 ships as ``opencode2``; ``opencode`` is a
 # secondary fallback (it may be a V2 install or a legacy V1 binary, which the
@@ -298,23 +301,94 @@ class ServiceClient:
     # ── row production ───────────────────────────────────────────────────────
 
     def rows(self) -> Iterator[UsageRow]:
-        """Yield normalized assistant-message rows from the running service."""
+        """Yield normalized usage rows from the running service.
+
+        Assistant messages provide the per-model detail. History a fork
+        copied from its parent is skipped (it predates the fork and was
+        already counted there), and each session's ledger difference — title
+        generation, compaction, or reverted requests — is added back as one
+        ``(unattributed)`` internal-usage row so totals match OpenCode.
+        """
         self._ensure_compatible()
-        found_assistant = False
+        found_usage = False
         for session in self.list_sessions():
             session_id = session["id"]
+            fork_started = _fork_started_at(session)
+            ledger = _session_ledger(session)
+            kept = [0, 0, 0, 0, 0, 0.0]
             for message in self.list_messages(session_id):
                 if message.get("type") != "assistant":
                     continue
-                found_assistant = True
-                yield _assistant_row(message)
-        if not found_assistant:
+                row = _assistant_row(message)
+                if fork_started and row.time_created and row.time_created < fork_started:
+                    continue
+                found_usage = True
+                kept[0] += row.input
+                kept[1] += row.cache_read
+                kept[2] += row.cache_write
+                kept[3] += row.output
+                kept[4] += row.reasoning
+                kept[5] += row.cost
+                yield row
+            if ledger is not None:
+                internal = reconcile_ledger(kept, ledger)
+                if internal is not None:
+                    found_usage = True
+                    yield internal
+        if not found_usage:
             raise NoUsageDataError(
                 "No assistant messages found. Run a session in OpenCode and retry."
             )
 
 
 # ── response/message helpers ──────────────────────────────────────────────────
+
+
+def _fork_started_at(session: dict[str, Any]) -> int | None:
+    """Creation time of a fork session, or ``None`` for regular sessions."""
+    fork = session.get("fork")
+    if not isinstance(fork, dict):
+        return None
+    time = session.get("time")
+    if not isinstance(time, dict):
+        return None
+    created = time.get("created")
+    if isinstance(created, bool) or not isinstance(created, (int, float)):
+        return None
+    return int(created)
+
+
+def _session_ledger(session: dict[str, Any]) -> SessionLedger | None:
+    """Normalize the session's aggregate usage record, when the API sent one."""
+    tokens = session.get("tokens")
+    if not isinstance(tokens, dict):
+        return None
+    cache = tokens.get("cache")
+    cache = cache if isinstance(cache, dict) else {}
+    cost = session.get("cost", 0.0)
+    if isinstance(cost, bool) or not isinstance(cost, (int, float)) or not math.isfinite(cost):
+        cost = 0.0
+    time = session.get("time")
+    created = 0
+    if isinstance(time, dict) and isinstance(time.get("created"), (int, float)):
+        created = int(time["created"])
+    return SessionLedger(
+        input=_as_int(tokens.get("input")),
+        cache_read=_as_int(cache.get("read")),
+        cache_write=_as_int(cache.get("write")),
+        output=_as_int(tokens.get("output")),
+        reasoning=_as_int(tokens.get("reasoning")),
+        cost=max(0.0, float(cost)),
+        time_created=max(0, created),
+    )
+
+
+def _as_int(value) -> int:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return 0
+    if not math.isfinite(value):
+        return 0
+    return max(0, int(value))
 
 
 def _paged(payload: dict[str, Any], path: str) -> tuple[list[Any], str | None]:
@@ -354,6 +428,7 @@ def _assistant_row(message: dict[str, Any]) -> UsageRow:
         token_values = dict.fromkeys(
             ("input", "output", "reasoning", "cache_read", "cache_write"), 0
         )
+        tokens_known = False
     elif isinstance(tokens, dict):
         cache = tokens.get("cache")
         if not isinstance(cache, dict):
@@ -365,6 +440,7 @@ def _assistant_row(message: dict[str, Any]) -> UsageRow:
             "cache_read": _number_as_int(cache, "read", "assistant tokens.cache"),
             "cache_write": _number_as_int(cache, "write", "assistant tokens.cache"),
         }
+        tokens_known = True
     else:
         raise ServiceSchemaError("OpenCode assistant tokens must be an object.")
 
@@ -393,6 +469,7 @@ def _assistant_row(message: dict[str, Any]) -> UsageRow:
         reasoning=token_values["reasoning"],
         cost=float(cost),
         time_created=created,
+        tokens_known=tokens_known,
     )
 
 
