@@ -16,7 +16,8 @@ Matching order (case-insensitive, first hit wins):
     3. the same two lookups with dated release suffixes (``-20241120``,
        ``-2026-04``) stripped from the model name
     4. the bare model name, but only when every provider in the merged list
-       prices that model identically (ambiguity ⇒ no estimate)
+       prices that model identically (ambiguity ⇒ no estimate; entries that
+       agree on input/output are merged by majority vote on the cache tiers)
 
 Models with a ``[long_context]`` table bill requests whose cached+uncached
 input exceeds ``threshold`` tokens at the higher tier.
@@ -28,14 +29,13 @@ import math
 import os
 import re
 import sys
+from collections.abc import Callable, Hashable, Iterable
 from dataclasses import dataclass
 from importlib import resources
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from oc_usage.models import UsageRow
 
 try:  # Python 3.11+
@@ -126,6 +126,33 @@ def _aliases(raw: dict, provider: str, model: str) -> list[str]:
     return [a.strip().lower() for a in aliases if a.strip()]
 
 
+def _consensus_price(options: dict[ModelPrice, int]) -> ModelPrice | None:
+    """Merge same-model entries that agree on what actually matters.
+
+    Resellers resync at different times, so cache tiers drift a step while
+    input/output (the bulk of every bill) stay in lockstep — e.g. a model
+    newly listed under its gateway name (``anthropic/claude-opus-5``) is
+    quoted identically everywhere except one stale cache_write. When every
+    entry agrees on input/output, vote each remaining field weighted by how
+    many providers back it instead of refusing to estimate; a lone outlier
+    loses to the consensus.
+    """
+    if len({(p.rates.input, p.rates.output) for p in options}) != 1:
+        return None
+
+    def majority(field: Callable[[ModelPrice], Hashable]) -> Hashable:
+        counts: dict[Hashable, int] = {}
+        for price, weight in options.items():
+            key = field(price)
+            counts[key] = counts.get(key, 0) + weight
+        best = max(counts.values())
+        return next(k for k, v in counts.items() if v == best)
+
+    rates = majority(lambda p: p.rates)
+    long_context = majority(lambda p: p.long_context)
+    return ModelPrice(rates, long_context)  # type: ignore[arg-type]
+
+
 class Pricing:
     """A merged, lookup-ready price table."""
 
@@ -140,10 +167,11 @@ class Pricing:
                 bucket[key] = price
                 for alias in _aliases(raw, provider, model):
                     bucket[alias] = price
-        self._global: dict[str, set[ModelPrice]] = {}
+        self._global: dict[str, dict[ModelPrice, int]] = {}
         for models in self._by_provider.values():
             for model, price in models.items():
-                self._global.setdefault(model, set()).add(price)
+                bucket = self._global.setdefault(model, {})
+                bucket[price] = bucket.get(price, 0) + 1
 
     def _provider_candidates(self, provider: str) -> list[str]:
         """Provider buckets to try, longest first.
@@ -184,8 +212,13 @@ class Pricing:
                         if price is not None:
                             return price
             options = self._global.get(candidate)
-            if options is not None and len(options) == 1:
+            if options is None:
+                continue
+            if len(options) == 1:
                 return next(iter(options))
+            consensus = _consensus_price(options)
+            if consensus is not None:
+                return consensus
         return None
 
     def estimate(self, row: UsageRow) -> float | None:

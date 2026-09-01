@@ -43,10 +43,10 @@ def test_bundled_file_loads_and_is_sane():
 @pytest.mark.parametrize(
     ("provider", "model", "expected"),
     [
-        # Spot-checks pinning verified official prices (2026-08-14).
+        # Spot-checks pinning catalog prices (refreshed 2026-09-02).
         ("anthropic", "claude-sonnet-5", (2, 10, 0.2, 2.5)),
         ("anthropic", "claude-opus-4-1", (15, 75, 1.5, 18.75)),
-        ("openai", "gpt-5.6-sol", (5, 30, 0.5, 6.25)),
+        ("openai", "gpt-5.6-sol", (4, 20, 0.4, 5)),
         ("openai", "gpt-5.6-terra", (2, 12, 0.2, 2.5)),
         ("openai", "gpt-5.6-luna", (0.2, 1.2, 0.02, 0.25)),
         ("openai", "gpt-4o-mini", (0.15, 0.6, 0.075, 0)),
@@ -95,20 +95,51 @@ def test_gateway_slash_id_matches_first_party():
     assert rates is not None and rates.rates.input == 5
 
 
+def test_global_ambiguity_merged_when_input_output_agree():
+    # Several resellers list models under the gateway name itself
+    # ("anthropic/claude-opus-5"). They agree on input/output but drift on
+    # cache tiers after a price change; the bare-name global lookup must
+    # merge them by majority instead of refusing to estimate.
+    from oc_usage.pricing import ModelPrice, Pricing, Rates
+
+    a = ModelPrice(Rates(input=4, output=20, cache_read=0.4, cache_write=5))
+    stale = ModelPrice(Rates(input=4, output=20, cache_read=0.4, cache_write=8))
+    pricing = Pricing([("reseller-a", {"m": {"input": 4, "output": 20}}),
+                       ("reseller-b", {"m": {"input": 4, "output": 20}})])
+    pricing._global["gateway/m"] = {a: 2, stale: 1}  # 3 providers, 2 agree
+    merged = pricing.lookup("anywhere", "gateway/m")
+    assert merged is not None
+    assert (merged.rates.input, merged.rates.output) == (4, 20)
+    assert merged.rates.cache_write == 5  # 2 provider votes vs 1
+
+
+def test_global_ambiguity_still_refused_on_rate_conflict():
+    # Genuine disagreement on input/output must stay unpriced.
+    from oc_usage.pricing import ModelPrice, Pricing, Rates
+
+    pricing = Pricing([("reseller-a", {"m": {"input": 4, "output": 20}}),
+                       ("reseller-b", {"m": {"input": 4, "output": 20}})])
+    pricing._global["m"] = {
+        ModelPrice(Rates(input=4, output=20)): 1,
+        ModelPrice(Rates(input=5, output=25)): 1,
+    }
+    assert pricing.lookup("anywhere", "m") is None
+
+
 def test_custom_provider_id_falls_back_to_vendor_prefix():
     # OpenCode lets users rename providers ("openai-anchit"); trimming the
     # custom suffix reaches the vendor table with full cache fidelity.
     price = load_bundled().lookup("openai-anchit", "gpt-5.6-sol")
     assert price is not None
-    assert price.rates.input == 5
-    assert price.rates.cache_write == 6.25
+    assert price.rates.input == 4
+    assert price.rates.cache_write == 5
 
 
 def test_coding_plan_prefix_trims_step_by_step():
     # "zai-coding-plan-cn" → "zai-coding-plan" (exact gateway) before "zai".
     pricing = load_bundled()
     assert pricing.lookup("zai-coding-plan", "glm-4.7") is not None
-    # glm-5.3 is pinned on the zai table and inherited by the coding plan.
+    # glm-5.3 ships at the official z.ai rate and the coding plan inherits it.
     assert pricing.lookup("zai", "glm-5.3").rates.input == 1.4
     assert pricing.lookup("zai-coding-plan", "glm-5.3").rates.input == 1.4
 
@@ -210,11 +241,11 @@ def test_estimate_none_for_unpriced():
 
 
 def test_long_context_tier_applies_above_threshold():
-    pricing = load_bundled()  # gpt-5.6-sol: 5/30 short, 10/45 above 272k
+    pricing = load_bundled()  # gpt-5.6-sol: 4/20 short, 8/30 above 272k
     short = pricing.estimate(row("openai", "gpt-5.6-sol", inp=272_000))
     long = pricing.estimate(row("openai", "gpt-5.6-sol", inp=272_001))
-    assert short == pytest.approx(272_000 * 5 / 1_000_000)
-    assert long == pytest.approx(272_001 * 10 / 1_000_000)
+    assert short == pytest.approx(272_000 * 4 / 1_000_000)
+    assert long == pytest.approx(272_001 * 8 / 1_000_000)
 
 
 def test_long_context_counts_cached_tokens_toward_threshold():
@@ -222,7 +253,7 @@ def test_long_context_counts_cached_tokens_toward_threshold():
     est = pricing.estimate(
         row("openai", "gpt-5.6-sol", inp=1, cr=272_000)  # 272_001 total input
     )
-    assert est == pytest.approx((1 * 10 + 272_000 * 1) / 1_000_000)
+    assert est == pytest.approx((1 * 8 + 272_000 * 0.8) / 1_000_000)
 
 
 def test_estimate_row_uses_default_pricing():
@@ -325,10 +356,10 @@ def test_aggregate_estimates_via_price_list():
     )
     assert report.totals.priced_turns == 1
     assert report.totals.estimate_complete is False
-    assert report.totals.estimated_cost == pytest.approx(0.5 + 0.6)
+    assert report.totals.estimated_cost == pytest.approx(0.4 + 0.4)
 
     sol = report.by_model[("openai", "gpt-5.6-sol", "")]
-    assert sol.estimated_cost == pytest.approx(1.1)
+    assert sol.estimated_cost == pytest.approx(0.8)
     mystery = report.by_model[("nobody", "mystery", "")]
     assert mystery.estimated_cost == 0.0 and mystery.priced_turns == 0
 

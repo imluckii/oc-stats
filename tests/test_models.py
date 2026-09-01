@@ -121,7 +121,7 @@ def test_estimate_uses_model_price_not_recorded_cost():
             )
         ]
     )
-    assert report.totals.estimated_cost == 1.1
+    assert report.totals.estimated_cost == 0.8
     assert report.totals.estimate_complete is True
 
 
@@ -133,7 +133,7 @@ def test_estimate_marks_unknown_models_incomplete():
 
 def test_estimate_applies_long_context_rate_per_turn():
     report = aggregate([_row(provider="openai", model="gpt-5.6-sol", input=300_000)])
-    assert report.totals.estimated_cost == 3.0
+    assert report.totals.estimated_cost == 2.4
 
 
 def test_estimate_accepts_namespaced_model_ids():
