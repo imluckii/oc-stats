@@ -104,8 +104,12 @@ def test_global_ambiguity_merged_when_input_output_agree():
 
     a = ModelPrice(Rates(input=4, output=20, cache_read=0.4, cache_write=5))
     stale = ModelPrice(Rates(input=4, output=20, cache_read=0.4, cache_write=8))
-    pricing = Pricing([("reseller-a", {"m": {"input": 4, "output": 20}}),
-                       ("reseller-b", {"m": {"input": 4, "output": 20}})])
+    pricing = Pricing(
+        [
+            ("reseller-a", {"m": {"input": 4, "output": 20}}),
+            ("reseller-b", {"m": {"input": 4, "output": 20}}),
+        ]
+    )
     pricing._global["gateway/m"] = {a: 2, stale: 1}  # 3 providers, 2 agree
     merged = pricing.lookup("anywhere", "gateway/m")
     assert merged is not None
@@ -117,8 +121,12 @@ def test_global_ambiguity_still_refused_on_rate_conflict():
     # Genuine disagreement on input/output must stay unpriced.
     from oc_usage.pricing import ModelPrice, Pricing, Rates
 
-    pricing = Pricing([("reseller-a", {"m": {"input": 4, "output": 20}}),
-                       ("reseller-b", {"m": {"input": 4, "output": 20}})])
+    pricing = Pricing(
+        [
+            ("reseller-a", {"m": {"input": 4, "output": 20}}),
+            ("reseller-b", {"m": {"input": 4, "output": 20}}),
+        ]
+    )
     pricing._global["m"] = {
         ModelPrice(Rates(input=4, output=20)): 1,
         ModelPrice(Rates(input=5, output=25)): 1,
