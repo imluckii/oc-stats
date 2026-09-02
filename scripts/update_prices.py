@@ -111,14 +111,8 @@ OVERRIDES: dict[tuple[str, str], dict] = {
             "cache_write": 1,
         },
     },
-    # GLM-5.3 released 2026-08-14: Z.AI's pricing page does not list it yet;
-    # pinned from OpenCode Go's published listing (same rates as GLM-5.2).
-    # Re-check docs.z.ai and drop this override once they publish it.
-    ("zai", "glm-5.3"): {
-        "input": 1.4,
-        "output": 4.4,
-        "cache_read": 0.26,
-    },
+    # GLM-5.3 released 2026-08-14 with models.dev listing $0; now listed at
+    # the official rate (docs.z.ai, verified 2026-09-02) — override dropped.
     # Cursor serves xAI's grok-4.5 under its own variant name and publishes no
     # token pricing (subscription product). Priced at the underlying model's
     # API rate (docs.x.ai, checked 2026-08-14): $2 in / $0.30 cached / $6 out.
