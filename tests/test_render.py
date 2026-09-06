@@ -166,6 +166,15 @@ def test_rich_report_shows_model_hit_percentage_inside_cache_column():
         assert fmt_full(5_678) in out
 
 
+def test_rich_report_shows_provider_hit_percentage_inside_cache_column():
+    # Same cell, same math as the per-model table: with one provider and one
+    # model the composite cell must appear exactly twice (both tables).
+    report = aggregate([UsageRow("p", "m", "", 10, 1_234, 5_678, 9, 2, 0.0, 1_000)])
+    out = _capture(report, NON_TTY_WIDTH)
+    assert "By Provider" in out
+    assert out.count("1,234 (17.8%)") == 2
+
+
 def test_rich_report_inlines_gray_variant_in_model_cell():
     out = _capture(aggregate(_rows()), NON_TTY_WIDTH)
     assert "Variant" not in out
