@@ -331,6 +331,21 @@ def _widen_cost_column(table: Table, report: Report) -> None:
     table.columns[-1].min_width = needed
 
 
+def _cache_cell(bucket: Bucket, fmt_num) -> Text:
+    """Cache-read count with its hit rate, one right-aligned cell.
+
+    The hit rate counts cache writes in the denominator — a write was not a
+    hit. Used by both the provider and the per-model tables.
+    """
+    all_input = bucket.input + bucket.cache_read + bucket.cache_write
+    cache = Text(justify="right")
+    cache.append(fmt_num(bucket.cache_read), style="green")
+    cache.append(" (", style="dim")
+    cache.append(f"{pct(bucket.cache_read, all_input):.1f}%", style="dim")
+    cache.append(")", style="dim")
+    return cache
+
+
 def _build_providers(
     report: Report, colors: dict[str, str], fmt_num, *, ascii: bool = False
 ) -> Table:
@@ -359,7 +374,7 @@ def _build_providers(
             Text(_display(name, ascii), style=f"bold {color}"),
             Text(fmt_num(bucket.turns), justify="right"),
             Text(fmt_num(bucket.input), justify="right"),
-            Text(fmt_num(bucket.cache_read), justify="right", style="green"),
+            _cache_cell(bucket, fmt_num),
             Text(fmt_num(bucket.output), justify="right"),
             Text(fmt_num(bucket.reasoning), justify="right"),
             Text(fmt_num(bucket.total), justify="right", style="bold"),
@@ -413,14 +428,7 @@ def _build_models(
                 model_name.append(" · " if not ascii else " - ", style="dim")
                 model_name.append(_display(variant, ascii), style="dim italic")
 
-            cache = Text(justify="right")
-            cache.append(fmt_num(bucket.cache_read), style="green")
-            cache.append(" (", style="dim")
-            cache.append(
-                f"{pct(bucket.cache_read, bucket.input + bucket.cache_read + bucket.cache_write):.1f}%",
-                style="dim",
-            )
-            cache.append(")", style="dim")
+            cache = _cache_cell(bucket, fmt_num)
             cells = [
                 model_name,
                 Text(fmt_num(bucket.turns), justify="right"),
