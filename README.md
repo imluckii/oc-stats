@@ -58,6 +58,22 @@ time, summed from its own data) and **estimated cost** (today's list prices
 from the bundled catalog). They differ by design — subscriptions and gateways
 record $0 or their own rates.
 
+## Hiding providers
+
+Providers you don't want in the report can be dropped entirely — tables,
+totals, cost estimates, and the TUI's day/hour groupings are all recomputed
+from what remains. List their ids in `~/.config/oc-usage/config.toml`:
+
+```toml
+hidden_providers = ["zai", "openrouter"]
+```
+
+Ids match the report's Provider column, case-insensitively; the synthetic
+`(unknown)` and `(unattributed)` rows hide the same way. The header (and the
+JSON `source` field) notes how many providers were hidden. A config file that
+exists but is broken fails the run instead of silently showing everything; set
+`OC_STATS_CONFIG` to read it from somewhere else.
+
 ## TUI
 
 Install with the extra and run:

@@ -14,6 +14,7 @@ from contextlib import nullcontext
 from pathlib import Path
 
 from oc_usage import __version__
+from oc_usage.config import ConfigError, filter_hidden, load_settings
 from oc_usage.database import DatabaseError, discover_databases, load_databases
 from oc_usage.models import aggregate
 from oc_usage.pricing import PricingError
@@ -94,6 +95,8 @@ def load_rows(dbs: list[Path] | None):
 
     Returns ``(rows, source)``. Mirrors the data path used by the report
     mode: explicit --db paths, discovery otherwise, service fallback last.
+    Rows of providers hidden in the user config are dropped here, so the
+    report, the JSON payload, and the TUI all see the same filtered set.
     """
     explicit = dbs is not None
     databases = [path.expanduser() for path in dbs] if explicit else discover_databases()
@@ -107,6 +110,9 @@ def load_rows(dbs: list[Path] | None):
     else:
         rows = list(ServiceClient().rows())
         source = "OpenCode service"
+    rows, hidden = filter_hidden(rows, load_settings())
+    if hidden:
+        source += f" · {len(hidden)} provider{'s' if len(hidden) != 1 else ''} hidden"
     return rows, source
 
 
@@ -162,6 +168,9 @@ def main(argv: list[str] | None = None) -> int:
         _err(str(exc))
         return 1
     except DatabaseError as exc:
+        _err(str(exc))
+        return 1
+    except ConfigError as exc:
         _err(str(exc))
         return 1
 
