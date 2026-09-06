@@ -227,6 +227,53 @@ def test_legacy_console_encoding_automatically_uses_ascii(monkeypatch, capsys):
     assert all(ord(ch) < 128 for ch in out), repr([(c, ord(c)) for c in out if ord(c) >= 128])
 
 
+# ── hidden providers (user config) ────────────────────────────────────────────
+
+
+def _use_config(tmp_path, monkeypatch, text: str) -> None:
+    path = tmp_path / "config.toml"
+    path.write_text(text)
+    monkeypatch.setenv("OC_STATS_CONFIG", str(path))
+
+
+def test_hidden_provider_is_excluded_from_json(tmp_path, monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    _use_config(tmp_path, monkeypatch, 'hidden_providers = ["openai"]')
+    assert main(["--json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    # Excluded entirely: rows gone and totals recomputed from the rest.
+    assert set(data["providers"]) == {"zai"}
+    assert data["totals"]["turns"] == 1
+    assert data["totals"]["input"] == 800
+    assert all(m["provider"] == "zai" for m in data["models"])
+    assert "1 provider hidden" in data["source"]
+
+
+def test_hidden_provider_matches_case_insensitively(tmp_path, monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    _use_config(tmp_path, monkeypatch, 'hidden_providers = ["OPENAI"]')
+    assert main(["--json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert set(data["providers"]) == {"zai"}
+
+
+def test_config_without_hidden_providers_changes_nothing(tmp_path, monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    _use_config(tmp_path, monkeypatch, 'hidden_providers = ["nobody"]')
+    assert main(["--json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert set(data["providers"]) == {"zai", "openai"}
+    assert "hidden" not in data["source"]
+
+
+def test_broken_config_exits_1(tmp_path, monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    _use_config(tmp_path, monkeypatch, "hidden_providers = ")
+    assert main([]) == 1
+    err = capsys.readouterr().err
+    assert "invalid TOML" in err
+
+
 # ── python -m & entry point ───────────────────────────────────────────────────
 
 
