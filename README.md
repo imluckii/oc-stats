@@ -50,9 +50,11 @@ usage ledger keeps the totals honest:
   OpenCode recorded for it.
 - **Deleted sessions are gone.** OpenCode cascades session deletion, so every
   number is *retained* usage, not all-time usage.
-- **Failed turns with recorded tokens count; turns without a token object
-  count as unaccounted** (they mark the estimate incomplete instead of
-  silently pricing at $0).
+- **Failed turns with recorded tokens count.** Turns without a token object
+  (interrupted streams, aborted generations) recorded no usage, so they are
+  excluded entirely — visibly, as an "N aborted turns excluded" note in the
+  header — rather than inflating turn counts and marking the estimate
+  incomplete.
 
 `oc-stats mini` prints the same report with every model's variants summed
 into a single row (`gpt-5.6-sol · high/low/...` becomes one `gpt-5.6-sol`),

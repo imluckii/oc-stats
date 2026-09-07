@@ -301,6 +301,55 @@ def test_broken_config_exits_1(tmp_path, monkeypatch, capsys):
     assert "invalid TOML" in err
 
 
+# ── aborted turns (no token object) ───────────────────────────────────────────
+
+
+def _fake_with_abort():
+    from tests.helpers import aborted_message
+
+    return FakeService(
+        ["s1"],
+        {
+            "s1": [
+                assistant_message(
+                    "a0", ("zai", "glm-4.7", "default", 800, 14000, 0, 60, 10, 0.0123, T0)
+                ),
+                aborted_message("a1", ("openai", "gpt-4o", "high", 0, 0, 0, 0, 0, 0.0, T0 + 1)),
+                aborted_message("a2", ("openai", "gpt-4o", "high", 0, 0, 0, 0, 0, 0.0, T0 + 2)),
+            ]
+        },
+    )
+
+
+def test_aborted_turns_are_excluded_and_noted(monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_abort())
+    assert main(["--json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert data["totals"]["turns"] == 1
+    assert set(data["providers"]) == {"zai"}
+    assert "2 aborted turns excluded" in data["source"]
+
+
+def test_aborted_turns_do_not_mark_estimate_incomplete(monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_abort())
+    assert main(["--json"]) == 0
+    totals = json.loads(capsys.readouterr().out)["totals"]
+    assert totals["estimate_complete"] is True
+
+
+def test_failed_turns_with_recorded_tokens_still_count(monkeypatch, capsys):
+    # An error turn that OpenCode still billed (tokens present) is usage.
+    patch_service(monkeypatch, _fake_with_data())
+    assert main(["--json"]) == 0
+    assert json.loads(capsys.readouterr().out)["totals"]["turns"] == 3
+
+
+def test_no_note_when_nothing_aborted(monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    assert main(["--json"]) == 0
+    assert "aborted" not in json.loads(capsys.readouterr().out)["source"]
+
+
 # ── mini subcommand ───────────────────────────────────────────────────────────
 
 

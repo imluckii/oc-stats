@@ -45,6 +45,21 @@ def user_message(message_id: str, *, created: int = T0) -> dict[str, Any]:
     return {"id": message_id, "type": "user", "time": {"created": created}, "cost": None}
 
 
+def aborted_message(message_id: str, spec: RowSpec) -> dict[str, Any]:
+    """An assistant message whose generation never finished.
+
+    Mirrors what OpenCode stores for an interrupted stream: a model and a
+    creation time, but no tokens and no cost. Such turns carry no usage.
+    """
+    provider, model, variant, _inp, _cr, _cw, _out, _reas, _cost, created = spec
+    return {
+        "id": message_id,
+        "type": "assistant",
+        "time": {"created": created},
+        "model": {"id": model, "providerID": provider, "variant": variant},
+    }
+
+
 def model_switched_message(
     message_id: str, model: str, provider: str, variant: str = "", *, created: int = T0
 ) -> dict[str, Any]:

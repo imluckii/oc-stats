@@ -118,6 +118,13 @@ def load_rows(dbs: list[Path] | None):
         rows = list(ServiceClient().rows())
         source = "OpenCode service"
     rows, hidden_providers, hidden_models = filter_hidden(rows, load_settings())
+    # Turns without a token object are interrupted generations (aborted
+    # streams, dropped providers): OpenCode recorded no usage for them, so
+    # they are not usage. Excluded here — visibly, via the source note —
+    # instead of inflating turn counts and marking estimates incomplete.
+    aborted = [row for row in rows if not row.tokens_known]
+    if aborted:
+        rows = [row for row in rows if row.tokens_known]
     bits = []
     if hidden_providers:
         bits.append(f"{len(hidden_providers)} provider{'s' if len(hidden_providers) != 1 else ''}")
@@ -125,6 +132,8 @@ def load_rows(dbs: list[Path] | None):
         bits.append(f"{len(hidden_models)} model{'s' if len(hidden_models) != 1 else ''}")
     if bits:
         source += " · " + " · ".join(bits) + " hidden"
+    if aborted:
+        source += f" · {len(aborted)} aborted turn{'s' if len(aborted) != 1 else ''} excluded"
     return rows, source
 
 
