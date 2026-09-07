@@ -49,8 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
             "  oc-stats          # show the report\n"
             "  oc-stats mini     # same report, variants merged per model\n"
             "  oc-stats --json   # machine-readable JSON\n"
-            "  oc-stats tui      # interactive TUI (needs oc-stats[tui])\n"
-            "  oc-stats --db PATH tui   # TUI over an explicit database\n"
+            "  oc-stats --db PATH mini   # mini over an explicit database\n"
             "\n"
             "In OpenCode's shell mode:  !oc-stats\n"
         ),
@@ -60,12 +59,10 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         action="append",
         metavar="PATH",
-        help="database path; repeat to merge multiple databases "
-        "(must come before the tui subcommand)",
+        help="database path; repeat to merge multiple databases (must come before the subcommand)",
     )
     ap.add_argument("--json", action="store_true", help="emit JSON to stdout")
     subparsers = ap.add_subparsers(dest="command")
-    subparsers.add_parser("tui", help="interactive TUI (requires textual)")
     subparsers.add_parser(
         "mini",
         help="compact report: every model's variants merged into one row",
@@ -102,8 +99,7 @@ def load_rows(dbs: list[Path] | None):
     Returns ``(rows, source)``. Mirrors the data path used by the report
     mode: explicit --db paths, discovery otherwise, service fallback last.
     Rows of providers and models hidden in the user config are dropped
-    here, so the report, the JSON payload, and the TUI all see the same
-    filtered set.
+    here, so the report and the JSON payload see the same filtered set.
     """
     explicit = dbs is not None
     databases = [path.expanduser() for path in dbs] if explicit else discover_databases()
@@ -137,28 +133,8 @@ def load_rows(dbs: list[Path] | None):
     return rows, source
 
 
-def run_tui(dbs: list[Path] | None) -> int:
-    try:
-        from oc_usage.tui import OcStatsApp
-    except ImportError:
-        _err(
-            "the TUI needs textual: pipx install --force "
-            "'oc-stats[tui]' (or pip install oc-stats[tui])"
-        )
-        return 1
-
-    def loader():
-        return load_rows(dbs)
-
-    OcStatsApp(loader).run()
-    return 0
-
-
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-
-    if args.command == "tui":
-        return run_tui(args.db)
 
     console = make_console()
     loading = (
