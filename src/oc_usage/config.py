@@ -85,9 +85,12 @@ def filter_hidden(
     the full ids; the synthetic ``(unknown)``, ``(unattributed)``, and
     ``(internal usage)`` rows hide the same way.
 
-    A ``hidden_models`` entry is either a bare model id, which hides that
-    model under every provider, or ``provider/model``, which hides it only
-    there — the same convention the price catalog uses.
+    A ``hidden_models`` entry takes one of three forms, matched exactly:
+
+    - ``model`` — that model under every provider and variant
+    - ``provider/model`` — that model only under that provider, any variant
+    - ``provider/model/variant`` — one variant only; a trailing slash
+      (``provider/model/``) selects rows recorded with no variant at all
     """
     kept: list[UsageRow] = []
     providers: set[str] = set()
@@ -95,9 +98,14 @@ def filter_hidden(
     for row in rows:
         provider = row.provider.lower()
         model = row.model.lower()
+        variant = row.variant.lower()
         if provider in settings.hidden_providers:
             providers.add(row.provider)
-        elif model in settings.hidden_models or f"{provider}/{model}" in settings.hidden_models:
+        elif (
+            f"{provider}/{model}/{variant}" in settings.hidden_models
+            or f"{provider}/{model}" in settings.hidden_models
+            or model in settings.hidden_models
+        ):
             models.add((row.provider, row.model))
         else:
             kept.append(row)
