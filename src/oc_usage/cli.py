@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import sys
 from contextlib import nullcontext
+from dataclasses import replace
 from pathlib import Path
 
 from oc_usage import __version__
@@ -46,6 +47,7 @@ def build_parser() -> argparse.ArgumentParser:
         epilog=(
             "Examples:\n"
             "  oc-stats          # show the report\n"
+            "  oc-stats mini     # same report, variants merged per model\n"
             "  oc-stats --json   # machine-readable JSON\n"
             "  oc-stats tui      # interactive TUI (needs oc-stats[tui])\n"
             "  oc-stats --db PATH tui   # TUI over an explicit database\n"
@@ -64,6 +66,10 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--json", action="store_true", help="emit JSON to stdout")
     subparsers = ap.add_subparsers(dest="command")
     subparsers.add_parser("tui", help="interactive TUI (requires textual)")
+    subparsers.add_parser(
+        "mini",
+        help="compact report: every model's variants merged into one row",
+    )
     ap.add_argument(
         "--version",
         action="version",
@@ -179,6 +185,12 @@ def main(argv: list[str] | None = None) -> int:
     except ConfigError as exc:
         _err(str(exc))
         return 1
+
+    if args.command == "mini":
+        # Merge every model's variants into a single row: clearing the
+        # variant makes the (provider, model, variant) key collapse.
+        rows = [replace(row, variant="") for row in rows]
+        source += " · variants merged"
 
     try:
         report = aggregate(rows, source=source)

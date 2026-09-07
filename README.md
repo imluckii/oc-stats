@@ -13,6 +13,7 @@ first-party API list prices; subscription charges may differ.
 
 ```bash
 oc-stats          # Rich terminal report
+oc-stats mini     # same report, each model's variants merged into one row
 oc-stats --json   # machine-readable output
 oc-stats tui      # interactive TUI (needs the tui extra)
 oc-stats --db "C:\Users\Anchit\.local\share\opencode\opencode.db"
@@ -52,6 +53,10 @@ usage ledger keeps the totals honest:
 - **Failed turns with recorded tokens count; turns without a token object
   count as unaccounted** (they mark the estimate incomplete instead of
   silently pricing at $0).
+
+`oc-stats mini` prints the same report with every model's variants summed
+into a single row (`gpt-5.6-sol · high/low/...` becomes one `gpt-5.6-sol`),
+for when the effort-level split is more detail than you want.
 
 Two costs are reported: **recorded cost** (what OpenCode billed at request
 time, summed from its own data) and **estimated cost** (today's list prices

@@ -18,10 +18,11 @@ __all__ = ["sample_specs", "fake_service", "client"]
 
 
 @pytest.fixture(autouse=True)
-def _isolated_pricing_env(monkeypatch, tmp_path):
-    """Keep the developer's own price overrides out of test results."""
+def _isolated_user_env(monkeypatch, tmp_path):
+    """Keep the developer's own price overrides and hidden-model config out of tests."""
     monkeypatch.delenv("OC_USAGE_PRICES", raising=False)
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+    monkeypatch.setenv("OC_STATS_CONFIG", str(tmp_path / "no-user-config.toml"))
     from oc_usage import pricing
 
     monkeypatch.setattr(pricing, "_default", None)
