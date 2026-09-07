@@ -395,6 +395,8 @@ def test_mini_keeps_hidden_config_filtering(tmp_path, monkeypatch, capsys):
 
 
 def test_db_before_mini_subcommand_is_kept():
+    # ``--db`` is a global option; it must survive when placed before the
+    # subcommand instead of being silently overwritten by the subparser default.
     args = cli.build_parser().parse_args(["--db", "custom.db", "mini"])
     assert args.command == "mini"
     assert [path.name for path in args.db] == ["custom.db"]
@@ -424,14 +426,6 @@ def test_python_m_module_help():
     assert result.returncode == 0
     assert "OpenCode token usage" in result.stdout
     assert "--db" in result.stdout
-
-
-def test_db_before_tui_subcommand_is_kept():
-    # ``--db`` is a global option; it must survive when placed before ``tui``
-    # instead of being silently overwritten by the subparser default.
-    args = cli.build_parser().parse_args(["--db", "custom.db", "tui"])
-    assert args.command == "tui"
-    assert [path.name for path in args.db] == ["custom.db"]
 
 
 def test_json_includes_recorded_cost(monkeypatch, capsys):

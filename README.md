@@ -15,9 +15,8 @@ first-party API list prices; subscription charges may differ.
 oc-stats          # Rich terminal report
 oc-stats mini     # same report, each model's variants merged into one row
 oc-stats --json   # machine-readable output
-oc-stats tui      # interactive TUI (needs the tui extra)
 oc-stats --db "C:\Users\Anchit\.local\share\opencode\opencode.db"
-oc-stats --db PATH tui   # --db is global and must precede the subcommand
+oc-stats --db PATH mini   # --db is global and must precede the subcommand
 ```
 
 All discovered databases are merged automatically — every `opencode*.db`
@@ -68,9 +67,8 @@ record $0 or their own rates.
 ## Hiding providers and models
 
 Providers or models you don't want in the report can be dropped entirely —
-tables, totals, cost estimates, and the TUI's day/hour groupings are all
-recomputed from what remains. List their ids in
-`~/.config/oc-usage/config.toml`:
+tables, totals, and cost estimates are recomputed from what remains. List
+their ids in `~/.config/oc-usage/config.toml`:
 
 ```toml
 hidden_providers = ["zai", "openrouter"]
@@ -86,35 +84,6 @@ model), or `provider/model/variant` for one variant only — a trailing slash
 JSON `source` field) notes how many providers and models were hidden. A config
 file that exists but is broken fails the run instead of silently showing
 everything; set `OC_STATS_CONFIG` to read it from somewhere else.
-
-## TUI
-
-Install with the extra and run:
-
-```bash
-pipx install --force "oc-stats[tui] @ git+https://github.com/imluckii/oc-stats.git"
-oc-stats tui
-```
-
-Five tabs: **Overview** (totals, top models, share of cost), **Models** (full
-per-model table), **Daily** and **Hourly** breakdowns, and **Stats** (cache hit
-rate, provider splits, busiest day/hour, unpriced turn ratio). Costs come from
-the same `prices.toml` catalog as the report.
-
-Keys:
-
-- `←`/`→` or `Tab`/`Shift+Tab` switch tabs
-- `c` / `t` / `p` sort models by cost / tokens / provider
-- `d` cycles the date range: all time → today → 7 days → 30 days
-- `i` toggles full/compact number formatting
-- `r` refreshes now; `R` toggles auto-refresh (default off); `+`/`-` adjusts
-  the interval in 30s steps (30–600s)
-- `e` exports the current view as JSON to `./oc-stats-export-<ts>.json`
-- `q` quits
-
-Preferences (active tab, sort, number format, refresh interval) persist to
-`~/.config/oc-usage/tui.toml`. Day/hour grouping uses IST by default; set
-`OC_STATS_TZ` to any IANA zone name (or `UTC`) to override.
 
 ## Prices
 
