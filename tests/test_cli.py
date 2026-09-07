@@ -301,6 +301,56 @@ def test_broken_config_exits_1(tmp_path, monkeypatch, capsys):
     assert "invalid TOML" in err
 
 
+# ── mini subcommand ───────────────────────────────────────────────────────────
+
+
+def test_mini_merges_variants_into_one_model_row(monkeypatch, capsys):
+    fake = FakeService(
+        ["s1"],
+        {
+            "s1": [
+                assistant_message("a0", ("openai", "gpt-4o", "high", 100, 0, 0, 10, 0, 0.1, T0)),
+                assistant_message("a1", ("openai", "gpt-4o", "low", 50, 0, 0, 5, 0, 0.05, T0 + 1)),
+                assistant_message("a2", ("zai", "glm-4.7", "default", 10, 0, 0, 1, 0, 0.0, T0 + 2)),
+            ]
+        },
+    )
+    patch_service(monkeypatch, fake)
+    assert main(["--json", "mini"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    models = {(m["provider"], m["model"], m["variant"]): m for m in data["models"]}
+    assert ("openai", "gpt-4o", "") in models
+    assert ("openai", "gpt-4o", "high") not in models
+    assert models[("openai", "gpt-4o", "")]["turns"] == 2
+    assert models[("openai", "gpt-4o", "")]["input"] == 150
+    # One row per model, and the note says what happened.
+    assert len(data["models"]) == 2
+    assert "variants merged" in data["source"]
+
+
+def test_mini_report_renders(monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    assert main(["mini"]) == 0
+    out = capsys.readouterr().out
+    assert "OpenCode Usage" in out
+    assert "variants merged" in out
+
+
+def test_mini_keeps_hidden_config_filtering(tmp_path, monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    _use_config(tmp_path, monkeypatch, 'hidden_providers = ["zai"]\n')
+    assert main(["--json", "mini"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert "1 provider hidden" in data["source"]
+    assert "variants merged" in data["source"]
+
+
+def test_db_before_mini_subcommand_is_kept():
+    args = cli.build_parser().parse_args(["--db", "custom.db", "mini"])
+    assert args.command == "mini"
+    assert [path.name for path in args.db] == ["custom.db"]
+
+
 # ── python -m & entry point ───────────────────────────────────────────────────
 
 
