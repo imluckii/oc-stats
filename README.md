@@ -72,12 +72,13 @@ hidden_models = ["title-generation", "openai/gpt-4o"]
 
 Provider ids match the report's Provider column, case-insensitively; the
 synthetic `(unknown)` and `(unattributed)` rows hide the same way. A
-`hidden_models` entry is either a bare model id, which hides that model under
-every provider, or `provider/model`, which hides it only there — the same
-convention the price catalog uses. The header (and the JSON `source` field)
-notes how many providers and models were hidden. A config file that exists
-but is broken fails the run instead of silently showing everything; set
-`OC_STATS_CONFIG` to read it from somewhere else.
+`hidden_models` entry takes one of three forms: a bare model id (hidden under
+every provider and variant), `provider/model` (any variant of that provider's
+model), or `provider/model/variant` for one variant only — a trailing slash
+(`provider/model/`) selects rows recorded with no variant. The header (and the
+JSON `source` field) notes how many providers and models were hidden. A config
+file that exists but is broken fails the run instead of silently showing
+everything; set `OC_STATS_CONFIG` to read it from somewhere else.
 
 ## TUI
 

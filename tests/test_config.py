@@ -96,6 +96,43 @@ def test_provider_qualified_model_hides_only_that_provider():
     assert models == ["openai/gpt-4o"]
 
 
+def test_variant_qualified_entry_hides_only_that_variant():
+    rows = [
+        UsageRow("zai-coding-plan", "glm-5.2", "max", 1, 0, 0, 1, 0, 0.0, 0),
+        UsageRow("zai-coding-plan", "glm-5.2", "default", 1, 0, 0, 1, 0, 0.0, 0),
+        UsageRow("zai-coding-plan", "glm-5.2", "", 1, 0, 0, 1, 0, 0.0, 0),
+    ]
+    kept, _, models = filter_hidden(
+        rows, Settings(hidden_models=frozenset({"zai-coding-plan/glm-5.2/default"}))
+    )
+    assert [r.variant for r in kept] == ["max", ""]
+    assert models == ["zai-coding-plan/glm-5.2"]
+
+
+def test_trailing_slash_entry_hides_only_untagged_rows():
+    rows = [
+        UsageRow("zai-coding-plan", "glm-5.2", "max", 1, 0, 0, 1, 0, 0.0, 0),
+        UsageRow("zai-coding-plan", "glm-5.2", "", 1, 0, 0, 1, 0, 0.0, 0),
+    ]
+    kept, _, models = filter_hidden(
+        rows, Settings(hidden_models=frozenset({"zai-coding-plan/glm-5.2/"}))
+    )
+    assert [r.variant for r in kept] == ["max"]
+    assert models == ["zai-coding-plan/glm-5.2"]
+
+
+def test_provider_model_entry_hides_every_variant():
+    rows = [
+        UsageRow("zai-coding-plan", "glm-5.2", "max", 1, 0, 0, 1, 0, 0.0, 0),
+        UsageRow("zai-coding-plan", "glm-5.2", "", 1, 0, 0, 1, 0, 0.0, 0),
+    ]
+    kept, _, models = filter_hidden(
+        rows, Settings(hidden_models=frozenset({"zai-coding-plan/glm-5.2"}))
+    )
+    assert kept == []
+    assert models == ["zai-coding-plan/glm-5.2"]
+
+
 def test_provider_hidden_wins_over_its_models():
     # A row already dropped by its provider is not also counted as a model.
     rows = [UsageRow("openai", "gpt-4o", "", 1, 0, 0, 1, 0, 0.0, 0)]
