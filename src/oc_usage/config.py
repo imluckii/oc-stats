@@ -32,6 +32,7 @@ class ConfigError(Exception):
 @dataclass(frozen=True)
 class Settings:
     hidden_providers: frozenset[str] = frozenset()
+    hidden_models: frozenset[str] = frozenset()
 
 
 def settings_path() -> Path:
@@ -39,6 +40,13 @@ def settings_path() -> Path:
     if override:
         return Path(override)
     return Path.home() / ".config" / "oc-usage" / "config.toml"
+
+
+def _name_list(data: dict, key: str, path: Path) -> list[str]:
+    names = data.get(key, [])
+    if not isinstance(names, list) or not all(isinstance(name, str) for name in names):
+        raise ConfigError(f"{key} in {path} must be a list of strings")
+    return [name.strip().lower() for name in names if name.strip()]
 
 
 def load_settings() -> Settings:
@@ -60,27 +68,37 @@ def load_settings() -> Settings:
     except ValueError as exc:  # tomllib.TOMLDecodeError
         raise ConfigError(f"invalid TOML in {path}: {exc}") from exc
 
-    names = data.get("hidden_providers", [])
-    if not isinstance(names, list) or not all(isinstance(name, str) for name in names):
-        raise ConfigError(f"hidden_providers in {path} must be a list of provider names")
-    return Settings(frozenset(name.strip().lower() for name in names if name.strip()))
+    return Settings(
+        hidden_providers=frozenset(_name_list(data, "hidden_providers", path)),
+        hidden_models=frozenset(_name_list(data, "hidden_models", path)),
+    )
 
 
-def filter_hidden(rows: Iterable[UsageRow], settings: Settings) -> tuple[list[UsageRow], list[str]]:
-    """Drop rows whose provider is hidden.
+def filter_hidden(
+    rows: Iterable[UsageRow], settings: Settings
+) -> tuple[list[UsageRow], list[str], list[str]]:
+    """Drop rows whose provider or model is hidden.
 
-    Returns the kept rows plus the hidden providers' display names as they
-    appeared in the data (sorted), so callers can note what was excluded.
-    Matching is case-insensitive on the full provider id; the synthetic
-    ``(unknown)`` and ``(unattributed)`` rows hide the same way.
+    Returns the kept rows plus the display names of what was actually
+    dropped: providers, and models as ``provider/model`` pairs (both sorted),
+    so callers can note what was excluded. Matching is case-insensitive on
+    the full ids; the synthetic ``(unknown)``, ``(unattributed)``, and
+    ``(internal usage)`` rows hide the same way.
+
+    A ``hidden_models`` entry is either a bare model id, which hides that
+    model under every provider, or ``provider/model``, which hides it only
+    there — the same convention the price catalog uses.
     """
-    if not settings.hidden_providers:
-        return list(rows), []
     kept: list[UsageRow] = []
-    dropped: set[str] = set()
+    providers: set[str] = set()
+    models: set[tuple[str, str]] = set()
     for row in rows:
-        if row.provider.lower() in settings.hidden_providers:
-            dropped.add(row.provider)
+        provider = row.provider.lower()
+        model = row.model.lower()
+        if provider in settings.hidden_providers:
+            providers.add(row.provider)
+        elif model in settings.hidden_models or f"{provider}/{model}" in settings.hidden_models:
+            models.add((row.provider, row.model))
         else:
             kept.append(row)
-    return kept, sorted(dropped)
+    return kept, sorted(providers), [f"{p}/{m}" for p, m in sorted(models)]

@@ -58,20 +58,25 @@ time, summed from its own data) and **estimated cost** (today's list prices
 from the bundled catalog). They differ by design — subscriptions and gateways
 record $0 or their own rates.
 
-## Hiding providers
+## Hiding providers and models
 
-Providers you don't want in the report can be dropped entirely — tables,
-totals, cost estimates, and the TUI's day/hour groupings are all recomputed
-from what remains. List their ids in `~/.config/oc-usage/config.toml`:
+Providers or models you don't want in the report can be dropped entirely —
+tables, totals, cost estimates, and the TUI's day/hour groupings are all
+recomputed from what remains. List their ids in
+`~/.config/oc-usage/config.toml`:
 
 ```toml
 hidden_providers = ["zai", "openrouter"]
+hidden_models = ["title-generation", "openai/gpt-4o"]
 ```
 
-Ids match the report's Provider column, case-insensitively; the synthetic
-`(unknown)` and `(unattributed)` rows hide the same way. The header (and the
-JSON `source` field) notes how many providers were hidden. A config file that
-exists but is broken fails the run instead of silently showing everything; set
+Provider ids match the report's Provider column, case-insensitively; the
+synthetic `(unknown)` and `(unattributed)` rows hide the same way. A
+`hidden_models` entry is either a bare model id, which hides that model under
+every provider, or `provider/model`, which hides it only there — the same
+convention the price catalog uses. The header (and the JSON `source` field)
+notes how many providers and models were hidden. A config file that exists
+but is broken fails the run instead of silently showing everything; set
 `OC_STATS_CONFIG` to read it from somewhere else.
 
 ## TUI

@@ -40,29 +40,68 @@ def test_invalid_toml_raises(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("value", ['"zai"', "[1, 2]", "[true]"])
-def test_wrong_type_raises(value, tmp_path, monkeypatch):
-    use_config(tmp_path, monkeypatch, f"hidden_providers = {value}")
-    with pytest.raises(ConfigError, match="list of provider names"):
+@pytest.mark.parametrize("key", ["hidden_providers", "hidden_models"])
+def test_wrong_type_raises(key, value, tmp_path, monkeypatch):
+    use_config(tmp_path, monkeypatch, f"{key} = {value}")
+    with pytest.raises(ConfigError, match=f"{key} .* must be a list of strings"):
         load_settings()
 
 
 def test_filter_drops_rows_and_reports_display_names():
     rows = [row("zai"), row("OpenAI"), row("anthropic")]
-    kept, dropped = filter_hidden(rows, Settings(frozenset({"zai", "openai"})))
+    kept, dropped, models = filter_hidden(rows, Settings(frozenset({"zai", "openai"})))
     assert [r.provider for r in kept] == ["anthropic"]
     # Display names keep the data's casing, sorted for a stable note.
     assert dropped == ["OpenAI", "zai"]
+    assert models == []
 
 
 def test_filter_without_hidden_settings_keeps_everything():
     rows = [row("zai"), row("anthropic")]
-    kept, dropped = filter_hidden(rows, Settings())
+    kept, dropped, models = filter_hidden(rows, Settings())
     assert kept == rows
     assert dropped == []
+    assert models == []
 
 
 def test_filter_drops_unknown_names_that_never_appeared():
     # A config listing providers absent from the data hides nothing.
-    kept, dropped = filter_hidden([row("zai")], Settings(frozenset({"openai"})))
+    kept, dropped, models = filter_hidden([row("zai")], Settings(frozenset({"openai"})))
     assert [r.provider for r in kept] == ["zai"]
     assert dropped == []
+    assert models == []
+
+
+def test_bare_model_name_hides_under_every_provider():
+    rows = [
+        UsageRow("openai", "gpt-4o", "", 1, 0, 0, 1, 0, 0.0, 0),
+        UsageRow("zai-coding-plan", "gpt-4o", "", 1, 0, 0, 1, 0, 0.0, 0),
+        UsageRow("openai", "gpt-4o-mini", "", 1, 0, 0, 1, 0, 0.0, 0),
+    ]
+    kept, dropped, models = filter_hidden(rows, Settings(hidden_models=frozenset({"gpt-4o"})))
+    assert [r.model for r in kept] == ["gpt-4o-mini"]
+    assert dropped == []
+    assert models == ["openai/gpt-4o", "zai-coding-plan/gpt-4o"]
+
+
+def test_provider_qualified_model_hides_only_that_provider():
+    rows = [
+        UsageRow("openai", "gpt-4o", "", 1, 0, 0, 1, 0, 0.0, 0),
+        UsageRow("zai-coding-plan", "gpt-4o", "", 1, 0, 0, 1, 0, 0.0, 0),
+    ]
+    kept, dropped, models = filter_hidden(
+        rows, Settings(hidden_models=frozenset({"openai/gpt-4o"}))
+    )
+    assert [(r.provider, r.model) for r in kept] == [("zai-coding-plan", "gpt-4o")]
+    assert models == ["openai/gpt-4o"]
+
+
+def test_provider_hidden_wins_over_its_models():
+    # A row already dropped by its provider is not also counted as a model.
+    rows = [UsageRow("openai", "gpt-4o", "", 1, 0, 0, 1, 0, 0.0, 0)]
+    kept, dropped, models = filter_hidden(
+        rows, Settings(frozenset({"openai"}), frozenset({"gpt-4o"}))
+    )
+    assert kept == []
+    assert dropped == ["openai"]
+    assert models == []
