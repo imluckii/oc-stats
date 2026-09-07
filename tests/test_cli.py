@@ -266,6 +266,33 @@ def test_config_without_hidden_providers_changes_nothing(tmp_path, monkeypatch, 
     assert "hidden" not in data["source"]
 
 
+def test_hidden_model_is_excluded_from_json(tmp_path, monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    # Bare id hides gpt-4o wherever it appears; the qualified id spares zai's.
+    _use_config(tmp_path, monkeypatch, 'hidden_models = ["gpt-4o", "zai/glm-4.7"]')
+    assert main(["--json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert [m["model"] for m in data["models"]] == ["gpt-4o-mini"]
+    assert data["totals"]["turns"] == 1
+    assert "2 models hidden" in data["source"]
+
+
+def test_provider_qualified_model_only_hides_that_provider(tmp_path, monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    _use_config(tmp_path, monkeypatch, 'hidden_models = ["openai/gpt-4o"]')
+    assert main(["--json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert {m["model"] for m in data["models"]} == {"glm-4.7", "gpt-4o-mini"}
+
+
+def test_hidden_note_lists_providers_and_models(tmp_path, monkeypatch, capsys):
+    patch_service(monkeypatch, _fake_with_data())
+    _use_config(tmp_path, monkeypatch, 'hidden_providers = ["zai"]\nhidden_models = ["gpt-4o"]\n')
+    assert main(["--json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert "1 provider · 1 model hidden" in data["source"]
+
+
 def test_broken_config_exits_1(tmp_path, monkeypatch, capsys):
     patch_service(monkeypatch, _fake_with_data())
     _use_config(tmp_path, monkeypatch, "hidden_providers = ")

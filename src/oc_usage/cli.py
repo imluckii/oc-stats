@@ -95,8 +95,9 @@ def load_rows(dbs: list[Path] | None):
 
     Returns ``(rows, source)``. Mirrors the data path used by the report
     mode: explicit --db paths, discovery otherwise, service fallback last.
-    Rows of providers hidden in the user config are dropped here, so the
-    report, the JSON payload, and the TUI all see the same filtered set.
+    Rows of providers and models hidden in the user config are dropped
+    here, so the report, the JSON payload, and the TUI all see the same
+    filtered set.
     """
     explicit = dbs is not None
     databases = [path.expanduser() for path in dbs] if explicit else discover_databases()
@@ -110,9 +111,14 @@ def load_rows(dbs: list[Path] | None):
     else:
         rows = list(ServiceClient().rows())
         source = "OpenCode service"
-    rows, hidden = filter_hidden(rows, load_settings())
-    if hidden:
-        source += f" · {len(hidden)} provider{'s' if len(hidden) != 1 else ''} hidden"
+    rows, hidden_providers, hidden_models = filter_hidden(rows, load_settings())
+    bits = []
+    if hidden_providers:
+        bits.append(f"{len(hidden_providers)} provider{'s' if len(hidden_providers) != 1 else ''}")
+    if hidden_models:
+        bits.append(f"{len(hidden_models)} model{'s' if len(hidden_models) != 1 else ''}")
+    if bits:
+        source += " · " + " · ".join(bits) + " hidden"
     return rows, source
 
 
