@@ -88,6 +88,7 @@ class Bucket:
     reasoning: int = 0
     recorded_cost: float = 0.0
     estimated_cost: float = 0.0
+    uncached_estimate: float = 0.0
     priced_turns: int = 0
     turns: int = 0
 
@@ -103,6 +104,7 @@ class Bucket:
         # the model has a rate: its zero components are unknown, not free.
         if estimate is not None and row.tokens_known:
             self.estimated_cost += estimate
+            self.uncached_estimate += estimate_row(row, uncached=True)
             self.priced_turns += 1
         self.turns += 1
 

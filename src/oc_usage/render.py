@@ -248,6 +248,7 @@ def _build_totals(report: Report, fmt_num, *, ascii: bool = False) -> Table.grid
         len(fmt_num(totals.cache_read)),
         len(fmt_num(totals.input)),
         len(money(totals.estimated_cost)),
+        len(money(totals.uncached_estimate)),
         len(money(totals.recorded_cost)),
     )
 
@@ -293,6 +294,15 @@ def _build_totals(report: Report, fmt_num, *, ascii: bool = False) -> Table.grid
             label_style="bold yellow",
             value_style="bold yellow",
         )
+        # Hidden when nothing was cached: it would just repeat the estimate.
+        if totals.cache_read or totals.cache_write:
+            row(
+                "Uncached estimate",
+                money(totals.uncached_estimate),
+                "cache billed at input rate",
+                label_style="yellow",
+                value_style="yellow",
+            )
     else:
         row(
             "Estimated cost",

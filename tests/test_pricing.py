@@ -264,6 +264,22 @@ def test_long_context_counts_cached_tokens_toward_threshold():
     assert est == pytest.approx((1 * 8 + 272_000 * 0.8) / 1_000_000)
 
 
+def test_uncached_estimate_bills_both_cache_buckets_at_input_rate():
+    # claude-sonnet-5: 2 / 0.2 / 2.5 / 10 per 1M — cache writes cost MORE
+    # than input, so "no cache pricing" must also drop that premium.
+    pricing = load_bundled()
+    r = row("anthropic", "claude-sonnet-5", inp=1_000_000, cr=1_000_000, cw=1_000_000)
+    assert pricing.estimate(r) == pytest.approx(2 + 0.2 + 2.5)
+    assert pricing.estimate(r, uncached=True) == pytest.approx(2 + 2 + 2)
+    assert pricing.estimate(row("nobody", "mystery"), uncached=True) is None
+
+
+def test_uncached_estimate_keeps_long_context_tier():
+    pricing = load_bundled()  # gpt-5.6-sol: input 8 per 1M above 272k
+    est = pricing.estimate(row("openai", "gpt-5.6-sol", inp=1, cr=272_000), uncached=True)
+    assert est == pytest.approx((1 * 8 + 272_000 * 8) / 1_000_000)
+
+
 def test_estimate_row_uses_default_pricing():
     est = estimate_row(row("moonshotai", "kimi-k3", inp=1_000_000))
     assert est == pytest.approx(3)
@@ -378,6 +394,13 @@ def test_free_models_estimate_to_zero_and_count_as_priced():
     assert report.totals.estimate_complete is True
     assert report.totals.estimated_cost == 0.0
     assert report.totals.priced_turns == 1
+
+
+def test_aggregate_tracks_uncached_estimate():
+    # claude-sonnet-5: input 2, cache_read 0.2 per 1M.
+    report = aggregate([row("anthropic", "claude-sonnet-5", inp=100_000, cr=900_000)])
+    assert report.totals.estimated_cost == pytest.approx(0.2 + 0.18)
+    assert report.totals.uncached_estimate == pytest.approx(2.0)  # 1M tokens at $2
 
 
 def test_dated_suffix_variants_fall_back_to_base_model():

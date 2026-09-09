@@ -206,6 +206,26 @@ def test_rich_report_shows_estimated_cost():
     assert "Estimated cost" in out
 
 
+def test_rich_report_shows_uncached_estimate():
+    # claude-sonnet-5: 1M input + 1M cache-read bills $2.20 cached, $4.00
+    # when the cache tokens pay the full input rate.
+    report = aggregate(
+        [UsageRow("anthropic", "claude-sonnet-5", "", 1_000_000, 1_000_000, 0, 0, 0, 0.0, 1)]
+    )
+    out = _capture(report, NON_TTY_WIDTH)
+    assert "Uncached estimate" in out
+    assert "cache billed at input rate" in out
+    assert "$2.20" in out
+    assert "$4.00" in out
+
+
+def test_rich_report_hides_uncached_estimate_without_cache_tokens():
+    # Nothing cached means the uncached figure would just repeat the estimate.
+    report = aggregate([UsageRow("openai", "gpt-4o", "", 1_000_000, 0, 0, 0, 0, 2.5, 1)])
+    out = _capture(report, NON_TTY_WIDTH)
+    assert "Uncached estimate" not in out
+
+
 def test_rich_ascii_mode_uses_ascii_chrome_and_escapes_labels():
     report = aggregate([UsageRow("提供者", "模型", "高", 10, 20, 0, 1, 0, 0.0, 1)])
     out = _capture(report, NON_TTY_WIDTH)

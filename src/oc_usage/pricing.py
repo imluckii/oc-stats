@@ -221,10 +221,12 @@ class Pricing:
                 return consensus
         return None
 
-    def estimate(self, row: UsageRow) -> float | None:
+    def estimate(self, row: UsageRow, *, uncached: bool = False) -> float | None:
         """Estimated USD cost of one row, or ``None`` when unpriced.
 
         Reasoning tokens are billed as output by every provider in the list.
+        With ``uncached``, both cache buckets bill at the input rate — what
+        the turn would cost with no cache pricing at all.
         """
         price = self.lookup(row.provider, row.model)
         if price is None:
@@ -235,10 +237,12 @@ class Pricing:
             threshold, long_rates = price.long_context
             if input_tokens > threshold:
                 rates = long_rates
+        cache_read_rate = rates.input if uncached else rates.cache_read
+        cache_write_rate = rates.input if uncached else rates.cache_write
         return (
             row.input * rates.input
-            + row.cache_read * rates.cache_read
-            + row.cache_write * rates.cache_write
+            + row.cache_read * cache_read_rate
+            + row.cache_write * cache_write_rate
             + (row.output + row.reasoning) * rates.output
         ) / TOKENS_PER_UNIT
 
@@ -328,9 +332,9 @@ def default_pricing() -> Pricing:
     return _default
 
 
-def estimate_row(row: UsageRow) -> float | None:
+def estimate_row(row: UsageRow, *, uncached: bool = False) -> float | None:
     """Estimate one turn at list prices; ``None`` when the model is unpriced."""
-    return default_pricing().estimate(row)
+    return default_pricing().estimate(row, uncached=uncached)
 
 
 def debug(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI helper
