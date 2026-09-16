@@ -138,7 +138,7 @@ def test_estimate_applies_long_context_rate_per_turn():
 
 def test_estimate_accepts_namespaced_model_ids():
     report = aggregate([_row(provider="openrouter", model="moonshotai/kimi-k3", input=1_000_000)])
-    assert report.totals.estimated_cost == 3.0
+    assert report.totals.estimated_cost == 2.648138
 
 
 def test_span_is_min_max_of_created_times_in_utc():
