@@ -42,7 +42,7 @@
 # ═══════════════════════════════════════════════════════════════════════════
 
 schema = 1
-updated = "2026-09-14"
+updated = "2026-09-21"
 
 
 # ── 302ai ── source: models.dev
@@ -148,6 +148,11 @@ output = 15
 ["302ai"."claude-sonnet-5"]
 input = 2
 output = 10
+
+["302ai"."deepseek-flash"]
+input = 0.15
+cache_read = 0.003
+output = 0.6
 
 ["302ai"."deepseek-v3.2"]
 input = 0.29
@@ -1119,23 +1124,38 @@ cache_read = 0.25
 cache_write = 3.125
 output = 15
 
+# ── ai21 ── source: models.dev
+["ai21"]
+
+["ai21"."jamba-large"]
+input = 2
+output = 8
+
+["ai21"."jamba-mini"]
+input = 0.2
+output = 0.4
+
 # ── aiand ── source: models.dev
 ["aiand"]
 
 ["aiand"."deepseek-ai/deepseek-v4-flash"]
 input = 0.15
+cache_read = 0.08
 output = 0.25
 
 ["aiand"."deepseek-ai/deepseek-v4-pro"]
 input = 1
+cache_read = 0.25
 output = 2.5
 
 ["aiand"."google/gemma-4-31b-it"]
 input = 0.2
+cache_read = 0.05
 output = 0.5
 
 ["aiand"."moonshotai/kimi-k2.7-code"]
 input = 0.75
+cache_read = 0.2
 output = 3.5
 
 ["aiand"."moonshotai/kimi-k3"]
@@ -1145,14 +1165,17 @@ output = 12.5
 
 ["aiand"."motif-technologies/motif-3"]
 input = 0.5
+cache_read = 0.2
 output = 2
 
 ["aiand"."openai/gpt-oss-120b"]
 input = 0.15
+cache_read = 0.08
 output = 0.6
 
 ["aiand"."qwen/qwen3.6-27b"]
 input = 0.32
+cache_read = 0.2
 output = 3.2
 
 ["aiand"."qwen/qwen3.8-27b"]
@@ -1162,6 +1185,7 @@ output = 3
 
 ["aiand"."zai-org/glm-5.2"]
 input = 1
+cache_read = 0.3
 output = 4
 
 ["aiand"."zai-org/glm-5.3"]
@@ -1191,6 +1215,12 @@ output = 3.38
 ["aihubmix"."claude-fable-5"]
 input = 11
 cache_read = 1.1
+cache_write = 13.75
+output = 55
+
+["aihubmix"."claude-fable-5-1"]
+input = 11
+cache_read = 0.275
 cache_write = 13.75
 output = 55
 
@@ -1353,6 +1383,11 @@ output = 0.956
 input = 0.142
 cache_read = 0.0284
 output = 0.284
+
+["aihubmix"."deepseek-v4-flash-vision-exp"]
+input = 0.155
+cache_read = 0.0031
+output = 0.62
 
 ["aihubmix"."deepseek-v4-pro-0813"]
 input = 0.6918
@@ -1630,6 +1665,10 @@ cache_read = 0.06
 cache_write = 0.375
 output = 1.2
 
+["aihubmix"."ox-alpha"]
+input = 0
+output = 0
+
 ["aihubmix"."qwen3.6-flash"]
 input = 0.17
 cache_read = 0.0169
@@ -1692,6 +1731,12 @@ input = 2
 cache_read = 0.5
 output = 6
 
+["aihubmix"."qwen3.8-flash"]
+input = 0.1126
+cache_read = 0.014075
+cache_write = 0.175937
+output = 0.380025
+
 ["aihubmix"."qwen3.8-max"]
 input = 1.69
 cache_read = 0.169
@@ -1735,6 +1780,14 @@ input = 0.845
 cache_read = 0.183112
 output = 3.38
 
+# ── ainetcafe ── source: models.dev
+["ainetcafe"]
+
+["ainetcafe"."Kimi-K3"]
+input = 2.1
+cache_read = 0.3
+output = 10.5
+
 # ── aixy ── source: models.dev
 ["aixy"]
 
@@ -1755,14 +1808,14 @@ output = 0.5
 input = 0.1
 output = 0.5
 
+["aki-io"."glm5.3-754b"]
+input = 1
+cache_read = 0.25
+output = 3.5
+
 ["aki-io"."gpt-oss-120b"]
 input = 0.15
 output = 0.55
-
-["aki-io"."kimi-k2.7-code-1100b"]
-input = 0.86
-cache_read = 0.18
-output = 3
 
 ["aki-io"."mistral4-119b"]
 input = 0.2
@@ -1790,6 +1843,11 @@ input = 1.4
 cache_read = 0.28
 cache_write = 0
 output = 4.4
+
+["alibaba"."kimi-k3"]
+input = 3
+cache_read = 0.3
+output = 15
 
 ["alibaba"."qvq-max"]
 input = 1.2
@@ -2107,6 +2165,11 @@ input = 0.435
 cache_read = 0.003625
 output = 0.87
 
+["alibaba-cn"."deepseek-v4.1-flash"]
+input = 0.29754
+cache_read = 0.01488
+output = 1.19015
+
 ["alibaba-cn"."glm-5"]
 input = 0.573
 output = 2.58
@@ -2132,6 +2195,12 @@ cache_read = 0.275
 cache_write = 0
 output = 3.851
 
+["alibaba-cn"."glm-5.3"]
+input = 1.1
+cache_read = 0.275
+cache_write = 0
+output = 3.851
+
 ["alibaba-cn"."kimi-k2-thinking"]
 input = 0.574
 output = 2.294
@@ -2143,6 +2212,11 @@ output = 2.411
 ["alibaba-cn"."kimi-k2.6"]
 input = 0.929
 output = 3.858
+
+["alibaba-cn"."kimi-k3"]
+input = 2.827
+cache_read = 0.283
+output = 14.133
 
 ["alibaba-cn"."kimi/kimi-k2.5"]
 input = 0.6
@@ -2220,8 +2294,8 @@ input = 0.23
 output = 0.574
 
 ["alibaba-cn"."qwen-vl-ocr"]
-input = 0.717
-output = 0.717
+input = 0.043
+output = 0.072
 
 ["alibaba-cn"."qwen-vl-plus"]
 input = 0.115
@@ -2314,12 +2388,22 @@ input = 0.144
 output = 0.574
 
 ["alibaba-cn"."qwen3-coder-plus"]
-input = 1
-output = 5
+input = 0.574
+output = 2.296
+
+["alibaba-cn"."qwen3-coder-plus".long_context]  # > 256000 input+cache tokens
+threshold = 256000
+input = 2.87
+output = 28.7
 
 ["alibaba-cn"."qwen3-max"]
-input = 0.861
-output = 3.441
+input = 1.291
+output = 7.749
+
+["alibaba-cn"."qwen3-max".long_context]  # > 128000 input+cache tokens
+threshold = 128000
+input = 2.153
+output = 12.915
 
 ["alibaba-cn"."qwen3-next-80b-a3b-instruct"]
 input = 0.144
@@ -2360,11 +2444,21 @@ output = 2.58
 
 ["alibaba-cn"."qwen3.5-flash"]
 input = 0.172
-output = 1.72
+output = 1.033
+
+["alibaba-cn"."qwen3.5-flash".long_context]  # > 256000 input+cache tokens
+threshold = 256000
+input = 0.689
+output = 4.133
 
 ["alibaba-cn"."qwen3.5-plus"]
-input = 0.573
-output = 3.44
+input = 0.287
+output = 1.722
+
+["alibaba-cn"."qwen3.5-plus".long_context]  # > 256000 input+cache tokens
+threshold = 256000
+input = 1.148
+output = 6.888
 
 ["alibaba-cn"."qwen3.6-flash"]
 input = 0.1875
@@ -2499,9 +2593,10 @@ input = 1
 output = 5
 
 ["alibaba-coding-plan"."qwen3-max-2026-01-23"]
-input = 1.2002
-cache_read = 0.6001
-output = 6.001
+input = 0
+cache_read = 0
+cache_write = 0
+output = 0
 
 ["alibaba-coding-plan"."qwen3.5-plus"]
 input = 0.4
@@ -2582,9 +2677,10 @@ input = 1
 output = 5
 
 ["alibaba-coding-plan-cn"."qwen3-max-2026-01-23"]
-input = 1.2002
-cache_read = 0.6001
-output = 6.001
+input = 0
+cache_read = 0
+cache_write = 0
+output = 0
 
 ["alibaba-coding-plan-cn"."qwen3.5-plus"]
 input = 0.4
@@ -2663,6 +2759,12 @@ cache_read = 0
 cache_write = 0
 output = 0
 
+["alibaba-token-plan"."deepseek-v4.1-flash"]
+input = 0
+cache_read = 0
+cache_write = 0
+output = 0
+
 ["alibaba-token-plan"."glm-5"]
 input = 0
 cache_read = 0
@@ -2680,6 +2782,12 @@ input = 1.4
 cache_read = 0.28
 cache_write = 0
 output = 4.4
+
+["alibaba-token-plan"."glm-5.3"]
+input = 0
+cache_read = 0
+cache_write = 0
+output = 0
 
 ["alibaba-token-plan"."happyhorse-1.1-i2v"]
 input = 0
@@ -2818,6 +2926,12 @@ cache_read = 0
 cache_write = 0
 output = 0
 
+["alibaba-token-plan-cn"."deepseek-v4.1-flash"]
+input = 0
+cache_read = 0
+cache_write = 0
+output = 0
+
 ["alibaba-token-plan-cn"."glm-5"]
 input = 0
 cache_read = 0
@@ -2835,6 +2949,12 @@ input = 1.4
 cache_read = 0.28
 cache_write = 0
 output = 4.4
+
+["alibaba-token-plan-cn"."glm-5.3"]
+input = 0
+cache_read = 0
+cache_write = 0
+output = 0
 
 ["alibaba-token-plan-cn"."happyhorse-1.1-i2v"]
 input = 0
@@ -2995,10 +3115,10 @@ cache_write = 6.25
 output = 25
 
 ["amazon-bedrock"."anthropic.claude-opus-4-6-v1"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 25
+input = 5.5
+cache_read = 0.55
+cache_write = 6.875
+output = 27.5
 
 ["amazon-bedrock"."anthropic.claude-opus-4-7"]
 input = 5
@@ -3025,10 +3145,10 @@ cache_write = 3.75
 output = 15
 
 ["amazon-bedrock"."anthropic.claude-sonnet-4-6"]
-input = 3
-cache_read = 0.3
-cache_write = 3.75
-output = 15
+input = 3.3
+cache_read = 0.33
+cache_write = 4.125
+output = 16.5
 
 ["amazon-bedrock"."anthropic.claude-sonnet-5"]
 input = 2
@@ -3054,17 +3174,23 @@ cache_read = 0.21
 cache_write = 0.84
 output = 3.36
 
+["amazon-bedrock"."apac.anthropic.claude-sonnet-4-20250514-v1:0"]
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
+
 ["amazon-bedrock"."au.anthropic.claude-haiku-4-5-20251001-v1:0"]
-input = 1
-cache_read = 0.1
-cache_write = 1.25
-output = 5
+input = 1.1
+cache_read = 0.11
+cache_write = 1.375
+output = 5.5
 
 ["amazon-bedrock"."au.anthropic.claude-opus-4-6-v1"]
-input = 16.5
-cache_read = 1.65
-cache_write = 20.625
-output = 82.5
+input = 5.5
+cache_read = 0.55
+cache_write = 6.875
+output = 27.5
 
 ["amazon-bedrock"."au.anthropic.claude-opus-4-7"]
 input = 5.5
@@ -3073,22 +3199,22 @@ cache_write = 6.875
 output = 27.5
 
 ["amazon-bedrock"."au.anthropic.claude-opus-4-8"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 25
+input = 5.5
+cache_read = 0.55
+cache_write = 6.875
+output = 27.5
 
 ["amazon-bedrock"."au.anthropic.claude-opus-5"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 25
+input = 5.5
+cache_read = 0.55
+cache_write = 6.875
+output = 27.5
 
 ["amazon-bedrock"."au.anthropic.claude-sonnet-4-5-20250929-v1:0"]
-input = 3
-cache_read = 0.3
-cache_write = 3.75
-output = 15
+input = 3.3
+cache_read = 0.33
+cache_write = 4.125
+output = 16.5
 
 ["amazon-bedrock"."au.anthropic.claude-sonnet-4-6"]
 input = 3.3
@@ -3097,10 +3223,10 @@ cache_write = 4.125
 output = 16.5
 
 ["amazon-bedrock"."au.anthropic.claude-sonnet-5"]
-input = 2
-cache_read = 0.2
-cache_write = 2.5
-output = 10
+input = 2.2
+cache_read = 0.22
+cache_write = 2.75
+output = 11
 
 ["amazon-bedrock"."ca.amazon.nova-lite-v1:0"]
 input = 0.064
@@ -3186,6 +3312,12 @@ cache_read = 0.55
 cache_write = 6.875
 output = 27.5
 
+["amazon-bedrock"."eu.anthropic.claude-sonnet-4-20250514-v1:0"]
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
+
 ["amazon-bedrock"."eu.anthropic.claude-sonnet-4-5-20250929-v1:0"]
 input = 3.3
 cache_read = 0.33
@@ -3261,6 +3393,12 @@ input = 5
 cache_read = 0.5
 cache_write = 6.25
 output = 25
+
+["amazon-bedrock"."global.anthropic.claude-sonnet-4-20250514-v1:0"]
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
 
 ["amazon-bedrock"."global.anthropic.claude-sonnet-4-5-20250929-v1:0"]
 input = 3
@@ -3394,46 +3532,46 @@ cache_write = 0.396
 output = 3.311
 
 ["amazon-bedrock"."jp.anthropic.claude-haiku-4-5-20251001-v1:0"]
-input = 1
-cache_read = 0.1
-cache_write = 1.25
-output = 5
+input = 1.1
+cache_read = 0.11
+cache_write = 1.375
+output = 5.5
 
 ["amazon-bedrock"."jp.anthropic.claude-opus-4-7"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 25
+input = 5.5
+cache_read = 0.55
+cache_write = 6.875
+output = 27.5
 
 ["amazon-bedrock"."jp.anthropic.claude-opus-4-8"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 25
+input = 5.5
+cache_read = 0.55
+cache_write = 6.875
+output = 27.5
 
 ["amazon-bedrock"."jp.anthropic.claude-opus-5"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 25
+input = 5.5
+cache_read = 0.55
+cache_write = 6.875
+output = 27.5
 
 ["amazon-bedrock"."jp.anthropic.claude-sonnet-4-5-20250929-v1:0"]
-input = 3
-cache_read = 0.3
-cache_write = 3.75
-output = 15
+input = 3.3
+cache_read = 0.33
+cache_write = 4.125
+output = 16.5
 
 ["amazon-bedrock"."jp.anthropic.claude-sonnet-4-6"]
-input = 3
-cache_read = 0.3
-cache_write = 3.75
-output = 15
+input = 3.3
+cache_read = 0.33
+cache_write = 4.125
+output = 16.5
 
 ["amazon-bedrock"."jp.anthropic.claude-sonnet-5"]
-input = 2
-cache_read = 0.2
-cache_write = 2.5
-output = 10
+input = 2.2
+cache_read = 0.22
+cache_write = 2.75
+output = 11
 
 ["amazon-bedrock"."meta.llama3-1-70b-instruct-v1:0"]
 input = 0.72
@@ -3680,10 +3818,10 @@ cache_write = 0.8
 output = 3.2
 
 ["amazon-bedrock"."us.anthropic.claude-fable-5"]
-input = 10
-cache_read = 1
-cache_write = 12.5
-output = 50
+input = 11
+cache_read = 1.1
+cache_write = 13.75
+output = 55
 
 ["amazon-bedrock"."us.anthropic.claude-fable-5-1"]
 input = 11
@@ -3692,10 +3830,10 @@ cache_write = 13.75
 output = 55
 
 ["amazon-bedrock"."us.anthropic.claude-haiku-4-5-20251001-v1:0"]
-input = 1
-cache_read = 0.1
-cache_write = 1.25
-output = 5
+input = 1.1
+cache_read = 0.11
+cache_write = 1.375
+output = 5.5
 
 ["amazon-bedrock"."us.anthropic.claude-opus-4-1-20250805-v1:0"]
 input = 15
@@ -3704,52 +3842,58 @@ cache_write = 18.75
 output = 75
 
 ["amazon-bedrock"."us.anthropic.claude-opus-4-5-20251101-v1:0"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 25
+input = 5.5
+cache_read = 0.55
+cache_write = 6.875
+output = 27.5
 
 ["amazon-bedrock"."us.anthropic.claude-opus-4-6-v1"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 25
+input = 5.5
+cache_read = 0.55
+cache_write = 6.875
+output = 27.5
 
 ["amazon-bedrock"."us.anthropic.claude-opus-4-7"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 25
+input = 5.5
+cache_read = 0.55
+cache_write = 6.875
+output = 27.5
 
 ["amazon-bedrock"."us.anthropic.claude-opus-4-8"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 25
+input = 5.5
+cache_read = 0.55
+cache_write = 6.875
+output = 27.5
 
 ["amazon-bedrock"."us.anthropic.claude-opus-5"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 25
+input = 5.5
+cache_read = 0.55
+cache_write = 6.875
+output = 27.5
+
+["amazon-bedrock"."us.anthropic.claude-sonnet-4-20250514-v1:0"]
+input = 3
+cache_read = 0.3
+cache_write = 3.75
+output = 15
 
 ["amazon-bedrock"."us.anthropic.claude-sonnet-4-5-20250929-v1:0"]
-input = 3
-cache_read = 0.3
-cache_write = 3.75
-output = 15
+input = 3.3
+cache_read = 0.33
+cache_write = 4.125
+output = 16.5
 
 ["amazon-bedrock"."us.anthropic.claude-sonnet-4-6"]
-input = 3
-cache_read = 0.3
-cache_write = 3.75
-output = 15
+input = 3.3
+cache_read = 0.33
+cache_write = 4.125
+output = 16.5
 
 ["amazon-bedrock"."us.anthropic.claude-sonnet-5"]
-input = 2
-cache_read = 0.2
-cache_write = 2.5
-output = 10
+input = 2.2
+cache_read = 0.22
+cache_write = 2.75
+output = 11
 
 ["amazon-bedrock"."us.deepseek.r1-v1:0"]
 input = 1.35
@@ -3950,10 +4094,20 @@ input = 0.14
 cache_read = 0.0028
 output = 0.28
 
-["amd"."MiniCPM5-1B"]
+["amd"."DeepSeek-V4.1-Flash"]
+input = 0.14
+cache_read = 0.0028
+output = 0.28
+
+["amd"."MiniCPM5-2B"]
 input = 0.124
 cache_read = 0.124
 output = 0.7425
+
+["amd"."Qwen3.8-27B"]
+input = 0.08
+cache_read = 0.05
+output = 0.35
 
 ["amd"."Qwen3.8-Flash-Next"]
 input = 0.15
@@ -4566,6 +4720,16 @@ cache_read = 1.25
 output = 32
 
 ["azure"."gpt-image-2"]
+input = 5
+cache_read = 1.25
+output = 30
+
+["azure"."gpt-image-2.5-flare"]
+input = 5
+cache_read = 1.25
+output = 30
+
+["azure"."gpt-image-2.5-sunburst"]
 input = 5
 cache_read = 1.25
 output = 30
@@ -5314,9 +5478,9 @@ cache_read = 0.03
 output = 2
 
 ["chutes"."Qwen/Qwen3.8-27B-TEE"]
-input = 0.32
-cache_read = 0.032
-output = 2.5
+input = 0.24
+cache_read = 0.024
+output = 2.2
 
 ["chutes"."deepseek-ai/DeepSeek-V3.2-TEE"]
 input = 1
@@ -5334,9 +5498,9 @@ cache_read = 0.012
 output = 0.37
 
 ["chutes"."moonshotai/Kimi-K2.6-TEE"]
-input = 0.58
-cache_read = 0.058
-output = 3.4
+input = 0.5
+cache_read = 0.05
+output = 2.85
 
 ["chutes"."moonshotai/Kimi-K3-TEE"]
 input = 3
@@ -5725,6 +5889,19 @@ cache_read = 0.2
 cache_write = 2.5
 output = 12
 
+["cloudflare-ai-gateway"."openai/gpt-6-astra"]
+input = 10
+cache_read = 1
+cache_write = 12
+output = 50
+
+["cloudflare-ai-gateway"."openai/gpt-6-astra".long_context]  # > 272000 input+cache tokens
+threshold = 272000
+input = 20
+cache_read = 2
+cache_write = 25
+output = 75
+
 ["cloudflare-ai-gateway"."openai/o3"]
 input = 2
 cache_read = 0.5
@@ -5739,6 +5916,11 @@ output = 4.4
 input = 1.1
 cache_read = 0.275
 output = 4.4
+
+["cloudflare-ai-gateway"."unbiased/pareto"]
+input = 2.5
+cache_read = 0.25
+output = 7.5
 
 ["cloudflare-ai-gateway"."xai/grok-4.20-0309-non-reasoning"]
 input = 2
@@ -5760,10 +5942,22 @@ input = 2
 cache_read = 0.3
 output = 6
 
+["cloudflare-ai-gateway"."xai/grok-4.5".long_context]  # > 200000 input+cache tokens
+threshold = 200000
+input = 4
+cache_read = 0.6
+output = 12
+
 ["cloudflare-ai-gateway"."xai/grok-4.6"]
 input = 2
 cache_read = 0.5
 output = 6
+
+["cloudflare-ai-gateway"."xai/grok-4.6".long_context]  # > 200000 input+cache tokens
+threshold = 200000
+input = 4
+cache_read = 1
+output = 12
 
 # ── cloudflare-workers-ai ── source: models.dev
 ["cloudflare-workers-ai"]
@@ -5930,6 +6124,11 @@ output = 0
 # ── coralbricks ── source: models.dev
 ["coralbricks"]
 
+["coralbricks"."glm-5.3-flash-fp4"]
+input = 0.15
+cache_read = 0
+output = 0.5
+
 ["coralbricks"."glm-5.3-fp4"]
 input = 1.12
 cache_read = 0
@@ -6013,9 +6212,9 @@ cache_write = 2.749
 output = 11
 
 ["cortecs"."codestral-2508"]
-input = 0.334
-cache_read = 0.033
-output = 1.003
+input = 0.368
+cache_read = 0.037
+output = 1.103
 
 ["cortecs"."deepseek-r1-0528"]
 input = 0.652
@@ -6028,9 +6227,9 @@ cache_read = 0.075
 output = 0.495
 
 ["cortecs"."deepseek-v4-flash-0731"]
-input = 0.09
-cache_read = 0.014
-output = 0.17
+input = 0.055
+cache_read = 0.009
+output = 0.174
 
 ["cortecs"."deepseek-v4-pro"]
 input = 1.73
@@ -6041,6 +6240,11 @@ output = 3.46
 input = 2
 cache_read = 0.5
 output = 3.999
+
+["cortecs"."deepseek-v4.1-flash"]
+input = 0.5
+cache_read = 0.13
+output = 1.499
 
 ["cortecs"."devstral-2512"]
 input = 0.478
@@ -6127,9 +6331,9 @@ cache_read = 0.346
 output = 4.348
 
 ["cortecs"."glm-5.2"]
-input = 1.2
-cache_read = 0.26
-output = 4.2
+input = 1.1
+cache_read = 0.18
+output = 2.99
 
 ["cortecs"."glm-5.3"]
 input = 1.114
@@ -6238,30 +6442,26 @@ cache_read = 0.124
 output = 2.768
 
 ["cortecs"."kimi-k2.6"]
-input = 0.773
-cache_read = 0.193
-output = 3.38
+input = 0.516
+cache_read = 0.115
+output = 2.869
 
 ["cortecs"."kimi-k2.7-code"]
-input = 0.75
-cache_read = 0.201
-output = 3.5
+input = 0.706
+cache_read = 0.18
+output = 3.208
 
 ["cortecs"."kimi-k3"]
 input = 3
 output = 14.999
-
-["cortecs"."llama-3.1-405b-instruct"]
-input = 1.95
-output = 1.95
 
 ["cortecs"."llama-3.1-8b-instruct"]
 input = 0.167
 output = 0.167
 
 ["cortecs"."llama-3.3-70b-instruct"]
-input = 0.129
-output = 0.399
+input = 0.724
+output = 0.724
 
 ["cortecs"."minicpm-v-4.5"]
 input = 0.651
@@ -6290,19 +6490,19 @@ cache_read = 0.099
 output = 1.977
 
 ["cortecs"."ministral-14b-2512"]
-input = 0.223
+input = 0.24
 cache_read = 0.022
-output = 0.223
+output = 0.24
 
 ["cortecs"."ministral-3b-2512"]
-input = 0.111
-cache_read = 0.011
-output = 0.111
+input = 0.123
+cache_read = 0.012
+output = 0.123
 
 ["cortecs"."ministral-8b-2512"]
-input = 0.167
+input = 0.179
 cache_read = 0.017
-output = 0.167
+output = 0.179
 
 ["cortecs"."mistral-7b-instruct-v0.2"]
 input = 0.159
@@ -6317,14 +6517,14 @@ input = 4.284
 output = 12.952
 
 ["cortecs"."mistral-large-2512"]
-input = 0.557
-cache_read = 0.056
-output = 1.671
+input = 0.613
+cache_read = 0.061
+output = 1.838
 
 ["cortecs"."mistral-medium-3.5"]
-input = 1.393
-cache_read = 0.139
-output = 7.13
+input = 1.532
+cache_read = 0.154
+output = 7.843
 
 ["cortecs"."mistral-nemo-instruct-2407"]
 input = 0.145
@@ -6336,9 +6536,9 @@ input = 0.111
 output = 0.334
 
 ["cortecs"."mistral-small-2603"]
-input = 0.143
-cache_read = 0.014
-output = 0.568
+input = 0.156
+cache_read = 0.016
+output = 0.625
 
 ["cortecs"."mistral-small-3.2-24b-instruct-2506"]
 input = 0.1
@@ -6394,8 +6594,8 @@ input = 0.099
 output = 0.299
 
 ["cortecs"."qwen3-32b"]
-input = 0.089
-output = 0.312
+input = 0.179
+output = 0.697
 
 ["cortecs"."qwen3-coder-30b-a3b-instruct"]
 input = 0.067
@@ -6456,9 +6656,9 @@ input = 0
 output = 0
 
 ["cortecs"."voxtral-small-2507"]
-input = 0.111
-cache_read = 0.011
-output = 0.334
+input = 0.123
+cache_read = 0.012
+output = 0.368
 
 # ── crof ── source: models.dev
 ["crof"]
@@ -6950,6 +7150,12 @@ input = 1.88
 cache_read = 0.23
 cache_write = 2.35
 output = 5.63
+
+["crossmodel"."qwen/qwen3.8-omni-flash"]
+input = 0.13
+cache_read = 0.016
+cache_write = 0.13
+output = 0.43
 
 ["crossmodel"."tencent/hy3"]
 input = 0.16
@@ -7548,9 +7754,9 @@ cache_read = 0.2
 output = 6
 
 ["deepinfra"."Qwen/Qwen3.8-27B"]
-input = 0.4
-cache_read = 0.04
-output = 3
+input = 0.2
+cache_read = 0.05
+output = 2.5
 
 ["deepinfra"."Qwen/Qwen3.8-Flash"]
 input = 0.113
@@ -7755,7 +7961,7 @@ output = 2.4
 
 ["deepinfra"."zai-org/GLM-5.3"]
 input = 1.2
-cache_read = 0.12
+cache_read = 0.2
 output = 4
 
 ["deepinfra"."zai-org/GLM-5.3-Flash"]
@@ -7983,6 +8189,11 @@ input = 1.32
 cache_read = 0.044
 output = 3.96
 
+["digitalocean"."deepseek-v4.1-flash"]
+input = 0.3
+cache_read = 0.006
+output = 1.2
+
 ["digitalocean"."e5-large-v2"]
 input = 0.02
 output = 0
@@ -8037,8 +8248,8 @@ cache_read = 0.285
 output = 12.95
 
 ["digitalocean"."llama-4-maverick"]
-input = 0.2
-output = 0.696
+input = 0.25
+output = 0.87
 
 ["digitalocean"."llama3-8b-instruct"]
 input = 0.198
@@ -8359,26 +8570,32 @@ output = 50
 
 ["edenai"."amazon/amazon.nova-lite-v1:0"]
 input = 0.06
+cache_read = 0.015
 output = 0.24
 
 ["edenai"."amazon/amazon.nova-lite-v1:0@us"]
 input = 0.06
+cache_read = 0.015
 output = 0.24
 
 ["edenai"."amazon/amazon.nova-micro-v1:0"]
 input = 0.035
+cache_read = 0.00875
 output = 0.14
 
 ["edenai"."amazon/amazon.nova-micro-v1:0@us"]
 input = 0.035
+cache_read = 0.00875
 output = 0.14
 
 ["edenai"."amazon/amazon.nova-pro-v1:0"]
 input = 0.8
+cache_read = 0.2
 output = 3.2
 
 ["edenai"."amazon/amazon.nova-pro-v1:0@us"]
 input = 0.8
+cache_read = 0.2
 output = 3.2
 
 ["edenai"."amazon/google.gemma-3-12b-it"]
@@ -8773,24 +8990,24 @@ cache_read = 0.01
 output = 0.4
 
 ["edenai"."deepseek/deepseek-chat"]
-input = 0.28
-cache_read = 0.028
-output = 0.42
+input = 0.15
+cache_read = 0.003
+output = 0.6
 
 ["edenai"."deepseek/deepseek-v4-flash"]
-input = 0.44
-cache_read = 0.014
-output = 1.32
+input = 0.15
+cache_read = 0.003
+output = 0.6
 
 ["edenai"."deepseek/deepseek-v4-flash-vision-exp"]
-input = 0.22
-cache_read = 0.007
-output = 0.66
+input = 0.15
+cache_read = 0.003
+output = 0.6
 
 ["edenai"."deepseek/deepseek-v4-pro"]
-input = 1.32
-cache_read = 0.044
-output = 3.96
+input = 0.66
+cache_read = 0.022
+output = 1.98
 
 ["edenai"."fireworks_ai/accounts/fireworks/models/deepseek-v4-flash-0731"]
 input = 0.22
@@ -8824,10 +9041,6 @@ output = 0.18
 ["edenai"."flexai/Muse-Glimmer-30B"]
 input = 0.3
 output = 1.1
-
-["edenai"."flexai/Nemotron-3-Super-120B-A12B"]
-input = 0.085
-output = 0.4
 
 ["edenai"."flexai/Step-3.7-Flash"]
 input = 0.2
@@ -8977,16 +9190,16 @@ cache_read = 0.0375
 output = 0.3
 
 ["edenai"."infomaniak/mistralai/Ministral-3-14B-Instruct-2512"]
-input = 0.34776
-output = 0.46368
+input = 0.3438
+output = 0.4584
 
 ["edenai"."ionos/meta-llama/Llama-3.3-70B-Instruct"]
-input = 0.75348
-output = 0.75348
+input = 0.7449
+output = 0.7449
 
 ["edenai"."ionos/openai/gpt-oss-120b"]
-input = 0.17388
-output = 0.75348
+input = 0.1719
+output = 0.7449
 
 ["edenai"."minimax/MiniMax-M2"]
 input = 0.3
@@ -9067,6 +9280,7 @@ output = 0.6
 
 ["edenai"."mistral/voxtral-small-latest"]
 input = 0.1
+cache_read = 0.01
 output = 0.4
 
 ["edenai"."moonshot/kimi-k2.6"]
@@ -9099,15 +9313,15 @@ input = 1.32
 cache_read = 1.32
 output = 3.96
 
+["edenai"."nebius/deepseek-ai/DeepSeek-V4.1-Flash"]
+input = 0.3
+cache_read = 0.3
+output = 1.2
+
 ["edenai"."nebius/google/gemma-3-27b-it"]
 input = 0.1
 cache_read = 0.1
 output = 0.3
-
-["edenai"."nebius/meta-llama/Llama-3.3-70B-Instruct"]
-input = 0.13
-cache_read = 0.13
-output = 0.4
 
 ["edenai"."nebius/nvidia/Nemotron-3-Ultra-550b-a55b"]
 input = 1
@@ -9515,20 +9729,20 @@ input = 0.8
 output = 2.4
 
 ["edenai"."scaleway/deepseek-v4-flash-0731"]
-input = 0.46368
-output = 0.92736
+input = 0.4584
+output = 0.9168
 
 ["edenai"."scaleway/gemma-3-27b-it"]
 input = 0.287125
 output = 0.57425
 
 ["edenai"."scaleway/gpt-oss-120b"]
-input = 0.17388
-output = 0.69552
+input = 0.1719
+output = 0.6876
 
 ["edenai"."scaleway/llama-3.3-70b-instruct"]
-input = 1.04328
-output = 1.04328
+input = 1.0314
+output = 1.0314
 
 ["edenai"."tensorx/deepseek/deepseek-v4-flash-0731"]
 input = 0.25
@@ -9574,19 +9788,10 @@ output = 1.5
 input = 0.15
 output = 0.6
 
-["edenai"."together_ai/openai/gpt-oss-20b"]
-input = 0.05
-output = 0.2
-
 ["edenai"."together_ai/thinkingmachines/Inkling"]
 input = 1
 cache_read = 0.17
 output = 4.05
-
-["edenai"."together_ai/thinkingmachines/Inkling-Small"]
-input = 0.5
-cache_read = 0.1
-output = 1.2
 
 ["edenai"."vertex/gemini-2.5-flash-image"]
 input = 0.3
@@ -9888,6 +10093,11 @@ output = 4
 input = 0.57
 cache_read = 0.57
 output = 1.71
+
+["empiriolabs"."deepseek-v4-1-flash"]
+input = 0.3
+cache_read = 0.3
+output = 1.2
 
 ["empiriolabs"."deepseek-v4-flash"]
 input = 0.14
@@ -10225,6 +10435,11 @@ input = 2
 cache_read = 2
 output = 6
 
+["empiriolabs"."qwen3-8-omni-flash"]
+input = 0.3
+cache_read = 0.3
+output = 0.94
+
 ["empiriolabs"."qwen3-max"]
 input = 1.08
 cache_read = 1.08
@@ -10543,6 +10758,11 @@ input = 0.22
 cache_read = 0.007
 output = 0.66
 
+["fireworks-ai"."accounts/fireworks/models/deepseek-v4-pro"]
+input = 1.2
+cache_read = 0.6
+output = 1.2
+
 ["fireworks-ai"."accounts/fireworks/models/deepseek-v4-pro-0813"]
 input = 1.32
 cache_read = 0.044
@@ -10593,6 +10813,11 @@ input = 3
 cache_read = 0.3
 output = 15
 
+["fireworks-ai"."accounts/fireworks/models/minimax-m2p7"]
+input = 1.2
+cache_read = 0.6
+output = 1.2
+
 ["fireworks-ai"."accounts/fireworks/models/minimax-m3"]
 input = 0.3
 cache_read = 0.06
@@ -10605,7 +10830,7 @@ output = 1.5
 
 ["fireworks-ai"."accounts/fireworks/models/nemotron-3-ultra-nvfp4"]
 input = 0.6
-cache_read = 0.119
+cache_read = 0.12
 output = 2.4
 
 ["fireworks-ai"."accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b"]
@@ -10628,6 +10853,16 @@ input = 2
 cache_read = 0.25
 output = 6
 
+["fireworks-ai"."accounts/fireworks/routers/deepseek-flash-latest"]
+input = 0.22
+cache_read = 0.007
+output = 0.66
+
+["fireworks-ai"."accounts/fireworks/routers/deepseek-pro-latest"]
+input = 1.32
+cache_read = 0.044
+output = 3.96
+
 ["fireworks-ai"."accounts/fireworks/routers/glm-5p2-fast"]
 input = 2.1
 cache_read = 0.21
@@ -10638,10 +10873,45 @@ input = 2.1
 cache_read = 0.39
 output = 6.6
 
+["fireworks-ai"."accounts/fireworks/routers/glm-fast-latest"]
+input = 2.1
+cache_read = 0.39
+output = 6.6
+
+["fireworks-ai"."accounts/fireworks/routers/glm-flash-latest"]
+input = 0.15
+cache_read = 0.03
+output = 0.5
+
+["fireworks-ai"."accounts/fireworks/routers/glm-latest"]
+input = 1.4
+cache_read = 0.26
+output = 4.4
+
+["fireworks-ai"."accounts/fireworks/routers/kimi-fast-latest"]
+input = 4.5
+cache_read = 0.45
+output = 22.5
+
 ["fireworks-ai"."accounts/fireworks/routers/kimi-k3-fast"]
 input = 4.5
 cache_read = 0.45
 output = 22.5
+
+["fireworks-ai"."accounts/fireworks/routers/kimi-latest"]
+input = 3
+cache_read = 0.3
+output = 15
+
+["fireworks-ai"."accounts/fireworks/routers/minimax-latest"]
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+["fireworks-ai"."accounts/fireworks/routers/qwen-max-latest"]
+input = 2
+cache_read = 0.25
+output = 6
 
 # ── freemodel ── source: models.dev
 ["freemodel"]
@@ -10734,9 +11004,14 @@ cache_read = 0.26
 output = 4.4
 
 ["friendli"."zai-org/GLM-5.3"]
-input = 1.4
-cache_read = 0.26
-output = 4.4
+input = 1.26
+cache_read = 0.234
+output = 3.96
+
+["friendli"."zai-org/GLM-5.3-Flash"]
+input = 0.15
+cache_read = 0.03
+output = 0.5
 
 # ── frogbot ── source: models.dev
 ["frogbot"]
@@ -11824,6 +12099,11 @@ input = 1
 cache_read = 0.1
 output = 3.2
 
+["google-vertex"."zai-org/glm-5.2-maas"]
+input = 1.4
+cache_read = 0.14
+output = 4.4
+
 # ── google-vertex-anthropic ── source: models.dev
 ["google-vertex-anthropic"]
 
@@ -12604,9 +12884,9 @@ cache_read = 0.056
 output = 1.1
 
 ["hetzner"."Qwen3.8-27B"]
-input = 0.2
+input = 0.08
 cache_read = 0.05
-output = 2
+output = 0.35
 
 # ── hpc-ai ── source: models.dev
 ["hpc-ai"]
@@ -13012,19 +13292,9 @@ cache_read = 0.03
 output = 1.2
 
 ["hyper"."gemma-4-26b-a4b-it"]
-input = 0.102
-cache_read = 0.051
-output = 0.356
-
-["hyper"."glm-5"]
-input = 0.86
-cache_read = 0.43
-output = 2.752
-
-["hyper"."glm-5.1"]
-input = 1.318
-cache_read = 0.659
-output = 4.308
+input = 0.098
+cache_read = 0.049
+output = 0.334
 
 ["hyper"."glm-5.2"]
 input = 1.52432
@@ -13042,9 +13312,9 @@ cache_read = 0.031575
 output = 0.5444
 
 ["hyper"."gpt-oss-120b"]
-input = 0.168
-cache_read = 0.084
-output = 0.66
+input = 0.178
+cache_read = 0.089
+output = 0.68
 
 ["hyper"."inkling"]
 input = 1.0888
@@ -13056,16 +13326,6 @@ input = 0.6
 cache_read = 0.3
 output = 2.5
 
-["hyper"."kimi-k2.5"]
-input = 0.5584
-cache_read = 0.2792
-output = 2.935
-
-["hyper"."kimi-k2.6"]
-input = 1.03436
-cache_read = 0.174208
-output = 4.3552
-
 ["hyper"."kimi-k2.7-code"]
 input = 1.03436
 cache_read = 0.206872
@@ -13076,53 +13336,15 @@ input = 3.2664
 cache_read = 0.32664
 output = 16.332
 
-["hyper"."llama-3.3-70b-instruct"]
-input = 0.6066
-cache_read = 0.3033
-output = 1.0386
-
-["hyper"."llama-4-maverick-17b-128e-instruct-fp8"]
-input = 0.255
-cache_read = 0.1275
-output = 0.8365
-
 ["hyper"."minimax-m2.7"]
-input = 0.396
-cache_read = 0.198
-output = 1.464
+input = 0.484
+cache_read = 0.242
+output = 1.852
 
 ["hyper"."minimax-m3"]
 input = 0.32664
 cache_read = 0.064239
 output = 1.30656
-
-["hyper"."qwen3-coder-480b-a35b-instruct-int4-mixed-ar"]
-input = 0.445
-cache_read = 0.2225
-output = 2.145
-
-["hyper"."qwen3-next-80b-a3b-instruct"]
-input = 0.1175
-cache_read = 0.05875
-output = 1.136
-
-["hyper"."qwen3.6-flash"]
-input = 1
-cache_read = 0.1
-cache_write = 1.25
-output = 4
-
-["hyper"."qwen3.6-max"]
-input = 2
-cache_read = 0.2
-cache_write = 2.5
-output = 12
-
-["hyper"."qwen3.6-plus"]
-input = 2
-cache_read = 0.2
-cache_write = 2.5
-output = 6
 
 ["hyper"."qwen3.7-flash"]
 input = 0.2
@@ -13723,6 +13945,52 @@ cache_read = 0.12
 cache_write = 0
 output = 2.35
 
+# ── inco ── source: models.dev
+["inco"]
+
+["inco"."deepseek-v4.1-flash:fast"]
+input = 0.6
+output = 2.4
+
+["inco"."glm-5.3"]
+input = 1.4
+output = 4.4
+
+["inco"."glm-5.3-flash:fast"]
+input = 0.15
+output = 0.5
+
+["inco"."glm-5.3:fast"]
+input = 2.8
+output = 8.8
+
+["inco"."kimi-k3:fast"]
+input = 6
+output = 30
+
+["inco"."minimax-m3"]
+input = 0.3
+output = 1.2
+
+["inco"."minimax-m3:fast"]
+input = 0.6
+output = 2.4
+
+# ── infer ── source: models.dev
+["infer"]
+
+["infer"."infer/gpt-5.6-sol:official"]
+input = 2.5
+cache_read = 0.25
+cache_write = 3.125
+output = 12.5
+
+["infer"."infer/gpt-6-astra:official"]
+input = 12.5
+cache_read = 1.25
+cache_write = 15.625
+output = 62.5
+
 # ── inference ── source: models.dev
 ["inference"]
 
@@ -13964,13 +14232,50 @@ output = 1.75
 # ── iteracompute ── source: models.dev
 ["iteracompute"]
 
-["iteracompute"."iteracompute/ornith-1.5-35b-a3b"]
+["iteracompute"."deepseek/deepseek-v4-flash-0731"]
+input = 0.34
+cache_read = 0.035
+output = 1.05
+
+["iteracompute"."deepseek/deepseek-v4-pro-0813"]
+input = 1.1
+cache_read = 0.11
+output = 3.3
+
+["iteracompute"."minimax/minimax-m3"]
+input = 0.29
+cache_read = 0.08
+output = 1.2
+
+["iteracompute"."moonshotai/kimi-k3"]
+input = 3
+cache_read = 0.29
+output = 14.9
+
+["iteracompute"."ornith-ai/ornith-1.5-35b-a3b"]
 input = 0.3
+cache_read = 0.03
 output = 3
 
-["iteracompute"."iteracompute/qwen3.8-27b"]
+["iteracompute"."qwen/qwen3.8-2.4t-a95b"]
+input = 1.95
+cache_read = 0.2
+output = 5.95
+
+["iteracompute"."qwen/qwen3.8-27b"]
 input = 0.3
+cache_read = 0.03
 output = 2.5
+
+["iteracompute"."z-ai/glm-5.3"]
+input = 1.2
+cache_read = 0.26
+output = 3.5
+
+["iteracompute"."z-ai/glm-5.3-flash"]
+input = 0.14
+cache_read = 0.03
+output = 0.49
 
 # ── jalapeno ── source: models.dev
 ["jalapeno"]
@@ -14395,9 +14700,8 @@ input = 0
 output = 0
 
 ["kenari"."glm-5-3"]
-input = 1.4
-cache_read = 1.4
-output = 4.4
+input = 0
+output = 0
 
 ["kenari"."glm-5-3-flash"]
 input = 0
@@ -14794,8 +15098,8 @@ input = 0
 output = 0
 
 ["kilo"."deepseek/deepseek-chat"]
-input = 0.2574
-output = 1.0287
+input = 0.32
+output = 0.89
 
 ["kilo"."deepseek/deepseek-chat-v3-0324"]
 input = 0.25
@@ -14892,12 +15196,6 @@ cache_write = 0.375
 output = 10
 
 ["kilo"."google/gemini-2.5-pro-preview"]
-input = 1.25
-cache_read = 0.125
-cache_write = 0.375
-output = 10
-
-["kilo"."google/gemini-2.5-pro-preview-05-06"]
 input = 1.25
 cache_read = 0.125
 cache_write = 0.375
@@ -15021,8 +15319,8 @@ input = 0
 output = 0
 
 ["kilo"."gryphe/mythomax-l2-13b"]
-input = 0.06
-output = 0.06
+input = 0.08
+output = 0.11
 
 ["kilo"."ibm-granite/granite-4.0-h-micro"]
 input = 0.017
@@ -15153,8 +15451,8 @@ input = 0.1
 output = 0.32
 
 ["kilo"."meta-llama/llama-4-maverick"]
-input = 0.2
-output = 0.696
+input = 0.1875
+output = 0.6525
 
 ["kilo"."meta-llama/llama-4-scout"]
 input = 0.1
@@ -15274,11 +15572,6 @@ input = 2
 cache_read = 0.2
 output = 6
 
-["kilo"."mistralai/mistral-large-2512"]
-input = 0.5
-cache_read = 0.05
-output = 1.5
-
 ["kilo"."mistralai/mistral-medium-3"]
 input = 0.4
 cache_read = 0.04
@@ -15316,8 +15609,8 @@ input = 0.351
 output = 0.555
 
 ["kilo"."mistralai/mistral-small-3.2-24b-instruct"]
-input = 0.075
-output = 0.2
+input = 0.09375
+output = 0.25
 
 ["kilo"."mistralai/mixtral-8x22b-instruct"]
 input = 2
@@ -15358,9 +15651,9 @@ cache_read = 0.19
 output = 4
 
 ["kilo"."moonshotai/kimi-k3"]
-input = 3
-cache_read = 0.3
-output = 15
+input = 1.7
+cache_read = 0.17
+output = 8.5
 
 ["kilo"."morph/morph-v3-fast"]
 input = 0.8
@@ -15453,10 +15746,6 @@ input = 30
 output = 60
 
 ["kilo"."openai/gpt-4-turbo"]
-input = 10
-output = 30
-
-["kilo"."openai/gpt-4-turbo-preview"]
 input = 10
 output = 30
 
@@ -15628,12 +15917,6 @@ cache_read = 0.4
 cache_write = 5
 output = 20
 
-["kilo"."openai/gpt-5.6-sol-discounted"]
-input = 2
-cache_read = 0.2
-cache_write = 2.5
-output = 10
-
 ["kilo"."openai/gpt-5.6-sol-pro"]
 input = 4
 cache_read = 0.4
@@ -15683,8 +15966,8 @@ cache_read = 0.03
 output = 0.17
 
 ["kilo"."openai/gpt-oss-20b"]
-input = 0.02
-output = 0.1
+input = 0.018
+output = 0.09
 
 ["kilo"."openai/gpt-oss-safeguard-20b"]
 input = 0.075
@@ -15786,6 +16069,10 @@ output = 0.2
 ["kilo"."poolside/laguna-xs-2.1:free"]
 input = 0
 output = 0
+
+["kilo"."prism-ml/ternary-bonsai-2-27b"]
+input = 0.075
+output = 0.5
 
 ["kilo"."qwen/qwen-2.5-72b-instruct"]
 input = 0.36
@@ -15958,9 +16245,9 @@ input = 0.45
 output = 2.7
 
 ["kilo"."qwen/qwen3.6-35b-a3b"]
-input = 0.1
+input = 0.15
 cache_read = 0.05
-output = 0.9
+output = 1
 
 ["kilo"."qwen/qwen3.6-flash"]
 input = 0.1875
@@ -15984,14 +16271,14 @@ cache_write = 0.038
 output = 0.13
 
 ["kilo"."qwen/qwen3.7-max"]
-input = 1.25
-cache_read = 0.125
-cache_write = 1.5625
-output = 3.75
+input = 1.475
+cache_read = 0.295
+cache_write = 1.84375
+output = 4.425
 
 ["kilo"."qwen/qwen3.7-plus"]
 input = 0.32
-cache_read = 0.032
+cache_read = 0.064
 cache_write = 0.4
 output = 1.28
 
@@ -16006,6 +16293,10 @@ input = 0.425
 cache_read = 0.085
 cache_write = 0.53125
 output = 2.55
+
+["kilo"."qwen/qwen3.8-27b:free"]
+input = 0
+output = 0
 
 ["kilo"."qwen/qwen3.8-flash"]
 input = 0.15
@@ -16128,9 +16419,9 @@ input = 0.074
 output = 0.295
 
 ["kilo"."tencent/hy3"]
-input = 0.14
-cache_read = 0.035
-output = 0.58
+input = 0.132
+cache_read = 0.033
+output = 0.528
 
 ["kilo"."tencent/hy3-preview"]
 input = 0.18
@@ -16169,6 +16460,11 @@ output = 1.2
 ["kilo"."thinkingmachines/inkling-small:free"]
 input = 0
 output = 0
+
+["kilo"."unbiased/pareto"]
+input = 2.5
+cache_read = 0.25
+output = 7.5
 
 ["kilo"."undi95/remm-slerp-l2-13b"]
 input = 0.35
@@ -16294,6 +16590,10 @@ input = 1.4
 cache_read = 0.26
 output = 4.4
 
+["kilo"."z-ai/glm-5.2:free"]
+input = 0
+output = 0
+
 ["kilo"."z-ai/glm-5.3"]
 input = 1.4
 cache_read = 0.26
@@ -16303,6 +16603,11 @@ output = 4.4
 input = 0.15
 cache_read = 0.03
 output = 0.5
+
+["kilo"."z-ai/glm-5.3-flashx"]
+input = 0.37
+cache_read = 0.075
+output = 1.25
 
 ["kilo"."z-ai/glm-5v-turbo"]
 input = 1.2
@@ -16333,10 +16638,20 @@ cache_read = 0.2
 cache_write = 2.5
 output = 10
 
+["kilo"."~deepseek/deepseek-flash-latest"]
+input = 0.12
+cache_read = 0.0036
+output = 0.48
+
+["kilo"."~deepseek/deepseek-pro-latest"]
+input = 0.66
+cache_read = 0.022
+output = 1.98
+
 ["kilo"."~deepseek/deepseek-v4-flash-latest"]
 input = 0.04
-cache_read = 0.01
-output = 0.1
+cache_read = 0.016
+output = 0.16
 
 ["kilo"."~google/gemini-flash-latest"]
 input = 0.75
@@ -16351,9 +16666,9 @@ cache_write = 0.375
 output = 12
 
 ["kilo"."~moonshotai/kimi-latest"]
-input = 2.1
-cache_read = 0.23
-output = 10.95
+input = 1.7
+cache_read = 0.17
+output = 8.5
 
 ["kilo"."~openai/gpt-astra-latest"]
 input = 10
@@ -16395,32 +16710,59 @@ cache_read = 0.015
 output = 0.25
 
 ["kilo"."~z-ai/glm-latest"]
-input = 0.92
-cache_read = 0.184
-output = 3.1372
+input = 0.7735
+cache_read = 0.127075
+output = 2.431
 
-# ── kimi-for-coding ── source: models.dev
-["kimi-for-coding"]
+# ── kimi-code-plan-cn ── source: models.dev
+["kimi-code-plan-cn"]
 
-["kimi-for-coding"."k3"]
+["kimi-code-plan-cn"."k3"]
 input = 0
 cache_read = 0
 cache_write = 0
 output = 0
 
-["kimi-for-coding"."k3-256k"]
+["kimi-code-plan-cn"."k3-256k"]
 input = 0
 cache_read = 0
 cache_write = 0
 output = 0
 
-["kimi-for-coding"."kimi-for-coding"]
+["kimi-code-plan-cn"."kimi-for-coding"]
 input = 0
 cache_read = 0
 cache_write = 0
 output = 0
 
-["kimi-for-coding"."kimi-for-coding-highspeed"]
+["kimi-code-plan-cn"."kimi-for-coding-highspeed"]
+input = 0
+cache_read = 0
+cache_write = 0
+output = 0
+
+# ── kimi-code-plan-global ── source: models.dev
+["kimi-code-plan-global"]
+
+["kimi-code-plan-global"."k3"]
+input = 0
+cache_read = 0
+cache_write = 0
+output = 0
+
+["kimi-code-plan-global"."k3-256k"]
+input = 0
+cache_read = 0
+cache_write = 0
+output = 0
+
+["kimi-code-plan-global"."kimi-for-coding"]
+input = 0
+cache_read = 0
+cache_write = 0
+output = 0
+
+["kimi-code-plan-global"."kimi-for-coding-highspeed"]
 input = 0
 cache_read = 0
 cache_write = 0
@@ -16502,8 +16844,8 @@ input = 0
 output = 0
 
 ["llama"."llama-4-maverick-17b-128e-instruct-fp8"]
-input = 0
-output = 0
+input = 0.25
+output = 1
 
 ["llama"."llama-4-scout-17b-16e-instruct-fp8"]
 input = 0
@@ -16513,9 +16855,13 @@ output = 0
 ["llmgateway"]
 
 ["llmgateway"."Qwen3.8-27B"]
-input = 0.2
+input = 0.08
 cache_read = 0.05
-output = 2
+output = 0.35
+
+["llmgateway"."atria-dawn-preview"]
+input = 0
+output = 0
 
 ["llmgateway"."auto"]
 input = 0.85
@@ -16996,10 +17342,10 @@ cache_write = 0.25
 output = 1.2
 
 ["llmgateway"."gpt-5.6-sol"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 30
+input = 4
+cache_read = 0.4
+cache_write = 5
+output = 20
 
 ["llmgateway"."gpt-5.6-terra"]
 input = 2
@@ -17578,6 +17924,11 @@ input = 1.4
 cache_read = 0.28
 output = 4.4
 
+["llmgateway-providers"."alibaba/glm-5.3"]
+input = 1.4
+cache_read = 0.28
+output = 4.4
+
 ["llmgateway-providers"."alibaba/kimi-k2.5"]
 input = 0.574
 output = 3.011
@@ -17786,6 +18137,10 @@ cache_read = 0.2
 cache_write = 2.5
 output = 10
 
+["llmgateway-providers"."atria/atria-dawn-preview"]
+input = 0
+output = 0
+
 ["llmgateway-providers"."aws-bedrock/claude-fable-5"]
 input = 10
 cache_read = 1
@@ -17905,10 +18260,10 @@ cache_write = 0.275
 output = 1.32
 
 ["llmgateway-providers"."aws-mantle/gpt-5.6-sol"]
-input = 5.5
-cache_read = 0.55
-cache_write = 6.875
-output = 33
+input = 4.4
+cache_read = 0.44
+cache_write = 5.5
+output = 22
 
 ["llmgateway-providers"."aws-mantle/gpt-5.6-terra"]
 input = 2.2
@@ -18094,10 +18449,10 @@ cache_write = 0.25
 output = 1.2
 
 ["llmgateway-providers"."azure/gpt-5.6-sol"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 30
+input = 4
+cache_read = 0.4
+cache_write = 5
+output = 20
 
 ["llmgateway-providers"."azure/gpt-5.6-terra"]
 input = 2
@@ -18137,13 +18492,18 @@ output = 4.4
 
 ["llmgateway-providers"."baidu/deepseek-v4-flash"]
 input = 0.44
-cache_read = 0.044
+cache_read = 0.014
 output = 1.32
 
 ["llmgateway-providers"."baidu/deepseek-v4-pro"]
 input = 1.32
-cache_read = 0.132
+cache_read = 0.042
 output = 3.96
+
+["llmgateway-providers"."baidu/deepseek-v4.1-flash"]
+input = 0.3
+cache_read = 0.006
+output = 1.2
 
 ["llmgateway-providers"."baidu/glm-5"]
 input = 1
@@ -18266,9 +18626,9 @@ input = 0.6
 output = 1.2
 
 ["llmgateway-providers"."consensusprotocol/Qwen3.8-27B"]
-input = 0.2
+input = 0.08
 cache_read = 0.05
-output = 2
+output = 0.35
 
 ["llmgateway-providers"."consensusprotocol/deepseek-v4-flash"]
 input = 0.05
@@ -18278,7 +18638,7 @@ output = 0.1
 ["llmgateway-providers"."consensusprotocol/deepseek-v4.1-flash"]
 input = 0.2
 cache_read = 0.005
-output = 1
+output = 0.6
 
 ["llmgateway-providers"."consensusprotocol/gemma-4-31b-it"]
 input = 0.1
@@ -19110,10 +19470,10 @@ cache_write = 0.25
 output = 1.2
 
 ["llmgateway-providers"."openai/gpt-5.6-sol"]
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 30
+input = 4
+cache_read = 0.4
+cache_write = 5
+output = 20
 
 ["llmgateway-providers"."openai/gpt-5.6-terra"]
 input = 2
@@ -19190,6 +19550,11 @@ input = 0.961
 cache_read = 0.079
 output = 1.922
 
+["llmgateway-providers"."runware/deepseek-v4.1-flash"]
+input = 0.15
+cache_read = 0.01
+output = 0.6
+
 ["llmgateway-providers"."runware/gemma-4-31b-it"]
 input = 0.102
 cache_read = 0.012
@@ -19240,8 +19605,13 @@ input = 5
 cache_read = 0.5
 output = 30
 
+["llmgateway-providers"."scx-ai-gp/deepseek-v4.1-flash"]
+input = 0.15
+cache_read = 0.01
+output = 0.6
+
 ["llmgateway-providers"."scx-ai-gp/glm-5.2"]
-input = 0.8
+input = 0.88
 cache_read = 0.16
 output = 2.55
 
@@ -19402,10 +19772,6 @@ input = 0.3
 cache_read = 0.006
 output = 1.2
 
-["llmgateway-providers"."together-ai/gemma-4-31b-it"]
-input = 0.39
-output = 0.97
-
 ["llmgateway-providers"."together-ai/glm-4.7"]
 input = 0.45
 output = 2
@@ -19413,10 +19779,6 @@ output = 2
 ["llmgateway-providers"."together-ai/gpt-oss-120b"]
 input = 0.15
 output = 0.6
-
-["llmgateway-providers"."together-ai/gpt-oss-20b"]
-input = 0.05
-output = 0.2
 
 ["llmgateway-providers"."together-ai/kimi-k3"]
 input = 3
@@ -19526,16 +19888,6 @@ output = 1.2
 ["llmgateway-providers"."vertex-openai/qwen3-next-80b-a3b-thinking"]
 input = 0.15
 output = 1.2
-
-["llmgateway-providers"."vichar-ai/glm-5.3"]
-input = 1.4
-cache_read = 0.26
-output = 4.4
-
-["llmgateway-providers"."vichar-ai/glm-5.3-flash"]
-input = 0.15
-cache_read = 0.03
-output = 0.5
 
 ["llmgateway-providers"."xai/grok-4"]
 input = 3
@@ -19967,6 +20319,84 @@ output = 0.8
 input = 0.8
 output = 2.56
 
+# ── melious ── source: models.dev
+["melious"]
+
+["melious"."deepseek-r1-0528"]
+input = 0.69552
+cache_read = 0.185472
+output = 2.78208
+
+["melious"."deepseek-v3.2"]
+input = 0.34776
+cache_read = 0.092736
+output = 0.5796
+
+["melious"."deepseek-v4-flash-0731"]
+input = 0.11592
+cache_read = 0.023184
+output = 0.2898
+
+["melious"."deepseek-v4-pro"]
+input = 1.85472
+cache_read = 0.46368
+output = 3.70944
+
+["melious"."deepseek-v4-pro-0813"]
+input = 1.1592
+cache_read = 0.11592
+output = 3.4776
+
+["melious"."deepseek-v4.1-flash"]
+input = 0.23184
+cache_read = 0.011592
+output = 1.1592
+
+["melious"."glm-5"]
+input = 1.10124
+cache_read = 0.266616
+output = 3.36168
+
+["melious"."glm-5.1"]
+input = 1.50696
+cache_read = 0.370944
+output = 4.6368
+
+["melious"."glm-5.2"]
+input = 1.1592
+cache_read = 0.2898
+output = 4.6368
+
+["melious"."glm-5.3"]
+input = 1.1592
+cache_read = 0.23184
+output = 3.4776
+
+["melious"."glm-5.3-flash"]
+input = 0.11592
+cache_read = 0.023184
+output = 0.46368
+
+["melious"."kimi-k2.5"]
+input = 0.5796
+cache_read = 0.139104
+output = 2.95596
+
+["melious"."kimi-k2.6"]
+input = 0.81144
+cache_read = 0.266616
+output = 4.0572
+
+["melious"."kimi-k2.7-code"]
+input = 0.81144
+cache_read = 0.220248
+output = 3.4776
+
+["melious"."kimi-k3"]
+input = 3.1878
+cache_read = 0.788256
+output = 15.939
+
 # ── merge-gateway ── source: models.dev
 ["merge-gateway"]
 
@@ -20133,18 +20563,18 @@ cache_read = 0.07
 output = 0.56
 
 ["merge-gateway"."deepseek/deepseek-v4-pro"]
-input = 0.66
-cache_read = 0.022
-output = 1.98
+input = 1.74
+cache_read = 0.145
+output = 3.48
 
 ["merge-gateway"."deepseek/deepseek-v4-pro-0423"]
 input = 1.65
 output = 3.3
 
 ["merge-gateway"."deepseek/deepseek-v4-pro-0813"]
-input = 0.66
-cache_read = 0.022
-output = 1.98
+input = 1.74
+cache_read = 0.003625
+output = 3.48
 
 ["merge-gateway"."deepseek/deepseek-v4.1-flash"]
 input = 0.15
@@ -21287,6 +21717,11 @@ input = 1.4
 cache_read = 0.14
 output = 4.4
 
+["mistral"."zai-glm-5-3"]
+input = 1.4
+cache_read = 0.14
+output = 4.4
+
 # ── mixlayer ── source: models.dev
 ["mixlayer"]
 
@@ -21631,11 +22066,6 @@ input = 0.1394
 cache_read = 0.0697
 output = 1.3328
 
-["nano-gpt"."MiniMax-M2"]
-input = 0.17
-cache_read = 0.085
-output = 1.53
-
 ["nano-gpt"."MiniMaxAI/MiniMax-M1-80k"]
 input = 0.6052
 cache_read = 0.3026
@@ -21726,10 +22156,10 @@ input = 0.5
 cache_read = 0.25
 output = 1
 
-["nano-gpt"."TEE/deepseek-v4-flash"]
-input = 0.2
-cache_read = 0.04
-output = 0.4
+["nano-gpt"."TEE/deepseek-v4.1-flash"]
+input = 0.65
+cache_read = 0.13
+output = 1.45
 
 ["nano-gpt"."TEE/gemma-4-26b-a4b-uncensored"]
 input = 0.15
@@ -21786,11 +22216,6 @@ input = 2
 cache_read = 2
 output = 2
 
-["nano-gpt"."TEE/gpt-oss-20b"]
-input = 0.04
-cache_read = 0.02
-output = 0.15
-
 ["nano-gpt"."TEE/kimi-k2.6"]
 input = 1.5
 cache_read = 0.375
@@ -21826,11 +22251,6 @@ input = 0.7
 cache_read = 0.35
 output = 0.7
 
-["nano-gpt"."TEE/qwen3-8b"]
-input = 0.11
-cache_read = 0.11
-output = 0.45
-
 ["nano-gpt"."TEE/qwen3.5-27b"]
 input = 0.3
 cache_read = 0.15
@@ -21850,11 +22270,6 @@ output = 2.7
 input = 0.2
 cache_read = 0.1
 output = 1.27
-
-["nano-gpt"."TEE/qwen3.6-35b-a3b-uncensored"]
-input = 0.3
-cache_read = 0.15
-output = 1.5
 
 ["nano-gpt"."TEE/qwen3.8-27b"]
 input = 0.4
@@ -21981,34 +22396,6 @@ input = 0.8
 cache_read = 0.4
 output = 1.6
 
-["nano-gpt"."alibaba/qwen3.6-27b"]
-input = 0.203
-cache_read = 0.1015
-output = 2.24
-
-["nano-gpt"."alibaba/qwen3.6-27b:thinking"]
-input = 0.203
-cache_read = 0.1015
-output = 2.24
-
-["nano-gpt"."alibaba/qwen3.6-flash"]
-input = 0.19
-cache_read = 0.02
-cache_write = 0.24
-output = 1.16
-
-["nano-gpt"."alibaba/qwen3.8-flash"]
-input = 0.14
-cache_read = 0.016
-cache_write = 0.2
-output = 0.42
-
-["nano-gpt"."alibaba/qwen3.8-max-0902"]
-input = 2
-cache_read = 0.17
-cache_write = 2.5
-output = 6
-
 ["nano-gpt"."amazon/nova-2-lite-v1"]
 input = 0.51
 cache_read = 0.255
@@ -22052,10 +22439,60 @@ cache_read = 0.25
 cache_write = 12.5
 output = 50
 
+["nano-gpt"."anthropic/claude-haiku-4.5"]
+input = 1
+cache_read = 0.1
+output = 5
+
+["nano-gpt"."anthropic/claude-haiku-4.5:thinking"]
+input = 1
+cache_read = 0.1
+output = 5
+
 ["nano-gpt"."anthropic/claude-haiku-latest"]
 input = 1
 cache_read = 0.1
 output = 5
+
+["nano-gpt"."anthropic/claude-opus-4"]
+input = 15
+cache_read = 1.5
+output = 75
+
+["nano-gpt"."anthropic/claude-opus-4.1"]
+input = 15
+cache_read = 1.5
+output = 75
+
+["nano-gpt"."anthropic/claude-opus-4.1:thinking"]
+input = 15
+cache_read = 1.5
+output = 75
+
+["nano-gpt"."anthropic/claude-opus-4.1:thinking:1024"]
+input = 15
+cache_read = 1.5
+output = 75
+
+["nano-gpt"."anthropic/claude-opus-4.1:thinking:32768"]
+input = 15
+cache_read = 1.5
+output = 75
+
+["nano-gpt"."anthropic/claude-opus-4.1:thinking:8192"]
+input = 15
+cache_read = 1.5
+output = 75
+
+["nano-gpt"."anthropic/claude-opus-4.5"]
+input = 5
+cache_read = 0.5
+output = 25
+
+["nano-gpt"."anthropic/claude-opus-4.5:thinking"]
+input = 5
+cache_read = 0.5
+output = 25
 
 ["nano-gpt"."anthropic/claude-opus-4.6"]
 input = 5
@@ -22102,6 +22539,26 @@ input = 5
 cache_read = 0.5
 output = 25
 
+["nano-gpt"."anthropic/claude-opus-4:thinking"]
+input = 15
+cache_read = 1.5
+output = 75
+
+["nano-gpt"."anthropic/claude-opus-4:thinking:1024"]
+input = 15
+cache_read = 1.5
+output = 75
+
+["nano-gpt"."anthropic/claude-opus-4:thinking:32768"]
+input = 15
+cache_read = 1.5
+output = 75
+
+["nano-gpt"."anthropic/claude-opus-4:thinking:8192"]
+input = 15
+cache_read = 1.5
+output = 75
+
 ["nano-gpt"."anthropic/claude-opus-5"]
 input = 5
 cache_read = 0.5
@@ -22114,12 +22571,52 @@ cache_read = 0.5
 cache_write = 6.25
 output = 25
 
+["nano-gpt"."anthropic/claude-sonnet-4"]
+input = 3
+cache_read = 0.3
+output = 15
+
+["nano-gpt"."anthropic/claude-sonnet-4.5"]
+input = 3
+cache_read = 0.3
+output = 15
+
+["nano-gpt"."anthropic/claude-sonnet-4.5:thinking"]
+input = 3
+cache_read = 0.3
+output = 15
+
 ["nano-gpt"."anthropic/claude-sonnet-4.6"]
 input = 3
 cache_read = 0.3
 output = 15
 
 ["nano-gpt"."anthropic/claude-sonnet-4.6:thinking"]
+input = 3
+cache_read = 0.3
+output = 15
+
+["nano-gpt"."anthropic/claude-sonnet-4:thinking"]
+input = 3
+cache_read = 0.3
+output = 15
+
+["nano-gpt"."anthropic/claude-sonnet-4:thinking:1024"]
+input = 3
+cache_read = 0.3
+output = 15
+
+["nano-gpt"."anthropic/claude-sonnet-4:thinking:32768"]
+input = 3
+cache_read = 0.3
+output = 15
+
+["nano-gpt"."anthropic/claude-sonnet-4:thinking:64000"]
+input = 3
+cache_read = 0.3
+output = 15
+
+["nano-gpt"."anthropic/claude-sonnet-4:thinking:8192"]
 input = 3
 cache_read = 0.3
 output = 15
@@ -22176,18 +22673,6 @@ input = 0.4
 cache_read = 0.2
 output = 1.8
 
-["nano-gpt"."brave"]
-input = 5
-output = 5
-
-["nano-gpt"."brave-pro"]
-input = 5
-output = 5
-
-["nano-gpt"."brave-research"]
-input = 5
-output = 5
-
 ["nano-gpt"."bytedance-seed/seed-2-1-turbo"]
 input = 0.5
 cache_read = 0.25
@@ -22224,121 +22709,6 @@ input = 2
 cache_read = 1
 output = 6
 
-["nano-gpt"."chutesai/Mistral-Small-3.2-24B-Instruct-2506"]
-input = 0.2
-cache_read = 0.1
-output = 0.4
-
-["nano-gpt"."claude-haiku-4-5-20251001"]
-input = 1
-cache_read = 0.1
-output = 5
-
-["nano-gpt"."claude-haiku-4-5-20251001-thinking"]
-input = 1
-cache_read = 0.1
-output = 5
-
-["nano-gpt"."claude-opus-4-1-20250805"]
-input = 15
-cache_read = 1.5
-output = 75
-
-["nano-gpt"."claude-opus-4-1-thinking"]
-input = 15
-cache_read = 1.5
-output = 75
-
-["nano-gpt"."claude-opus-4-1-thinking:1024"]
-input = 15
-cache_read = 1.5
-output = 75
-
-["nano-gpt"."claude-opus-4-1-thinking:32768"]
-input = 15
-cache_read = 1.5
-output = 75
-
-["nano-gpt"."claude-opus-4-1-thinking:8192"]
-input = 15
-cache_read = 1.5
-output = 75
-
-["nano-gpt"."claude-opus-4-20250514"]
-input = 15
-cache_read = 1.5
-output = 75
-
-["nano-gpt"."claude-opus-4-5-20251101"]
-input = 5
-cache_read = 0.5
-output = 25
-
-["nano-gpt"."claude-opus-4-5-20251101:thinking"]
-input = 5
-cache_read = 0.5
-output = 25
-
-["nano-gpt"."claude-opus-4-thinking"]
-input = 15
-cache_read = 1.5
-output = 75
-
-["nano-gpt"."claude-opus-4-thinking:1024"]
-input = 15
-cache_read = 1.5
-output = 75
-
-["nano-gpt"."claude-opus-4-thinking:32768"]
-input = 15
-cache_read = 1.5
-output = 75
-
-["nano-gpt"."claude-opus-4-thinking:8192"]
-input = 15
-cache_read = 1.5
-output = 75
-
-["nano-gpt"."claude-sonnet-4-20250514"]
-input = 3
-cache_read = 0.3
-output = 15
-
-["nano-gpt"."claude-sonnet-4-5-20250929"]
-input = 3
-cache_read = 0.3
-output = 15
-
-["nano-gpt"."claude-sonnet-4-5-20250929-thinking"]
-input = 3
-cache_read = 0.3
-output = 15
-
-["nano-gpt"."claude-sonnet-4-thinking"]
-input = 3
-cache_read = 0.3
-output = 15
-
-["nano-gpt"."claude-sonnet-4-thinking:1024"]
-input = 3
-cache_read = 0.3
-output = 15
-
-["nano-gpt"."claude-sonnet-4-thinking:32768"]
-input = 3
-cache_read = 0.3
-output = 15
-
-["nano-gpt"."claude-sonnet-4-thinking:64000"]
-input = 3
-cache_read = 0.3
-output = 15
-
-["nano-gpt"."claude-sonnet-4-thinking:8192"]
-input = 3
-cache_read = 0.3
-output = 15
-
 ["nano-gpt"."claw-high"]
 input = 1
 cache_read = 0.2
@@ -22364,21 +22734,6 @@ output = 14.246
 input = 2.5
 cache_read = 1.25
 output = 10
-
-["nano-gpt"."crofai/greg-2-super"]
-input = 1.5
-cache_read = 0.25
-output = 5
-
-["nano-gpt"."crofai/greg-2-ultra"]
-input = 3
-cache_read = 0.5
-output = 10
-
-["nano-gpt"."deepclaude"]
-input = 3
-cache_read = 0.3
-output = 15
 
 ["nano-gpt"."deepcogito/cogito-v1-preview-qwen-32B"]
 input = 1.8
@@ -22521,14 +22876,14 @@ cache_read = 0.11
 output = 2.2
 
 ["nano-gpt"."deepseek/deepseek-v4.1-flash"]
-input = 0.15
-cache_read = 0.003
-output = 0.6
+input = 0.13
+cache_read = 0.006
+output = 0.52
 
 ["nano-gpt"."deepseek/deepseek-v4.1-flash:thinking"]
-input = 0.15
-cache_read = 0.003
-output = 0.6
+input = 0.13
+cache_read = 0.006
+output = 0.52
 
 ["nano-gpt"."doubao-1.5-pro-256k"]
 input = 0.799
@@ -22594,10 +22949,6 @@ output = 3
 input = 0.15
 cache_read = 0.075
 output = 0.6
-
-["nano-gpt"."exa-answer"]
-input = 2.5
-output = 2.5
 
 ["nano-gpt"."failspy/Meta-Llama-3-70B-Instruct-abliterated-v3.5"]
 input = 0.7
@@ -22769,16 +23120,6 @@ input = 0.12
 cache_read = 0.06
 output = 0.38
 
-["nano-gpt"."gemma-4-26b-a4b-uncensored"]
-input = 0.12
-cache_read = 0.06
-output = 0.38
-
-["nano-gpt"."gemma-4-26b-a4b-uncensored:thinking"]
-input = 0.12
-cache_read = 0.06
-output = 0.38
-
 ["nano-gpt"."gemma-4-31b-it-darkidol"]
 input = 0.1
 cache_read = 0.05
@@ -22814,16 +23155,6 @@ input = 0.1
 cache_read = 0.05
 output = 0.45
 
-["nano-gpt"."gemma-4-e2b-it"]
-input = 0.02
-cache_read = 0.01
-output = 0.1
-
-["nano-gpt"."gemma-4-e4b-it"]
-input = 0.04
-cache_read = 0.02
-output = 0.2
-
 ["nano-gpt"."glm-4-air-0111"]
 input = 0.1394
 cache_read = 0.0697
@@ -22853,6 +23184,11 @@ output = 0.3
 input = 0.7
 cache_read = 0.35
 output = 0.7
+
+["nano-gpt"."google/diffusiongemma"]
+input = 0.05
+cache_read = 0.025
+output = 0.15
 
 ["nano-gpt"."google/gemini-3-flash-preview"]
 input = 0.5
@@ -22933,7 +23269,7 @@ output = 3.75
 ["nano-gpt"."google/gemini-flash-latest"]
 input = 0.75
 cache_read = 0.075
-cache_write = 0.075
+cache_write = 0.041667
 output = 3.75
 
 ["nano-gpt"."google/gemini-flash-lite-latest"]
@@ -22953,6 +23289,11 @@ input = 0.12
 cache_read = 0.06
 output = 0.38
 
+["nano-gpt"."google/gemma-4-26b-a4b-it-cybersecurity"]
+input = 0.1056
+cache_read = 0.0528
+output = 0.3344
+
 ["nano-gpt"."google/gemma-4-26b-a4b-it:thinking"]
 input = 0.13
 cache_read = 0.065
@@ -22967,6 +23308,11 @@ output = 0.45
 input = 0.1
 cache_read = 0.05
 output = 0.35
+
+["nano-gpt"."google/gemma4-31b-splituntied"]
+input = 0.1
+cache_read = 0.05
+output = 0.3
 
 ["nano-gpt"."hermes-high"]
 input = 1
@@ -23039,6 +23385,16 @@ input = 0.075
 cache_read = 0.015
 output = 0.22
 
+["nano-gpt"."inference-net/schematron-v2-small"]
+input = 0.05
+cache_read = 0.025
+output = 0.23
+
+["nano-gpt"."inference-net/schematron-v2-turbo"]
+input = 0.03
+cache_read = 0.015
+output = 0.15
+
 ["nano-gpt"."inflatebot/MN-12B-Mag-Mell-R1"]
 input = 0.493
 cache_read = 0.2465
@@ -23092,10 +23448,6 @@ output = 0.75
 input = 0.25
 cache_read = 0.125
 output = 1
-
-["nano-gpt"."meta-llama/llama-3.1-405b-instruct"]
-input = 2.0265
-output = 2.0265
 
 ["nano-gpt"."meta-llama/llama-3.1-8b-instruct"]
 input = 0.0544
@@ -23167,6 +23519,11 @@ input = 0.3
 cache_read = 0.06
 output = 1.2
 
+["nano-gpt"."minimax/minimax-m2"]
+input = 0.17
+cache_read = 0.085
+output = 1.53
+
 ["nano-gpt"."minimax/minimax-m2-her"]
 input = 0.302
 cache_read = 0.151
@@ -23212,31 +23569,6 @@ input = 0.3
 cache_read = 0.15
 output = 0.9
 
-["nano-gpt"."mistral-small-31-24b-instruct"]
-input = 0.1
-cache_read = 0.05
-output = 0.3
-
-["nano-gpt"."mistral/mistral-medium-3.5"]
-input = 1.5
-cache_read = 0.75
-output = 7.5
-
-["nano-gpt"."mistral/mistral-medium-3.5:thinking"]
-input = 1.5
-cache_read = 0.75
-output = 7.5
-
-["nano-gpt"."mistralai/Devstral-Small-2505"]
-input = 0.06
-cache_read = 0.03
-output = 0.06
-
-["nano-gpt"."mistralai/Mistral-Nemo-Instruct-2407"]
-input = 0.1003
-cache_read = 0.05015
-output = 0.1207
-
 ["nano-gpt"."mistralai/codestral-2508"]
 input = 0.3
 cache_read = 0.15
@@ -23246,6 +23578,11 @@ output = 0.9
 input = 0.4
 cache_read = 0.2
 output = 1.4
+
+["nano-gpt"."mistralai/devstral-small-2505"]
+input = 0.06
+cache_read = 0.03
+output = 0.06
 
 ["nano-gpt"."mistralai/ministral-14b-2512"]
 input = 0.2
@@ -23272,11 +23609,6 @@ input = 2.006
 cache_read = 0.2
 output = 6.001
 
-["nano-gpt"."mistralai/mistral-large-3-675b-instruct-2512"]
-input = 1
-cache_read = 0.5
-output = 3
-
 ["nano-gpt"."mistralai/mistral-medium-3"]
 input = 0.4
 cache_read = 0.2
@@ -23287,6 +23619,21 @@ input = 0.4
 cache_read = 0.2
 output = 2
 
+["nano-gpt"."mistralai/mistral-medium-3.5"]
+input = 1.5
+cache_read = 0.75
+output = 7.5
+
+["nano-gpt"."mistralai/mistral-medium-3.5:thinking"]
+input = 1.5
+cache_read = 0.75
+output = 7.5
+
+["nano-gpt"."mistralai/mistral-nemo-instruct-2407"]
+input = 0.1003
+cache_read = 0.05015
+output = 0.1207
+
 ["nano-gpt"."mistralai/mistral-saba"]
 input = 0.1989
 cache_read = 0.09945
@@ -23295,6 +23642,16 @@ output = 0.595
 ["nano-gpt"."mistralai/mistral-small-24b-instruct-2501"]
 input = 0.1155
 output = 0.3465
+
+["nano-gpt"."mistralai/mistral-small-3.1-24b-instruct"]
+input = 0.1
+cache_read = 0.05
+output = 0.3
+
+["nano-gpt"."mistralai/mistral-small-3.2-24b-instruct"]
+input = 0.2
+cache_read = 0.1
+output = 0.4
 
 ["nano-gpt"."mistralai/mistral-small-4-119b-2603"]
 input = 0.4
@@ -23444,6 +23801,11 @@ output = 2.5
 input = 0.5
 cache_read = 0.25
 output = 2.5
+
+["nano-gpt"."nvidia/nemotron-3.5-content-safety"]
+input = 0.05
+cache_read = 0.025
+output = 0.15
 
 ["nano-gpt"."nvidia/nemotron-3.5-lightning"]
 input = 0.05
@@ -23739,11 +24101,6 @@ input = 0.15
 cache_read = 0.075
 output = 1.5
 
-["nano-gpt"."perplexity-academic-researcher"]
-input = 2
-cache_read = 1
-output = 8
-
 ["nano-gpt"."phi-4-mini-instruct"]
 input = 0.17
 cache_read = 0.085
@@ -23769,81 +24126,45 @@ input = 0.1
 cache_read = 0.01
 output = 0.2
 
+["nano-gpt"."prism-ml/ternary-bonsai-2-27b"]
+input = 0.075
+cache_read = 0.0375
+output = 0.5
+
 ["nano-gpt"."qvq-max"]
 input = 1.2
 cache_read = 0.6
 output = 4.8
 
-["nano-gpt"."qwen-3.6-plus"]
-input = 0.325
-cache_read = 0.0325
-cache_write = 0.40625
-output = 1.95
-
-["nano-gpt"."qwen-long"]
-input = 0.1003
-cache_read = 0.05015
-output = 0.408
-
-["nano-gpt"."qwen-max"]
-input = 1.5997
-cache_read = 0.79985
-output = 6.392
-
-["nano-gpt"."qwen-plus"]
-input = 0.3995
-cache_read = 0.19975
-output = 1.2002
-
-["nano-gpt"."qwen-turbo"]
-input = 0.04998
-cache_read = 0.02499
-output = 0.2006
-
-["nano-gpt"."qwen/Qwen2.5-Coder-32B-Instruct"]
-input = 0.2006
-cache_read = 0.1003
-output = 0.2006
-
-["nano-gpt"."qwen/Qwen3-235B-A22B-Instruct-2507"]
-input = 0.13
-cache_read = 0.065
-output = 0.5
-
-["nano-gpt"."qwen/Qwen3-235B-A22B-Thinking-2507"]
-input = 0.3
-cache_read = 0.15
-output = 0.5
-
-["nano-gpt"."qwen/Qwen3-8B"]
-input = 0.47
-cache_read = 0.235
-output = 0.47
-
-["nano-gpt"."qwen/Qwen3-Next-80B-A3B-Instruct"]
-input = 0.15
-cache_read = 0.075
-output = 0.65
-
-["nano-gpt"."qwen/Qwen3-VL-235B-A22B-Instruct"]
-input = 0.3
-cache_read = 0.15
-output = 1.2
-
-["nano-gpt"."qwen/Qwen3.6-35B-A3B"]
-input = 0.112
-cache_read = 0.056
-output = 0.8
-
-["nano-gpt"."qwen/Qwen3.6-35B-A3B:thinking"]
-input = 0.112
-cache_read = 0.056
-output = 0.8
-
 ["nano-gpt"."qwen/qwen-2.5-72b-instruct"]
 input = 0.357
 cache_read = 0.1785
 output = 0.408
+
+["nano-gpt"."qwen/qwen-long"]
+input = 0.1003
+cache_read = 0.05015
+output = 0.408
+
+["nano-gpt"."qwen/qwen-max"]
+input = 1.5997
+cache_read = 0.79985
+output = 6.392
+
+["nano-gpt"."qwen/qwen-plus"]
+input = 0.3995
+cache_read = 0.19975
+output = 1.2002
+
+["nano-gpt"."qwen/qwen-turbo"]
+input = 0.04998
+cache_read = 0.02499
+output = 0.2006
+
+["nano-gpt"."qwen/qwen2.5-coder-32b-instruct"]
+input = 0.2006
+cache_read = 0.1003
+output = 0.2006
 
 ["nano-gpt"."qwen/qwen3-14b"]
 input = 0.08
@@ -23855,20 +24176,40 @@ input = 0.3
 cache_read = 0.15
 output = 0.5
 
+["nano-gpt"."qwen/qwen3-235b-a22b-instruct-2507"]
+input = 0.13
+cache_read = 0.065
+output = 0.5
+
 ["nano-gpt"."qwen/qwen3-30b-a3b"]
 input = 0.1
 cache_read = 0.05
 output = 0.3
+
+["nano-gpt"."qwen/qwen3-30b-a3b-instruct-2507"]
+input = 0.2
+cache_read = 0.1
+output = 0.5
 
 ["nano-gpt"."qwen/qwen3-32b"]
 input = 0.1
 cache_read = 0.05
 output = 0.3
 
+["nano-gpt"."qwen/qwen3-8b"]
+input = 0.47
+cache_read = 0.235
+output = 0.47
+
 ["nano-gpt"."qwen/qwen3-coder"]
 input = 0.13
 cache_read = 0.065
 output = 0.5
+
+["nano-gpt"."qwen/qwen3-coder-30b-a3b-instruct"]
+input = 0.1
+cache_read = 0.05
+output = 0.4
 
 ["nano-gpt"."qwen/qwen3-coder-flash"]
 input = 0.3
@@ -23890,17 +24231,67 @@ input = 1.2002
 cache_read = 0.6001
 output = 6.001
 
+["nano-gpt"."qwen/qwen3-max-2026-01-23"]
+input = 1.2002
+cache_read = 0.6001
+output = 6.001
+
+["nano-gpt"."qwen/qwen3-next-80b-a3b-instruct"]
+input = 0.15
+cache_read = 0.075
+output = 0.65
+
 ["nano-gpt"."qwen/qwen3-next-80b-a3b-thinking"]
 input = 0.15
 cache_read = 0.075
 output = 0.65
+
+["nano-gpt"."qwen/qwen3-vl-235b-a22b-instruct"]
+input = 0.3
+cache_read = 0.15
+output = 1.9
+
+["nano-gpt"."qwen/qwen3-vl-235b-a22b-thinking"]
+input = 0.5
+cache_read = 0.25
+output = 6
+
+["nano-gpt"."qwen/qwen3.5-122b-a10b"]
+input = 0.437
+cache_read = 0.103788
+output = 3.496
+
+["nano-gpt"."qwen/qwen3.5-122b-a10b:thinking"]
+input = 0.437
+cache_read = 0.103788
+output = 3.496
+
+["nano-gpt"."qwen/qwen3.5-27b"]
+input = 0.27
+cache_read = 0.135
+output = 2.16
+
+["nano-gpt"."qwen/qwen3.5-27b:thinking"]
+input = 0.27
+cache_read = 0.135
+output = 2.16
+
+["nano-gpt"."qwen/qwen3.5-35b-a3b"]
+input = 0.225
+cache_read = 0.1125
+output = 1.8
+
+["nano-gpt"."qwen/qwen3.5-35b-a3b:thinking"]
+input = 0.225
+cache_read = 0.1125
+output = 1.8
 
 ["nano-gpt"."qwen/qwen3.5-397b-a17b"]
 input = 0.6
 cache_read = 0.3
 output = 3.6
 
-["nano-gpt"."qwen/qwen3.5-397b-a17b-thinking"]
+["nano-gpt"."qwen/qwen3.5-397b-a17b:thinking"]
 input = 0.6
 cache_read = 0.3
 output = 3.6
@@ -23910,35 +24301,127 @@ input = 0.05
 cache_read = 0.025
 output = 0.15
 
+["nano-gpt"."qwen/qwen3.5-flash"]
+input = 0.1
+cache_read = 0.05
+output = 0.4
+
+["nano-gpt"."qwen/qwen3.5-flash:thinking"]
+input = 0.1
+cache_read = 0.05
+output = 0.4
+
 ["nano-gpt"."qwen/qwen3.5-plus"]
 input = 0.4
 cache_read = 0.04
 output = 2.4
 
-["nano-gpt"."qwen/qwen3.5-plus-thinking"]
+["nano-gpt"."qwen/qwen3.5-plus:thinking"]
 input = 0.4
 cache_read = 0.04
 output = 2.4
 
-["nano-gpt"."qwen/qwen3.8-2.4t-a95b"]
-input = 2
-cache_read = 0.25
-cache_write = 2.5
-output = 6
+["nano-gpt"."qwen/qwen3.6-27b"]
+input = 0.203
+cache_read = 0.1015
+output = 2.24
+
+["nano-gpt"."qwen/qwen3.6-27b:thinking"]
+input = 0.203
+cache_read = 0.1015
+output = 2.24
+
+["nano-gpt"."qwen/qwen3.6-35b-a3b"]
+input = 0.112
+cache_read = 0.056
+output = 0.8
+
+["nano-gpt"."qwen/qwen3.6-35b-a3b:thinking"]
+input = 0.112
+cache_read = 0.056
+output = 0.8
+
+["nano-gpt"."qwen/qwen3.6-flash"]
+input = 0.19
+cache_read = 0.02
+cache_write = 0.24
+output = 1.16
+
+["nano-gpt"."qwen/qwen3.6-max-preview"]
+input = 1.04
+cache_read = 0.52
+output = 6.24
+
+["nano-gpt"."qwen/qwen3.6-plus"]
+input = 0.325
+cache_read = 0.0325
+cache_write = 0.40625
+output = 1.95
+
+["nano-gpt"."qwen/qwen3.7-flash"]
+input = 0.03
+cache_read = 0.006
+cache_write = 0.038
+output = 0.13
+
+["nano-gpt"."qwen/qwen3.7-flash:thinking"]
+input = 0.03
+cache_read = 0.006
+cache_write = 0.038
+output = 0.13
+
+["nano-gpt"."qwen/qwen3.7-max"]
+input = 2.5
+cache_read = 0.5
+cache_write = 3.125
+output = 7.5
+
+["nano-gpt"."qwen/qwen3.7-max:thinking"]
+input = 2.5
+cache_read = 0.5
+cache_write = 3.125
+output = 7.5
+
+["nano-gpt"."qwen/qwen3.7-plus"]
+input = 0.4
+cache_read = 0.08
+cache_write = 0.5
+output = 1.6
+
+["nano-gpt"."qwen/qwen3.7-plus:thinking"]
+input = 0.4
+cache_read = 0.08
+cache_write = 0.5
+output = 1.6
+
+["nano-gpt"."qwen/qwen3.8-27b"]
+input = 0.15
+cache_read = 0.04
+output = 0.7
+
+["nano-gpt"."qwen/qwen3.8-27b-cybersecurity"]
+input = 0.1
+cache_read = 0.05
+output = 0.6
 
 ["nano-gpt"."qwen/qwen3.8-27b-fable"]
 input = 0.25
 cache_read = 0.125
 output = 1.5
 
-["nano-gpt"."qwen/qwen3.8-27b-obliterated"]
+["nano-gpt"."qwen/qwen3.8-27b-hemmingway"]
 input = 0.25
 cache_read = 0.125
 output = 1.5
 
+["nano-gpt"."qwen/qwen3.8-27b-obliterated"]
+input = 0.25
+cache_read = 0.2
+output = 1.5
+
 ["nano-gpt"."qwen/qwen3.8-27b-obliterated:thinking"]
 input = 0.25
-cache_read = 0.125
+cache_read = 0.2
 output = 1.5
 
 ["nano-gpt"."qwen/qwen3.8-27b-queen"]
@@ -23947,170 +24430,53 @@ cache_read = 0.125
 output = 1.5
 
 ["nano-gpt"."qwen/qwen3.8-27b-uncensored"]
-input = 0.25
+input = 0.15
 cache_read = 0.125
-output = 1.5
-
-["nano-gpt"."qwen/qwen3.8-27b-uncensored:thinking"]
-input = 0.25
-cache_read = 0.125
-output = 1.5
-
-["nano-gpt"."qwen25-vl-72b-instruct"]
-input = 0.69989
-cache_read = 0.349945
-output = 0.69989
-
-["nano-gpt"."qwen3-30b-a3b-instruct-2507"]
-input = 0.2
-cache_read = 0.1
-output = 0.5
-
-["nano-gpt"."qwen3-coder-30b-a3b-instruct"]
-input = 0.1
-cache_read = 0.05
-output = 0.4
-
-["nano-gpt"."qwen3-max-2026-01-23"]
-input = 1.2002
-cache_read = 0.6001
-output = 6.001
-
-["nano-gpt"."qwen3-vl-235b-a22b-instruct-original"]
-input = 0.5
-cache_read = 0.25
 output = 1.2
 
-["nano-gpt"."qwen3-vl-235b-a22b-thinking"]
-input = 0.5
-cache_read = 0.25
-output = 6
+["nano-gpt"."qwen/qwen3.8-27b-uncensored:thinking"]
+input = 0.15
+cache_read = 0.125
+output = 1.2
 
-["nano-gpt"."qwen3.5-0.8b"]
-input = 0.06
-cache_read = 0.03
-output = 0.12
-
-["nano-gpt"."qwen3.5-122b-a10b"]
-input = 0.437
-cache_read = 0.103788
-output = 3.496
-
-["nano-gpt"."qwen3.5-122b-a10b:thinking"]
-input = 0.437
-cache_read = 0.103788
-output = 3.496
-
-["nano-gpt"."qwen3.5-27b"]
-input = 0.27
-cache_read = 0.135
-output = 2.16
-
-["nano-gpt"."qwen3.5-27b:thinking"]
-input = 0.27
-cache_read = 0.135
-output = 2.16
-
-["nano-gpt"."qwen3.5-2b"]
-input = 0.08
-cache_read = 0.04
-output = 0.16
-
-["nano-gpt"."qwen3.5-35b-a3b"]
-input = 0.225
-cache_read = 0.1125
-output = 1.8
-
-["nano-gpt"."qwen3.5-35b-a3b:thinking"]
-input = 0.225
-cache_read = 0.1125
-output = 1.8
-
-["nano-gpt"."qwen3.5-4b"]
-input = 0.1
-cache_read = 0.05
-output = 0.2
-
-["nano-gpt"."qwen3.5-flash"]
-input = 0.1
-cache_read = 0.05
-output = 0.4
-
-["nano-gpt"."qwen3.5-flash:thinking"]
-input = 0.1
-cache_read = 0.05
-output = 0.4
-
-["nano-gpt"."qwen3.5-omni-flash"]
-input = 0
-output = 0
-
-["nano-gpt"."qwen3.5-omni-plus"]
-input = 0
-output = 0
-
-["nano-gpt"."qwen3.6-max-preview"]
-input = 1.04
-cache_read = 0.52
-output = 6.24
-
-["nano-gpt"."qwen3.7-flash"]
-input = 0.03
-cache_read = 0.006
-cache_write = 0.038
-output = 0.13
-
-["nano-gpt"."qwen3.7-flash:thinking"]
-input = 0.03
-cache_read = 0.006
-cache_write = 0.038
-output = 0.13
-
-["nano-gpt"."qwen3.7-max"]
-input = 2.5
-cache_read = 0.5
-cache_write = 3.125
-output = 7.5
-
-["nano-gpt"."qwen3.7-max:thinking"]
-input = 2.5
-cache_read = 0.5
-cache_write = 3.125
-output = 7.5
-
-["nano-gpt"."qwen3.7-plus"]
-input = 0.4
-cache_read = 0.08
-cache_write = 0.5
-output = 1.6
-
-["nano-gpt"."qwen3.7-plus:thinking"]
-input = 0.4
-cache_read = 0.08
-cache_write = 0.5
-output = 1.6
-
-["nano-gpt"."qwen3.8-27b"]
+["nano-gpt"."qwen/qwen3.8-27b:thinking"]
 input = 0.15
 cache_read = 0.04
 output = 0.7
 
-["nano-gpt"."qwen3.8-27b:thinking"]
-input = 0.15
-cache_read = 0.04
-output = 0.7
+["nano-gpt"."qwen/qwen3.8-flash"]
+input = 0.14
+cache_read = 0.016
+cache_write = 0.2
+output = 0.42
 
-["nano-gpt"."qwen3.8-max"]
+["nano-gpt"."qwen/qwen3.8-max"]
 input = 2
 cache_read = 0.25
 cache_write = 2.5
 output = 6
 
-["nano-gpt"."qwen3.8-max:thinking"]
+["nano-gpt"."qwen/qwen3.8-max-0902"]
+input = 2
+cache_read = 0.17
+cache_write = 2.5
+output = 6
+
+["nano-gpt"."qwen/qwen3.8-max:thinking"]
 input = 2
 cache_read = 0.25
 cache_write = 2.5
 output = 6
+
+["nano-gpt"."qwen/qwen3.8-omni-flash"]
+input = 0.15
+cache_read = 0.016
+output = 0.47
+
+["nano-gpt"."qwen3-vl-235b-a22b-instruct-original"]
+input = 0.3
+cache_read = 0.15
+output = 1.9
 
 ["nano-gpt"."sakana/fugu-max"]
 input = 2
@@ -24142,26 +24508,6 @@ input = 0.5
 cache_read = 0.25
 output = 0.5
 
-["nano-gpt"."sonar"]
-input = 1
-cache_read = 0.5
-output = 1
-
-["nano-gpt"."sonar-deep-research"]
-input = 3.4
-cache_read = 1.7
-output = 13.6
-
-["nano-gpt"."sonar-pro"]
-input = 3
-cache_read = 1.5
-output = 15
-
-["nano-gpt"."sonar-reasoning-pro"]
-input = 2
-cache_read = 1
-output = 8
-
 ["nano-gpt"."soob3123/GrayLine-Qwen3-8B"]
 input = 0.3
 cache_read = 0.15
@@ -24192,6 +24538,11 @@ input = 0.2
 cache_read = 0.04
 output = 1.15
 
+["nano-gpt"."stepfun/step-5-preview"]
+input = 1
+cache_read = 0.05
+output = 2.7
+
 ["nano-gpt"."tencent/hy3"]
 input = 0.066
 cache_read = 0.029
@@ -24221,6 +24572,11 @@ output = 4.05
 input = 1
 cache_read = 0.17
 output = 4.05
+
+["nano-gpt"."unbiased/pareto"]
+input = 2.5
+cache_read = 0.25
+output = 7.5
 
 ["nano-gpt"."undi95/remm-slerp-l2-13b"]
 input = 0.799
@@ -24313,16 +24669,6 @@ cache_read = 0.0036
 cache_write = 0
 output = 0.87
 
-["nano-gpt"."xiaomi/mimo-v2.5-pro-crof"]
-input = 0.4
-cache_read = 0.003
-output = 0.8
-
-["nano-gpt"."xiaomi/mimo-v2.5-pro-crof:thinking"]
-input = 0.4
-cache_read = 0.003
-output = 0.8
-
 ["nano-gpt"."xiaomi/mimo-v2.5-pro:thinking"]
 input = 0.435
 cache_read = 0.0036
@@ -24410,16 +24756,6 @@ input = 0.07
 cache_read = 0.035
 output = 0.4
 
-["nano-gpt"."z-ai/glm-4.7-flash-original"]
-input = 0.07
-cache_read = 0.035
-output = 0.4
-
-["nano-gpt"."z-ai/glm-4.7-flash-original:thinking"]
-input = 0.07
-cache_read = 0.035
-output = 0.4
-
 ["nano-gpt"."z-ai/glm-4.7-flash:thinking"]
 input = 0.07
 cache_read = 0.035
@@ -24490,10 +24826,15 @@ input = 0.075
 cache_read = 0.015
 output = 0.25
 
+["nano-gpt"."z-ai/glm-5.3-flash-cybersecurity"]
+input = 0.15
+cache_read = 0.075
+output = 0.5
+
 ["nano-gpt"."z-ai/glm-5.3-flash-uncensored"]
-input = 0.35
-cache_read = 0.175
-output = 1.4
+input = 0.2
+cache_read = 0.1
+output = 0.8
 
 ["nano-gpt"."z-ai/glm-5.3:thinking"]
 input = 1
@@ -24743,6 +25084,16 @@ input = 1.75
 cache_read = 0.15
 output = 3.5
 
+["nebius"."deepseek-ai/DeepSeek-V4-Pro-0813"]
+input = 1.32
+cache_read = 1.32
+output = 3.96
+
+["nebius"."deepseek-ai/DeepSeek-V4.1-Flash"]
+input = 0.3
+cache_read = 0.3
+output = 1.2
+
 ["nebius"."google/gemma-3-27b-it"]
 input = 0.1
 cache_read = 0.01
@@ -24780,6 +25131,11 @@ output = 0.6
 
 ["nebius"."zai-org/GLM-5.2"]
 input = 1.4
+output = 4.4
+
+["nebius"."zai-org/GLM-5.3"]
+input = 1.4
+cache_read = 1.4
 output = 4.4
 
 ["nebius"."zai-org/GLM-5.3-Flash"]
@@ -25042,6 +25398,11 @@ output = 0.6
 ["neon"."gpt-oss-20b"]
 input = 0.07
 output = 0.3
+
+["neon"."grok-4-6"]
+input = 2
+cache_read = 0.5
+output = 6
 
 ["neon"."inkling"]
 input = 1
@@ -25857,9 +26218,8 @@ input = 0
 output = 0
 
 ["nvidia"."mistralai/mistral-large-3-675b-instruct-2512"]
-input = 1
-cache_read = 0.5
-output = 3
+input = 0
+output = 0
 
 ["nvidia"."mistralai/mistral-medium-3-instruct"]
 input = 0
@@ -26081,8 +26441,9 @@ input = 0
 output = 0
 
 ["nvidia"."qwen/qwen2.5-coder-32b-instruct"]
-input = 0
-output = 0
+input = 0.2006
+cache_read = 0.1003
+output = 0.2006
 
 ["nvidia"."qwen/qwen3-coder-480b-a35b-instruct"]
 input = 0
@@ -26125,9 +26486,80 @@ output = 0
 input = 0
 output = 0
 
+["nvidia"."z-ai/glm-5.3"]
+input = 0
+output = 0
+
 ["nvidia"."z-ai/glm-5.3-flash"]
 input = 0
 output = 0
+
+# ── oci ── source: models.dev
+["oci"]
+
+["oci"."meta.llama-3.3-70b-instruct"]
+input = 0.72
+output = 0.72
+
+["oci"."meta.llama-4-maverick-17b-128e-instruct-fp8"]
+input = 0.72
+output = 0.72
+
+["oci"."meta.llama-4-scout-17b-16e-instruct"]
+input = 0.72
+output = 0.72
+
+["oci"."openai.gpt-oss-120b"]
+input = 0.15
+output = 0.6
+
+["oci"."openai.gpt-oss-20b"]
+input = 0.07
+output = 0.3
+
+["oci"."xai.grok-4.20-non-reasoning"]
+input = 1.25
+cache_read = 0.2
+output = 2.5
+
+["oci"."xai.grok-4.20-non-reasoning".long_context]  # > 200000 input+cache tokens
+threshold = 200000
+input = 2.5
+cache_read = 0.4
+output = 5
+
+["oci"."xai.grok-4.20-reasoning"]
+input = 1.25
+cache_read = 0.2
+output = 2.5
+
+["oci"."xai.grok-4.20-reasoning".long_context]  # > 200000 input+cache tokens
+threshold = 200000
+input = 2.5
+cache_read = 0.4
+output = 5
+
+["oci"."xai.grok-4.3"]
+input = 1.25
+cache_read = 0.2
+output = 2.5
+
+["oci"."xai.grok-4.3".long_context]  # > 200000 input+cache tokens
+threshold = 200000
+input = 2.5
+cache_read = 0.4
+output = 5
+
+["oci"."xai.grok-4.6"]
+input = 2
+cache_read = 0.5
+output = 6
+
+["oci"."xai.grok-4.6".long_context]  # > 200000 input+cache tokens
+threshold = 200000
+input = 4
+cache_read = 1
+output = 12
 
 # ── ofox ── source: models.dev
 ["ofox"]
@@ -26317,6 +26749,12 @@ cache_read = 0.05
 cache_write = 0.5625
 output = 3.2
 
+["ofox"."bailian/qwen3.8-flash"]
+input = 0.15
+cache_read = 0.016
+cache_write = 0.2
+output = 0.47
+
 ["ofox"."bailian/qwen3.8-max"]
 input = 2
 cache_read = 0.25
@@ -26345,9 +26783,9 @@ cache_read = 0.028
 output = 0.51
 
 ["ofox"."deepseek/deepseek-v4-flash-0731"]
-input = 0.44
-cache_read = 0.014
-output = 1.32
+input = 0.308
+cache_read = 0.0098
+output = 0.924
 
 ["ofox"."deepseek/deepseek-v4-flash-vision-exp"]
 input = 0.44
@@ -26365,14 +26803,14 @@ cache_read = 0.15
 output = 3.96
 
 ["ofox"."deepseek/deepseek-v4-pro-0813"]
-input = 1.32
-cache_read = 0.044
-output = 3.96
+input = 0.924
+cache_read = 0.0308
+output = 2.772
 
 ["ofox"."deepseek/deepseek-v4.1-flash"]
-input = 0.3
-cache_read = 0.006
-output = 1.2
+input = 0.21
+cache_read = 0.0042
+output = 0.84
 
 ["ofox"."google/gemini-2.5-flash"]
 input = 0.3
@@ -26517,93 +26955,93 @@ cache_read = 0.3
 output = 15
 
 ["ofox"."openai/gpt-4.1"]
-input = 2
-cache_read = 0.5
-output = 8
+input = 1.6
+cache_read = 0.4
+output = 6.4
 
 ["ofox"."openai/gpt-4.1-mini"]
-input = 0.4
-cache_read = 0.1
-output = 1.6
+input = 0.32
+cache_read = 0.08
+output = 1.28
 
 ["ofox"."openai/gpt-4o"]
-input = 2.5
-cache_read = 1.25
-output = 10
+input = 2
+cache_read = 1
+output = 8
 
 ["ofox"."openai/gpt-4o-mini"]
-input = 0.15
-cache_read = 0.075
-output = 0.6
+input = 0.12
+cache_read = 0.06
+output = 0.48
 
 ["ofox"."openai/gpt-5"]
-input = 1.25
-cache_read = 0.13
-output = 10
+input = 1
+cache_read = 0.104
+output = 8
 
 ["ofox"."openai/gpt-5-mini"]
-input = 0.25
-cache_read = 0.03
-output = 2
+input = 0.2
+cache_read = 0.024
+output = 1.6
 
 ["ofox"."openai/gpt-5-nano"]
-input = 0.05
-cache_read = 0.01
-output = 0.4
+input = 0.04
+cache_read = 0.008
+output = 0.32
 
 ["ofox"."openai/gpt-5.1"]
-input = 1.25
-cache_read = 0.13
-output = 10
+input = 1
+cache_read = 0.104
+output = 8
 
 ["ofox"."openai/gpt-5.1-codex-max"]
-input = 1.25
-cache_read = 0.13
-output = 10
+input = 1
+cache_read = 0.104
+output = 8
 
 ["ofox"."openai/gpt-5.1-codex-mini"]
-input = 0.25
-cache_read = 0.03
-output = 2
+input = 0.2
+cache_read = 0.024
+output = 1.6
 
 ["ofox"."openai/gpt-5.2"]
-input = 1.75
-cache_read = 0.18
-output = 14
+input = 1.4
+cache_read = 0.144
+output = 11.2
 
 ["ofox"."openai/gpt-5.2-codex"]
-input = 1.75
-cache_read = 0.18
-output = 14
+input = 1.4
+cache_read = 0.144
+output = 11.2
 
 ["ofox"."openai/gpt-5.3-codex"]
-input = 1.75
-cache_read = 0.18
-output = 14
+input = 1.4
+cache_read = 0.144
+output = 11.2
 
 ["ofox"."openai/gpt-5.4"]
-input = 2.5
-cache_read = 0.25
-output = 15
+input = 2
+cache_read = 0.2
+output = 12
 
 ["ofox"."openai/gpt-5.4-mini"]
-input = 0.75
-cache_read = 0.075
-output = 4.5
+input = 0.6
+cache_read = 0.06
+output = 3.6
 
 ["ofox"."openai/gpt-5.4-nano"]
-input = 0.2
-cache_read = 0.02
-output = 1.25
+input = 0.16
+cache_read = 0.016
+output = 1
 
 ["ofox"."openai/gpt-5.4-pro"]
-input = 30
-output = 180
+input = 24
+output = 144
 
 ["ofox"."openai/gpt-5.5"]
-input = 5
-cache_read = 0.5
-output = 30
+input = 4
+cache_read = 0.4
+output = 24
 
 ["ofox"."openai/gpt-5.6-luna"]
 input = 0.2
@@ -26624,10 +27062,10 @@ cache_write = 2.5
 output = 12
 
 ["ofox"."openai/gpt-6-astra"]
-input = 10
-cache_read = 1
-cache_write = 12.5
-output = 50
+input = 8
+cache_read = 0.8
+cache_write = 10
+output = 40
 
 ["ofox"."qwen/qwen-flash"]
 input = 0.022
@@ -26908,6 +27346,116 @@ output = 0.5
 input = 1.2
 cache_read = 0.24
 output = 4
+
+# ── ollama-cloud ── source: models.dev
+["ollama-cloud"]
+
+["ollama-cloud"."deepseek-v4-flash"]
+input = 0.22
+cache_read = 0.007
+output = 0.66
+
+["ollama-cloud"."deepseek-v4-flash:0731"]
+input = 0.22
+cache_read = 0.007
+output = 0.66
+
+["ollama-cloud"."deepseek-v4-pro"]
+input = 0.66
+cache_read = 0.022
+output = 1.98
+
+["ollama-cloud"."deepseek-v4-pro:0813"]
+input = 0.66
+cache_read = 0.022
+output = 1.98
+
+["ollama-cloud"."deepseek-v4.1-flash"]
+input = 0.15
+cache_read = 0.003
+output = 0.6
+
+["ollama-cloud"."gemma4:31b"]
+input = 0.14
+cache_read = 0.05
+output = 0.4
+
+["ollama-cloud"."glm-5.1"]
+input = 1
+cache_read = 0.2
+output = 3.2
+
+["ollama-cloud"."glm-5.2"]
+input = 1.4
+cache_read = 0.26
+output = 4.4
+
+["ollama-cloud"."glm-5.3"]
+input = 1.4
+cache_read = 0.26
+output = 4.4
+
+["ollama-cloud"."glm-5.3-flash"]
+input = 0.15
+cache_read = 0.03
+output = 0.5
+
+["ollama-cloud"."gpt-oss:120b"]
+input = 0.15
+cache_read = 0.014
+output = 0.6
+
+["ollama-cloud"."gpt-oss:20b"]
+input = 0.07
+cache_read = 0.035
+output = 0.3
+
+["ollama-cloud"."kimi-k2.6"]
+input = 0.95
+cache_read = 0.16
+output = 4
+
+["ollama-cloud"."kimi-k2.7-code"]
+input = 0.95
+cache_read = 0.19
+output = 4
+
+["ollama-cloud"."kimi-k3"]
+input = 3
+cache_read = 0.3
+output = 15
+
+["ollama-cloud"."minimax-m2.7"]
+input = 0.3
+cache_read = 0.06
+output = 1.2
+
+["ollama-cloud"."minimax-m3"]
+input = 0.6
+cache_read = 0.12
+output = 2.4
+
+["ollama-cloud"."mistral-large-3:675b"]
+input = 0.5
+output = 1.5
+
+["ollama-cloud"."nemotron-3-nano:30b"]
+input = 0.06
+output = 0.24
+
+["ollama-cloud"."nemotron-3-super"]
+input = 0.015
+cache_read = 0.015
+output = 0.6
+
+["ollama-cloud"."nemotron-3-ultra"]
+input = 0.1
+cache_read = 0.1
+output = 3
+
+["ollama-cloud"."qwen3.5:397b"]
+input = 0.6
+output = 3.6
 
 # ── openai ── source: models.dev
 ["openai"]
@@ -27351,6 +27899,11 @@ input = 1.74
 cache_read = 0.145
 output = 3.84
 
+["opencode"."deepseek-v4.1-flash"]
+input = 0.3
+cache_read = 0.006
+output = 1.2
+
 ["opencode"."gemini-3-flash"]
 input = 0.5
 cache_read = 0.05
@@ -27559,17 +28112,17 @@ cache_write = 0.5
 output = 1.8
 
 ["opencode"."gpt-5.6-sol"]
-input = 2
-cache_read = 0.2
-cache_write = 2.5
-output = 10
-
-["opencode"."gpt-5.6-sol".long_context]  # > 272000 input+cache tokens
-threshold = 272000
 input = 4
 cache_read = 0.4
 cache_write = 5
-output = 15
+output = 20
+
+["opencode"."gpt-5.6-sol".long_context]  # > 272000 input+cache tokens
+threshold = 272000
+input = 8
+cache_read = 0.8
+cache_write = 10
+output = 30
 # verified - see OVERRIDES in scripts/update_prices.py
 
 ["opencode"."gpt-5.6-terra"]
@@ -27819,6 +28372,12 @@ input = 0
 cache_read = 0
 output = 0
 
+["opencode"."qwen3.8-flash"]
+input = 0.15
+cache_read = 0.016
+cache_write = 0.2
+output = 0.47
+
 ["opencode"."ring-2.6-1t-free"]
 input = 0
 output = 0
@@ -27978,12 +28537,14 @@ output = 0.87
 
 ["opencode-go"."minimax-m2.5"]
 input = 0.3
-cache_read = 0.03
+cache_read = 0.06
+cache_write = 0.375
 output = 1.2
 
 ["opencode-go"."minimax-m2.7"]
 input = 0.3
 cache_read = 0.06
+cache_write = 0.375
 output = 1.2
 
 ["opencode-go"."minimax-m3"]
@@ -28342,8 +28903,8 @@ input = 0
 output = 0
 
 ["openrouter"."deepseek/deepseek-chat"]
-input = 0.2574
-output = 1.0287
+input = 0.32
+output = 0.89
 
 ["openrouter"."deepseek/deepseek-chat-v3-0324"]
 input = 0.25
@@ -28387,9 +28948,9 @@ cache_read = 0.017721
 output = 0.177212
 
 ["openrouter"."deepseek/deepseek-v4-flash-0731"]
-input = 0.06
-cache_read = 0.012
-output = 0.12
+input = 0.04
+cache_read = 0.016
+output = 0.16
 
 ["openrouter"."deepseek/deepseek-v4-flash-vision-exp"]
 input = 0.22
@@ -28397,14 +28958,14 @@ cache_read = 0.007
 output = 0.66
 
 ["openrouter"."deepseek/deepseek-v4-pro"]
-input = 1.6
-cache_read = 0.135
-output = 3.2
+input = 0.95526
+cache_read = 0.079605
+output = 1.91052
 
 ["openrouter"."deepseek/deepseek-v4-pro-0813"]
-input = 0.9834
-cache_read = 0.03278
-output = 2.9502
+input = 0.66
+cache_read = 0.022
+output = 1.98
 
 ["openrouter"."deepseek/deepseek-v4.1-flash"]
 input = 0.15
@@ -28452,18 +29013,6 @@ cache_write = 0.375
 output = 10
 
 ["openrouter"."google/gemini-2.5-pro-preview".long_context]  # > 200000 input+cache tokens
-threshold = 200000
-input = 2.5
-cache_read = 0.25
-output = 15
-
-["openrouter"."google/gemini-2.5-pro-preview-05-06"]
-input = 1.25
-cache_read = 0.125
-cache_write = 0.375
-output = 10
-
-["openrouter"."google/gemini-2.5-pro-preview-05-06".long_context]  # > 200000 input+cache tokens
 threshold = 200000
 input = 2.5
 cache_read = 0.25
@@ -28609,17 +29158,17 @@ input = 0
 output = 0
 
 ["openrouter"."gryphe/mythomax-l2-13b"]
-input = 0.06
-output = 0.06
+input = 0.08
+output = 0.11
 
 ["openrouter"."ibm-granite/granite-4.0-h-micro"]
 input = 0.017
 output = 0.112
 
 ["openrouter"."ibm-granite/granite-4.2-8b"]
-input = 0.06
-cache_read = 0.015
-output = 0.25
+input = 0.1
+cache_read = 0.05
+output = 0.15
 
 ["openrouter"."inception/mercury-2"]
 input = 0.25
@@ -28692,8 +29241,8 @@ cache_read = 0.006
 output = 1.2
 
 ["openrouter"."meta-llama/llama-3.1-70b-instruct"]
-input = 0.4
-output = 0.4
+input = 0.72
+output = 0.72
 
 ["openrouter"."meta-llama/llama-3.1-8b-instruct"]
 input = 0.05
@@ -28714,7 +29263,7 @@ output = 0.32
 
 ["openrouter"."meta-llama/llama-4-maverick"]
 input = 0.2
-output = 0.696
+output = 0.8
 
 ["openrouter"."meta-llama/llama-4-scout"]
 input = 0.1
@@ -28725,9 +29274,9 @@ input = 0.18
 output = 0.18
 
 ["openrouter"."meta/muse-glimmer-30b"]
-input = 0.35
+input = 0.3
 cache_read = 0.04
-output = 1.5
+output = 1.2
 
 ["openrouter"."meta/muse-spark-1.1"]
 input = 1.25
@@ -28767,7 +29316,7 @@ input = 0.2
 output = 1.1
 
 ["openrouter"."minimax/minimax-m1"]
-input = 0.55
+input = 0.4
 output = 2.2
 
 ["openrouter"."minimax/minimax-m2"]
@@ -28834,11 +29383,6 @@ input = 2
 cache_read = 0.2
 output = 6
 
-["openrouter"."mistralai/mistral-large-2512"]
-input = 0.5
-cache_read = 0.05
-output = 1.5
-
 ["openrouter"."mistralai/mistral-medium-3"]
 input = 0.4
 cache_read = 0.04
@@ -28876,8 +29420,8 @@ input = 0.351
 output = 0.555
 
 ["openrouter"."mistralai/mistral-small-3.2-24b-instruct"]
-input = 0.075
-output = 0.2
+input = 0.09375
+output = 0.25
 
 ["openrouter"."mistralai/mixtral-8x22b-instruct"]
 input = 2
@@ -28913,14 +29457,14 @@ cache_read = 0.16
 output = 4
 
 ["openrouter"."moonshotai/kimi-k2.7-code"]
-input = 0.71
-cache_read = 0.15
-output = 3.5
+input = 0.7062
+cache_read = 0.18
+output = 3.21
 
 ["openrouter"."moonshotai/kimi-k3"]
-input = 2.648138
-cache_read = 0.302644
-output = 13.282724
+input = 1.7
+cache_read = 0.17
+output = 8.5
 
 ["openrouter"."morph/morph-v3-fast"]
 input = 0.8
@@ -28951,9 +29495,8 @@ input = 1
 output = 3
 
 ["openrouter"."nvidia/nemotron-3-nano-30b-a3b"]
-input = 0.05
-cache_read = 0.03
-output = 0.2
+input = 0.06
+output = 0.24
 
 ["openrouter"."nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"]
 input = 0
@@ -28985,7 +29528,7 @@ input = 0
 output = 0
 
 ["openrouter"."nvidia/nemotron-3.5-lightning"]
-input = 0.08
+input = 0.07
 cache_read = 0.04
 output = 0.2
 
@@ -29014,10 +29557,6 @@ input = 30
 output = 60
 
 ["openrouter"."openai/gpt-4-turbo"]
-input = 10
-output = 30
-
-["openrouter"."openai/gpt-4-turbo-preview"]
 input = 10
 output = 30
 
@@ -29311,8 +29850,9 @@ cache_read = 0.5
 output = 30
 
 ["openrouter"."openai/gpt-oss-120b"]
-input = 0.037
-output = 0.17
+input = 0.15
+cache_read = 0.075
+output = 0.6
 
 ["openrouter"."openai/gpt-oss-20b"]
 input = 0.03
@@ -29407,6 +29947,10 @@ output = 0.12
 ["openrouter"."poolside/laguna-xs-2.1:free"]
 input = 0
 output = 0
+
+["openrouter"."prism-ml/ternary-bonsai-2-27b"]
+input = 0.075
+output = 0.5
 
 ["openrouter"."qwen/qwen-2.5-72b-instruct"]
 input = 0.36
@@ -29564,8 +30108,8 @@ input = 0.4
 output = 4
 
 ["openrouter"."qwen/qwen3-vl-30b-a3b-instruct"]
-input = 0.15
-output = 0.6
+input = 0.13
+output = 0.52
 
 ["openrouter"."qwen/qwen3-vl-30b-a3b-thinking"]
 input = 0.2
@@ -29635,9 +30179,9 @@ cache_read = 0.03
 output = 2
 
 ["openrouter"."qwen/qwen3.6-35b-a3b"]
-input = 0.1
+input = 0.15
 cache_read = 0.05
-output = 0.9
+output = 1
 
 ["openrouter"."qwen/qwen3.6-flash"]
 input = 0.1875
@@ -29710,9 +30254,13 @@ cache_read = 0.25
 output = 6
 
 ["openrouter"."qwen/qwen3.8-27b"]
-input = 0.214
-cache_read = 0.15
-output = 2.55
+input = 0.2
+cache_read = 0.05
+output = 2.5
+
+["openrouter"."qwen/qwen3.8-27b:free"]
+input = 0
+output = 0
 
 ["openrouter"."qwen/qwen3.8-flash"]
 input = 0.15
@@ -29858,6 +30406,11 @@ output = 0
 input = 0
 output = 0
 
+["openrouter"."unbiased/pareto"]
+input = 2.5
+cache_read = 0.25
+output = 7.5
+
 ["openrouter"."undi95/remm-slerp-l2-13b"]
 input = 0.35
 output = 0.65
@@ -30002,19 +30555,28 @@ cache_read = 0.1794
 output = 3.036
 
 ["openrouter"."z-ai/glm-5.2"]
-input = 0.6832
-cache_read = 0.12688
-output = 2.1472
+input = 0.6496
+cache_read = 0.12064
+output = 2.0416
+
+["openrouter"."z-ai/glm-5.2:free"]
+input = 0
+output = 0
 
 ["openrouter"."z-ai/glm-5.3"]
-input = 1.4
-cache_read = 0.26
-output = 4.4
+input = 0.91
+cache_read = 0.169
+output = 2.86
 
 ["openrouter"."z-ai/glm-5.3-flash"]
-input = 0.15
-cache_read = 0.03
-output = 0.5
+input = 0.09
+cache_read = 0.018
+output = 0.3
+
+["openrouter"."z-ai/glm-5.3-flashx"]
+input = 0.37
+cache_read = 0.075
+output = 1.25
 
 ["openrouter"."z-ai/glm-5v-turbo"]
 input = 1.2
@@ -30045,10 +30607,20 @@ cache_read = 0.2
 cache_write = 2.5
 output = 10
 
+["openrouter"."~deepseek/deepseek-flash-latest"]
+input = 0.12
+cache_read = 0.0036
+output = 0.48
+
+["openrouter"."~deepseek/deepseek-pro-latest"]
+input = 0.66
+cache_read = 0.022
+output = 1.98
+
 ["openrouter"."~deepseek/deepseek-v4-flash-latest"]
 input = 0.04
-cache_read = 0.01
-output = 0.1
+cache_read = 0.016
+output = 0.16
 
 ["openrouter"."~google/gemini-flash-latest"]
 input = 0.75
@@ -30069,9 +30641,9 @@ cache_read = 0.4
 output = 18
 
 ["openrouter"."~moonshotai/kimi-latest"]
-input = 2.1
-cache_read = 0.23
-output = 10.95
+input = 1.7
+cache_read = 0.17
+output = 8.5
 
 ["openrouter"."~openai/gpt-astra-latest"]
 input = 10
@@ -30147,9 +30719,9 @@ cache_read = 0.015
 output = 0.25
 
 ["openrouter"."~z-ai/glm-latest"]
-input = 0.92
-cache_read = 0.184
-output = 3.1372
+input = 0.7735
+cache_read = 0.127075
+output = 2.431
 
 # ── opper ── source: models.dev
 ["opper"]
@@ -31097,10 +31669,6 @@ output = 0.31
 input = 1.01
 output = 1.01
 
-["ovhcloud"."qwen3-32b"]
-input = 0.09
-output = 0.25
-
 ["ovhcloud"."qwen3-coder-30b-a3b-instruct"]
 input = 0.07
 output = 0.26
@@ -31118,8 +31686,8 @@ input = 0.47
 output = 3.19
 
 ["ovhcloud"."qwen3.8-27b"]
-input = 0
-output = 0
+input = 0.47
+output = 3.19
 
 ["ovhcloud"."qwen3guard-gen-0.6b"]
 input = 0
@@ -31141,8 +31709,9 @@ input = 0
 output = 0
 
 ["pendra"."gpt-oss:120b"]
-input = 0
-output = 0
+input = 0.15
+cache_read = 0.014
+output = 0.6
 
 ["pendra"."llama3.3:70b"]
 input = 0
@@ -32464,6 +33033,16 @@ input = 1.791
 cache_read = 0.1733
 output = 8.9436
 
+["privatemode-ai"."glm-5.3-flash"]
+input = 0.8897
+cache_read = 0.0924
+output = 4.4718
+
+["privatemode-ai"."glm-flash-latest"]
+input = 0.8897
+cache_read = 0.0924
+output = 4.4718
+
 ["privatemode-ai"."glm-latest"]
 input = 1.791
 cache_read = 0.1733
@@ -32574,18 +33153,16 @@ input = 0
 output = 0
 
 ["qvac"."qwen3.5-0.8b"]
-input = 0.06
-cache_read = 0.03
-output = 0.12
-
-["qvac"."qwen3.5-2b"]
 input = 0
 output = 0
 
+["qvac"."qwen3.5-2b"]
+input = 0.02
+output = 0.1
+
 ["qvac"."qwen3.5-4b"]
-input = 0.1
-cache_read = 0.05
-output = 0.2
+input = 0
+output = 0
 
 ["qvac"."qwen3.5-9b"]
 input = 0
@@ -34043,6 +34620,11 @@ input = 0
 cache_read = 0
 output = 0
 
+["scnet-token-plan"."DeepSeek-V4.1-Flash"]
+input = 0.14
+cache_read = 0.0028
+output = 0.28
+
 ["scnet-token-plan"."GLM-5"]
 input = 0
 cache_read = 0
@@ -34082,8 +34664,9 @@ input = 0.95
 output = 4
 
 ["scnet-token-plan"."Kimi-K3"]
-input = 3
-output = 15
+input = 0
+cache_read = 0
+output = 0
 
 ["scnet-token-plan"."MiniMax-M2.5"]
 input = 0
@@ -34736,6 +35319,11 @@ input = 0.45
 cache_read = 0.45
 output = 3.6
 
+["synthetic"."hf:deepseek-ai/DeepSeek-V4.1-Flash"]
+input = 0.6
+cache_read = 0.03
+output = 1.2
+
 ["synthetic"."hf:moonshotai/Kimi-K2.7-Code"]
 input = 0.95
 cache_read = 0.95
@@ -34858,12 +35446,6 @@ output = 2.501
 # ── tensorx ── source: models.dev
 ["tensorx"]
 
-["tensorx"."deepseek/deepseek-chat-v3.1"]
-input = 0.2
-cache_read = 0.05
-cache_write = 0.25
-output = 0.8
-
 ["tensorx"."deepseek/deepseek-r1-0528"]
 input = 0.66
 cache_read = 0.165
@@ -34876,12 +35458,6 @@ cache_read = 0.075
 cache_write = 0.375
 output = 0.5
 
-["tensorx"."deepseek/deepseek-v4-flash"]
-input = 0.15
-cache_read = 0.0375
-cache_write = 0.1875
-output = 0.3
-
 ["tensorx"."deepseek/deepseek-v4-flash-0731"]
 input = 0.25
 cache_read = 0.06
@@ -34892,6 +35468,16 @@ input = 1.75
 cache_read = 0.4375
 cache_write = 2.185
 output = 3.5
+
+["tensorx"."deepseek/deepseek-v4-pro-0813"]
+input = 2
+cache_read = 0.5
+output = 4
+
+["tensorx"."deepseek/deepseek-v4.1-flash"]
+input = 0.5
+cache_read = 0.13
+output = 1.5
 
 ["tensorx"."minimax/minimax-m2.5"]
 input = 0.3
@@ -34926,35 +35512,11 @@ input = 3
 cache_read = 0.75
 output = 15
 
-["tensorx"."nvidia/nemotron-3-super-120b-a12b"]
-input = 0.3
-cache_read = 0.075
-cache_write = 0.375
-output = 0.9
-
-["tensorx"."openai/gpt-oss-120b"]
-input = 0.04
-cache_read = 0.01
-cache_write = 0.05
-output = 0.2
-
 ["tensorx"."qwen/qwen3-235b-a22b-2507"]
 input = 0.072
 cache_read = 0.018
 cache_write = 0.09
 output = 0.464
-
-["tensorx"."qwen/qwen3-coder-30b-a3b-instruct"]
-input = 0.06
-cache_read = 0.015
-cache_write = 0.075
-output = 0.25
-
-["tensorx"."qwen/qwen3-vl-235b-a22b-instruct"]
-input = 0.21
-cache_read = 0.0525
-cache_write = 0.2625
-output = 1.9
 
 ["tensorx"."qwen/qwen3.5-122b-a10b"]
 input = 0.5
@@ -34968,11 +35530,20 @@ cache_read = 0.0375
 cache_write = 0.1875
 output = 0.2
 
-["tensorx"."z-ai/glm-4.7"]
-input = 0.6
-cache_read = 0.15
-cache_write = 0.75
-output = 2.2
+["tensorx"."qwen/qwen3.8-2.4t-a95b"]
+input = 2.5
+cache_read = 0.63
+output = 6
+
+["tensorx"."qwen/qwen3.8-27b"]
+input = 0.4
+cache_read = 0.1
+output = 2.4
+
+["tensorx"."qwen/qwen3.8-flash-next"]
+input = 0.2
+cache_read = 0.05
+output = 0.5
 
 ["tensorx"."z-ai/glm-5"]
 input = 1
@@ -34997,6 +35568,16 @@ input = 1.5
 cache_read = 0.375
 output = 4.5
 
+["tensorx"."z-ai/glm-5.3"]
+input = 1.75
+cache_read = 0.44
+output = 4.5
+
+["tensorx"."z-ai/glm-5.3-flash"]
+input = 0.2
+cache_read = 0.05
+output = 0.5
+
 ["tensorx"."z-ai/glm-5v-turbo"]
 input = 1.2
 cache_read = 0.3
@@ -35019,14 +35600,19 @@ output = 9.36
 # ── tinfoil ── source: models.dev
 ["tinfoil"]
 
-["tinfoil"."deepseek-v4-flash"]
-input = 0.3
-cache_read = 0.06
-output = 0.7
+["tinfoil"."deepseek-v4-1-flash"]
+input = 0.65
+cache_read = 0.13
+output = 1.45
 
 ["tinfoil"."gemma4-31b"]
 input = 0.4
 output = 1
+
+["tinfoil"."glm-5-3"]
+input = 1.8
+cache_read = 0.45
+output = 5.75
 
 ["tinfoil"."glm-5-3-flash"]
 input = 0.4
@@ -35309,9 +35895,9 @@ output = 0
 ["umans-ai"]
 
 ["umans-ai"."umans-coder"]
-input = 0.95
-cache_read = 0.19
-output = 4
+input = 0.15
+cache_read = 0.03
+output = 0.5
 
 ["umans-ai"."umans-deepseek-v4-flash-0731"]
 input = 0.14
@@ -35328,15 +35914,10 @@ input = 0.15
 cache_read = 0.05
 output = 1
 
-["umans-ai"."umans-glm-5.2"]
-input = 1.4
-cache_read = 0.26
-output = 4.4
-
-["umans-ai"."umans-kimi-k2.7"]
-input = 0.95
-cache_read = 0.19
-output = 4
+["umans-ai"."umans-glm-5.3-flash"]
+input = 0.15
+cache_read = 0.03
+output = 0.5
 
 ["umans-ai"."umans-kimi-k3"]
 input = 3
@@ -35347,9 +35928,9 @@ output = 15
 ["umans-ai-coding-plan"]
 
 ["umans-ai-coding-plan"."umans-coder"]
-input = 0.95
-cache_read = 0.19
-output = 4
+input = 0.15
+cache_read = 0.03
+output = 0.5
 
 ["umans-ai-coding-plan"."umans-deepseek-v4-flash-0731"]
 input = 0.14
@@ -35366,15 +35947,10 @@ input = 0.15
 cache_read = 0.05
 output = 1
 
-["umans-ai-coding-plan"."umans-glm-5.2"]
-input = 1.4
-cache_read = 0.26
-output = 4.4
-
-["umans-ai-coding-plan"."umans-kimi-k2.7"]
-input = 0.95
-cache_read = 0.19
-output = 4
+["umans-ai-coding-plan"."umans-glm-5.3-flash"]
+input = 0.15
+cache_read = 0.03
+output = 0.5
 
 ["umans-ai-coding-plan"."umans-kimi-k3"]
 input = 3
@@ -35525,20 +36101,10 @@ input = 0.24
 cache_read = 0.048
 output = 0.96
 
-["vancine"."deepseek-v4-flash"]
-input = 0.22
-cache_read = 0.007
-output = 0.66
-
-["vancine"."deepseek-v4-flash-vision-exp"]
-input = 0.22
-cache_read = 0.007
-output = 0.66
-
-["vancine"."deepseek-v4-pro"]
-input = 0.66
-cache_read = 0.022
-output = 1.98
+["vancine"."deepseek-v4.1-flash"]
+input = 0.24
+cache_read = 0.0048
+output = 0.96
 
 ["vancine"."glm-5.3"]
 input = 1.12
@@ -35546,9 +36112,9 @@ cache_read = 0.208
 output = 3.52
 
 ["vancine"."glm-5.3-flash"]
-input = 0.06
-cache_read = 0.012
-output = 0.2
+input = 0.12
+cache_read = 0.024
+output = 0.4
 
 ["vancine"."hy4-preview"]
 input = 0.67
@@ -35885,10 +36451,6 @@ input = 0.3
 cache_read = 0.06
 output = 1.2
 
-["venice"."mistral-small-2603"]
-input = 0.1875
-output = 0.75
-
 ["venice"."mistral-small-3-2-24b-instruct"]
 input = 0.09375
 output = 0.25
@@ -35917,11 +36479,6 @@ cache_read = 0.09375
 output = 0.75
 
 ["venice"."openai-gpt-52"]
-input = 2.19
-cache_read = 0.219
-output = 17.5
-
-["venice"."openai-gpt-52-codex"]
 input = 2.19
 cache_read = 0.219
 output = 17.5
@@ -35992,30 +36549,30 @@ cache_write = 0.625
 output = 2.25
 
 ["venice"."openai-gpt-56-sol"]
-input = 2.5
-cache_read = 0.25
-cache_write = 3.125
-output = 12.5
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
 
 ["venice"."openai-gpt-56-sol".long_context]  # > 272000 input+cache tokens
 threshold = 272000
+input = 10
+cache_read = 1
+cache_write = 12.5
+output = 37.5
+
+["venice"."openai-gpt-56-sol-pro"]
 input = 5
 cache_read = 0.5
 cache_write = 6.25
-output = 18.75
-
-["venice"."openai-gpt-56-sol-pro"]
-input = 2.5
-cache_read = 0.25
-cache_write = 3.125
-output = 12.5
+output = 25
 
 ["venice"."openai-gpt-56-sol-pro".long_context]  # > 272000 input+cache tokens
 threshold = 272000
-input = 5
-cache_read = 0.5
-cache_write = 6.25
-output = 18.75
+input = 10
+cache_read = 1
+cache_write = 12.5
+output = 37.5
 
 ["venice"."openai-gpt-56-terra"]
 input = 2.5
@@ -36257,7 +36814,7 @@ output = 0.64
 
 ["vercel"."alibaba/qwen-3.6-max-preview"]
 input = 1.3
-cache_read = 0.26
+cache_read = 0.13
 cache_write = 1.625
 output = 7.8
 
@@ -36320,7 +36877,7 @@ output = 4
 
 ["vercel"."alibaba/qwen3.5-flash"]
 input = 0.1
-cache_read = 0.001
+cache_read = 0.01
 cache_write = 0.125
 output = 0.4
 
@@ -36328,7 +36885,7 @@ output = 0.4
 input = 0.4
 cache_read = 0.04
 cache_write = 0.5
-output = 2.4
+output = 2.5
 
 ["vercel"."alibaba/qwen3.6-27b"]
 input = 0.6
@@ -36336,7 +36893,7 @@ output = 3.6
 
 ["vercel"."alibaba/qwen3.6-plus"]
 input = 0.5
-cache_read = 0.1
+cache_read = 0.05
 cache_write = 0.625
 output = 3
 
@@ -36370,20 +36927,14 @@ cache_write = 0.625
 output = 3
 
 ["vercel"."alibaba/qwen3.8-flash"]
-input = 0.16
+input = 0.15
 cache_read = 0.016
 cache_write = 0.2
 output = 0.47
 
-["vercel"."alibaba/qwen3.8-flash-next"]
-input = 0.12
-cache_read = 0.01
-output = 0.4
-
 ["vercel"."alibaba/qwen3.8-max"]
 input = 2
 cache_read = 0.25
-cache_write = 2.5
 output = 6
 
 ["vercel"."alibaba/qwen3.8-max-0902"]
@@ -36391,6 +36942,11 @@ input = 2
 cache_read = 0.25
 cache_write = 2.5
 output = 6
+
+["vercel"."alibaba/qwen3.8-omni-flash"]
+input = 0.15
+cache_read = 0.016
+output = 0.47
 
 ["vercel"."amazon/nova-2-lite"]
 input = 0.3
@@ -36532,6 +37088,11 @@ input = 0.25
 cache_read = 0.05
 output = 2
 
+["vercel"."bytedance/seed-2.1-turbo"]
+input = 0.5
+cache_read = 0.1
+output = 2.5
+
 ["vercel"."cohere/command-a"]
 input = 2.5
 output = 10
@@ -36585,7 +37146,7 @@ output = 1.98
 
 ["vercel"."deepseek/deepseek-v4.1-flash"]
 input = 0.3
-cache_read = 0.006
+cache_read = 0.03
 output = 1.2
 
 ["vercel"."google/gemini-2.5-flash"]
@@ -36678,6 +37239,14 @@ input = 0.75
 cache_read = 0.075
 output = 3.75
 
+["vercel"."google/gemini-3.8-live"]
+input = 0.75
+output = 4.5
+
+["vercel"."google/gemini-3.8-live-extended-thinking"]
+input = 0.75
+output = 4.5
+
 ["vercel"."google/gemini-omni-flash-preview"]
 input = 1.5
 output = 9
@@ -36706,9 +37275,9 @@ input = 0.25
 output = 1
 
 ["vercel"."inclusionai/ling-3.0-flash"]
-input = 0.06
-cache_read = 0.012
-output = 0.18
+input = 0.021
+cache_read = 0.0042
+output = 0.063
 
 ["vercel"."inclusionai/ling-3.0-flash-fin"]
 input = 0.06
@@ -36727,29 +37296,28 @@ output = 0
 input = 0
 output = 0
 
+["vercel"."inclusionai/ling-3.0-flash-vl"]
+input = 0.06
+cache_read = 0.012
+output = 0.18
+
+["vercel"."inclusionai/ling-3.0-flash-vl-free"]
+input = 0
+output = 0
+
+["vercel"."inference-net/schematron-v2-small"]
+input = 0.05
+cache_read = 0.05
+output = 0.23
+
+["vercel"."inference-net/schematron-v2-turbo"]
+input = 0.03
+cache_read = 0.03
+output = 0.15
+
 ["vercel"."interfaze/interfaze-beta"]
 input = 1.5
 output = 3.5
-
-["vercel"."kwaipilot/kat-coder-air-v2.5"]
-input = 0.15
-cache_read = 0.03
-output = 0.6
-
-["vercel"."kwaipilot/kat-coder-pro-v1"]
-input = 0.3
-cache_read = 0.06
-output = 1.2
-
-["vercel"."kwaipilot/kat-coder-pro-v2"]
-input = 0.3
-cache_read = 0.06
-output = 1.2
-
-["vercel"."kwaipilot/kat-coder-pro-v2.5"]
-input = 0.74
-cache_read = 0.15
-output = 2.96
 
 ["vercel"."meta/llama-3.1-70b"]
 input = 0.72
@@ -36852,16 +37420,9 @@ output = 1.2
 input = 0.3
 output = 0.9
 
-["vercel"."mistral/devstral-2"]
-input = 0.4
-output = 2
-
-["vercel"."mistral/devstral-small-2"]
-input = 0.1
-output = 0.3
-
 ["vercel"."mistral/ministral-14b"]
 input = 0.2
+cache_read = 0.02
 output = 0.2
 
 ["vercel"."mistral/ministral-3b"]
@@ -36874,27 +37435,27 @@ output = 0.1
 
 ["vercel"."mistral/mistral-large-3"]
 input = 0.5
+cache_read = 0.05
 output = 1.5
-
-["vercel"."mistral/mistral-medium"]
-input = 0.4
-output = 2
 
 ["vercel"."mistral/mistral-medium-3.5"]
 input = 1.5
+cache_read = 0.15
 output = 7.5
 
 ["vercel"."mistral/mistral-nemo"]
-input = 0.15
-output = 0.15
+input = 0.04
+output = 0.17
 
 ["vercel"."mistral/mistral-small"]
-input = 0.1
-output = 0.3
-
-["vercel"."mistral/pixtral-12b"]
 input = 0.15
-output = 0.15
+cache_read = 0.015
+output = 0.6
+
+["vercel"."mixedbread/toast-1"]
+input = 0.3
+cache_read = 0.036
+output = 0.72
 
 ["vercel"."moonshotai/kimi-k2"]
 input = 0.57
@@ -36907,7 +37468,6 @@ output = 2
 
 ["vercel"."moonshotai/kimi-k2.5"]
 input = 0.6
-cache_read = 0.1
 output = 3
 
 ["vercel"."moonshotai/kimi-k2.6"]
@@ -36945,7 +37505,8 @@ output = 1.9
 
 ["vercel"."nvidia/nemotron-3-nano-30b-a3b"]
 input = 0.05
-output = 0.24
+cache_read = 0.025
+output = 0.2
 
 ["vercel"."nvidia/nemotron-3-super-120b-a12b"]
 input = 0.15
@@ -37179,16 +37740,16 @@ cache_write = 0.5
 output = 2.4
 
 ["vercel"."openai/gpt-5.6-sol"]
-input = 2
-cache_read = 0.2
-cache_write = 2.5
-output = 10
-
-["vercel"."openai/gpt-5.6-sol-fast"]
 input = 4
 cache_read = 0.4
 cache_write = 5
 output = 20
+
+["vercel"."openai/gpt-5.6-sol-fast"]
+input = 8
+cache_read = 0.8
+cache_write = 10
+output = 40
 
 ["vercel"."openai/gpt-5.6-terra"]
 input = 2
@@ -37263,8 +37824,8 @@ input = 0.1
 output = 0.5
 
 ["vercel"."openai/gpt-oss-20b"]
-input = 0.05
-output = 0.2
+input = 0.03
+output = 0.14
 
 ["vercel"."openai/gpt-oss-safeguard-120b"]
 input = 0.15
@@ -37337,7 +37898,29 @@ output = 0.2
 input = 0
 output = 0
 
+["vercel"."quiverai/arrow-2"]
+input = 4
+cache_read = 0.4
+cache_write = 5
+output = 20
+
+["vercel"."quiverai/arrow-2-telos"]
+input = 6
+cache_read = 0.6
+cache_write = 7.5
+output = 30
+
+["vercel"."sakana/fugu-max"]
+input = 2
+cache_read = 0.25
+output = 6
+
 ["vercel"."sakana/fugu-ultra"]
+input = 5
+cache_read = 0.5
+output = 30
+
+["vercel"."sakana/fugu-ultra-v2"]
 input = 5
 cache_read = 0.5
 output = 30
@@ -37416,6 +37999,11 @@ output = 0.3
 input = 0.2
 cache_read = 0.04
 output = 1.15
+
+["vercel"."stepfun/step-5-preview"]
+input = 1
+cache_read = 0.05
+output = 2.7
 
 ["vercel"."tencent/hy-mt2-lite"]
 input = 0.044
@@ -37532,10 +38120,30 @@ input = 0.15
 cache_read = 0.03
 output = 0.5
 
+["vercel"."zai/glm-5.3-flashx"]
+input = 0.37
+cache_read = 0.075
+output = 1.25
+
 ["vercel"."zai/glm-5v-turbo"]
 input = 1.2
 cache_read = 0.24
 output = 4
+
+# ── vispark ── source: models.dev
+["vispark"]
+
+["vispark"."vispark/vision-large"]
+input = 7.37
+output = 22.11
+
+["vispark"."vispark/vision-medium"]
+input = 4.21
+output = 12.63
+
+["vispark"."vispark/vision-small"]
+input = 1.05
+output = 3.16
 
 # ── vivgrid ── source: models.dev
 ["vivgrid"]
@@ -37551,6 +38159,18 @@ input = 10
 cache_read = 0.5
 cache_write = 12.5
 output = 50
+
+["vivgrid"."claude-opus-5"]
+input = 5
+cache_read = 0.5
+cache_write = 6.25
+output = 25
+
+["vivgrid"."claude-sonnet-5"]
+input = 2
+cache_read = 0.2
+cache_write = 2.5
+output = 10
 
 ["vivgrid"."deepseek-v3.2"]
 input = 0.28
@@ -37832,6 +38452,11 @@ input = 1.18747
 cache_read = 0.29687
 output = 4.15615
 
+["volcengine"."glm-5-3-flash-260828"]
+input = 0.11875
+cache_read = 0.03414
+output = 0.41563
+
 # ── volcengine-coding-plan ── source: models.dev
 ["volcengine-coding-plan"]
 
@@ -37968,6 +38593,14 @@ cache_read = 0.5
 cache_write = 0
 output = 10.25
 
+# ── wallaby ── source: models.dev
+["wallaby"]
+
+["wallaby"."moonshotai/kimi-k3"]
+input = 2.7
+cache_read = 0.27
+output = 13.5
+
 # ── wandb ── source: models.dev
 ["wandb"]
 
@@ -38077,14 +38710,14 @@ cache_read = 0.15
 output = 3.5
 
 ["wandb"."nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B"]
-input = 0.75
-cache_read = 0.15
-output = 2.75
+input = 0.5
+cache_read = 0.1
+output = 2.15
 
 ["wandb"."nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B"]
-input = 0.1
-cache_read = 0.05
-output = 0.25
+input = 0.07
+cache_read = 0.04
+output = 0.2
 
 ["wandb"."openai/gpt-oss-120b"]
 input = 0.03
@@ -38496,10 +39129,16 @@ cache_write = 0
 output = 4.4
 
 ["zai"."glm-5.3-flash"]
-input = 0.075
-cache_read = 0.015
+input = 0.15
+cache_read = 0.03
 cache_write = 0
-output = 0.25
+output = 0.5
+
+["zai"."glm-5.3-flashx"]
+input = 0.37
+cache_read = 0.075
+cache_write = 0
+output = 1.25
 
 ["zai"."glm-5v-turbo"]
 input = 1.2
@@ -38541,10 +39180,10 @@ cache_write = 0
 output = 4.4
 
 ["zai-coding-plan"."glm-5.3-flash"]
-input = 0.075
-cache_read = 0.015
+input = 0.15
+cache_read = 0.03
 cache_write = 0
-output = 0.25
+output = 0.5
 
 ["zai-coding-plan"."glm-5.3-highspeed"]
 input = 0
@@ -39076,45 +39715,37 @@ input = 0.17
 cache_read = 0.03
 output = 1.12
 
-["zenmux"."x-ai/grok-4"]
-input = 3
-cache_read = 0.75
-output = 15
-
-["zenmux"."x-ai/grok-4-fast"]
-input = 0.2
-cache_read = 0.05
-output = 0.5
-
-["zenmux"."x-ai/grok-4.1-fast"]
-input = 0.2
-cache_read = 0.05
-output = 0.5
-
-["zenmux"."x-ai/grok-4.1-fast-non-reasoning"]
-input = 0.2
-cache_read = 0.05
-output = 0.5
-
 ["zenmux"."x-ai/grok-4.2-fast"]
-input = 3
-output = 9
+input = 2
+cache_read = 0.2
+output = 6
+
+["zenmux"."x-ai/grok-4.2-fast".long_context]  # > 128000 input+cache tokens
+threshold = 128000
+input = 4
+cache_read = 0.2
+output = 12
 
 ["zenmux"."x-ai/grok-4.2-fast-non-reasoning"]
-input = 3
-output = 9
+input = 2
+cache_read = 0.2
+output = 6
+
+["zenmux"."x-ai/grok-4.2-fast-non-reasoning".long_context]  # > 128000 input+cache tokens
+threshold = 128000
+input = 4
+cache_read = 0.2
+output = 12
 
 ["zenmux"."x-ai/grok-4.3"]
 input = 1.25
 cache_read = 0.2
-cache_write = 0
 output = 2.5
 
 ["zenmux"."x-ai/grok-4.3".long_context]  # > 200000 input+cache tokens
 threshold = 200000
 input = 2.5
 cache_read = 0.4
-cache_write = 0
 output = 5
 
 ["zenmux"."x-ai/grok-4.5"]
@@ -39128,15 +39759,21 @@ input = 4
 cache_read = 1
 output = 12
 
+["zenmux"."x-ai/grok-4.6"]
+input = 2
+cache_read = 0.5
+output = 6
+
+["zenmux"."x-ai/grok-4.6".long_context]  # > 200000 input+cache tokens
+threshold = 200000
+input = 4
+cache_read = 1
+output = 12
+
 ["zenmux"."x-ai/grok-build-0.1"]
 input = 1
 cache_read = 0.2
 output = 2
-
-["zenmux"."x-ai/grok-code-fast-1"]
-input = 0.2
-cache_read = 0.02
-output = 1.5
 
 ["zenmux"."xiaomi/mimo-v2-flash"]
 input = 0.1
@@ -39182,76 +39819,155 @@ cache_read = 0.4
 output = 6
 
 ["zenmux"."z-ai/glm-4.5"]
-input = 0.35
-cache_read = 0.07
-output = 1.54
+input = 0.2911
+cache_read = 0.0582
+output = 1.1645
+
+["zenmux"."z-ai/glm-4.5".long_context]  # > 32000 input+cache tokens
+threshold = 32000
+input = 0.5823
+cache_read = 0.1165
+output = 2.3291
 
 ["zenmux"."z-ai/glm-4.5-air"]
-input = 0.11
-cache_read = 0.02
-output = 0.56
+input = 0.1165
+cache_read = 0.0233
+output = 0.2911
+
+["zenmux"."z-ai/glm-4.5-air".long_context]  # > 32000 input+cache tokens
+threshold = 32000
+input = 0.1747
+cache_read = 0.0349
+output = 1.1645
 
 ["zenmux"."z-ai/glm-4.6"]
-input = 0.35
-cache_read = 0.07
-output = 1.54
+input = 0.2911
+cache_read = 0.0582
+output = 1.1645
+
+["zenmux"."z-ai/glm-4.6".long_context]  # > 32000 input+cache tokens
+threshold = 32000
+input = 0.5823
+cache_read = 0.1165
+output = 2.3291
 
 ["zenmux"."z-ai/glm-4.6v"]
-input = 0.14
-cache_read = 0.03
-output = 0.42
+input = 0.1456
+cache_read = 0.0291
+output = 0.4367
+
+["zenmux"."z-ai/glm-4.6v".long_context]  # > 32000 input+cache tokens
+threshold = 32000
+input = 0.2911
+cache_read = 0.0582
+output = 0.8734
 
 ["zenmux"."z-ai/glm-4.6v-flash"]
-input = 0.02
-cache_read = 0.0043
-output = 0.21
+input = 0.0218
+cache_read = 0.0044
+output = 0.2184
+
+["zenmux"."z-ai/glm-4.6v-flash".long_context]  # > 32000 input+cache tokens
+threshold = 32000
+input = 0.0437
+cache_read = 0.0044
+output = 0.4367
 
 ["zenmux"."z-ai/glm-4.6v-flash-free"]
 input = 0
+cache_read = 0
+output = 0
+
+["zenmux"."z-ai/glm-4.6v-flash-free".long_context]  # > 32000 input+cache tokens
+threshold = 32000
+input = 0
+cache_read = 0
 output = 0
 
 ["zenmux"."z-ai/glm-4.7"]
-input = 0.28
-cache_read = 0.06
-output = 1.14
+input = 0.2911
+cache_read = 0.0582
+output = 1.1645
+
+["zenmux"."z-ai/glm-4.7".long_context]  # > 32000 input+cache tokens
+threshold = 32000
+input = 0.5823
+cache_read = 0.1165
+output = 2.3291
 
 ["zenmux"."z-ai/glm-4.7-flash-free"]
 input = 0
+cache_read = 0
 output = 0
 
 ["zenmux"."z-ai/glm-4.7-flashx"]
-input = 0.07
-cache_read = 0.01
-output = 0.42
+input = 0.0728
+cache_read = 0.0146
+output = 0.4367
 
 ["zenmux"."z-ai/glm-5"]
 input = 0.58
 cache_read = 0.14
 output = 2.6
 
+["zenmux"."z-ai/glm-5".long_context]  # > 32000 input+cache tokens
+threshold = 32000
+input = 0.87
+cache_read = 0.22
+output = 3.18
+
 ["zenmux"."z-ai/glm-5-turbo"]
-input = 0.88
-output = 3.48
+input = 0.73
+cache_read = 0.174
+output = 3.19
+
+["zenmux"."z-ai/glm-5-turbo".long_context]  # > 32000 input+cache tokens
+threshold = 32000
+input = 1.02
+cache_read = 0.261
+output = 3.77
 
 ["zenmux"."z-ai/glm-5.1"]
 input = 0.8781
 cache_read = 0.1903
 output = 3.5126
 
+["zenmux"."z-ai/glm-5.1".long_context]  # > 32000 input+cache tokens
+threshold = 32000
+input = 1.1709
+cache_read = 0.2927
+output = 4.098
+
 ["zenmux"."z-ai/glm-5.2"]
+input = 0.98
+cache_read = 0.182
+output = 3.08
+
+["zenmux"."z-ai/glm-5.3"]
 input = 1.4
 cache_read = 0.26
-output = 4.5
+output = 4.4
 
-["zenmux"."z-ai/glm-5.2-free"]
-input = 0
-cache_read = 0
-output = 0
+["zenmux"."z-ai/glm-5.3-flash"]
+input = 0.15
+cache_read = 0.03
+output = 0.5
+
+["zenmux"."z-ai/glm-5.3-flashx"]
+input = 0.375
+cache_read = 0.075
+output = 1.25
 
 ["zenmux"."z-ai/glm-5v-turbo"]
 input = 0.726
 cache_read = 0.1743
 output = 3.1946
+
+["zenmux"."z-ai/glm-5v-turbo".long_context]  # > 32000 input+cache tokens
+threshold = 32000
+input = 1.0165
+cache_read = 0.2614
+output = 3.7754
 
 # ── zhipuai ── source: models.dev
 ["zhipuai"]
@@ -39331,10 +40047,16 @@ cache_write = 0
 output = 4.4
 
 ["zhipuai"."glm-5.3-flash"]
-input = 0.075
-cache_read = 0.015
+input = 0.15
+cache_read = 0.03
 cache_write = 0
-output = 0.25
+output = 0.5
+
+["zhipuai"."glm-5.3-flashx"]
+input = 0.37
+cache_read = 0.075
+cache_write = 0
+output = 1.25
 
 ["zhipuai"."glm-5v-turbo"]
 input = 5
@@ -39349,36 +40071,6 @@ output = 22
 input = 0.3
 output = 0.9
 
-["zhipuai-coding-plan"."glm-4.7"]
-input = 0.6
-cache_read = 0.11
-cache_write = 0
-output = 2.2
-
-["zhipuai-coding-plan"."glm-5-turbo"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
-
-["zhipuai-coding-plan"."glm-5.1"]
-input = 1.4
-cache_read = 0.26
-cache_write = 0
-output = 4.4
-
-["zhipuai-coding-plan"."glm-5.2"]
-input = 1.4
-cache_read = 0.26
-cache_write = 0
-output = 4.4
-
-["zhipuai-coding-plan"."glm-5.2-highspeed"]
-input = 0
-cache_read = 0
-cache_write = 0
-output = 0
-
 ["zhipuai-coding-plan"."glm-5.3"]
 input = 1.4
 cache_read = 0.26
@@ -39386,22 +40078,16 @@ cache_write = 0
 output = 4.4
 
 ["zhipuai-coding-plan"."glm-5.3-flash"]
-input = 0.075
-cache_read = 0.015
+input = 0.15
+cache_read = 0.03
 cache_write = 0
-output = 0.25
+output = 0.5
 
 ["zhipuai-coding-plan"."glm-5.3-highspeed"]
 input = 0
 cache_read = 0
 cache_write = 0
 output = 0
-
-["zhipuai-coding-plan"."glm-5v-turbo"]
-input = 5
-cache_read = 1.2
-cache_write = 0
-output = 22
 
 # ── cursor-acp ── source: models.dev
 ["cursor-acp"]
