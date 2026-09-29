@@ -70,19 +70,21 @@ OVERRIDES: dict[tuple[str, str], dict] = {
         "output": 1.5,
         "cache_read": 0.05,
     },
-    # OpenAI "fast" service-tier variants (platform.openai.com/docs/pricing,
-    # Fast mode table, checked 2026-08-14). models.dev does not list them.
+    # OpenAI "fast" service-tier variants. models.dev does not list them.
+    # https://developers.openai.com/api/docs/guides/fast-mode (2026-09-30):
+    # GPT-5.6 Sol's promotional Fast rates are $8/$40, at least through
+    # 2026-11-21; long context is $16/$60. All cache rates are doubled too.
     ("openai", "gpt-5.6-sol-fast"): {
-        "input": 10,
-        "output": 60,
-        "cache_read": 1,
-        "cache_write": 12.5,
+        "input": 8,
+        "output": 40,
+        "cache_read": 0.8,
+        "cache_write": 10,
         "long_context": {
             "threshold": 272000,
-            "input": 20,
-            "output": 90,
-            "cache_read": 2,
-            "cache_write": 25,
+            "input": 16,
+            "output": 60,
+            "cache_read": 1.6,
+            "cache_write": 20,
         },
     },
     ("openai", "gpt-5.6-terra-fast"): {
@@ -109,6 +111,21 @@ OVERRIDES: dict[tuple[str, str], dict] = {
             "output": 3.6,
             "cache_read": 0.08,
             "cache_write": 1,
+        },
+    },
+    # https://developers.openai.com/api/docs/pricing?latest-pricing=fast
+    # (checked 2026-09-30): GPT-6 Luna Fast, including the >272K tier.
+    ("openai", "gpt-6-luna-fast"): {
+        "input": 0.2,
+        "output": 1,
+        "cache_read": 0.02,
+        "cache_write": 0.25,
+        "long_context": {
+            "threshold": 272000,
+            "input": 0.4,
+            "output": 1.5,
+            "cache_read": 0.04,
+            "cache_write": 0.5,
         },
     },
     # GLM-5.3 released 2026-08-14 with models.dev listing $0; now listed at

@@ -43,7 +43,7 @@ def test_bundled_file_loads_and_is_sane():
 @pytest.mark.parametrize(
     ("provider", "model", "expected"),
     [
-        # Spot-checks pinning catalog prices (refreshed 2026-09-02).
+        # Spot-checks pinning catalog prices (refreshed 2026-09-30).
         ("anthropic", "claude-sonnet-5", (2, 10, 0.2, 2.5)),
         ("anthropic", "claude-opus-4-1", (15, 75, 1.5, 18.75)),
         ("openai", "gpt-5.6-sol", (4, 20, 0.4, 5)),
@@ -61,7 +61,7 @@ def test_bundled_file_loads_and_is_sane():
         ("groq", "llama-3.3-70b-versatile", (0.59, 0.79, 0, 0)),
         ("cohere", "command-r-08-2024", (0.15, 0.6, 0, 0)),
         ("perplexity", "sonar-pro", (3, 15, 0, 0)),
-        ("alibaba", "qwen3.7-plus", (0.5, 3, 0.05, 0.625)),
+        ("alibaba", "qwen3.7-plus", (0.4, 1.6, 0.04, 0.5)),
         ("opencode", "gpt-5.6-terra", (2, 12, 0.2, 2.5)),
     ],
 )
@@ -156,12 +156,49 @@ def test_new_release_models_are_priced():
     pricing = load_bundled()
     sol_fast = pricing.lookup("openai", "gpt-5.6-sol-fast")
     assert sol_fast is not None
-    assert (sol_fast.rates.input, sol_fast.rates.output) == (10, 60)
+    assert (sol_fast.rates.input, sol_fast.rates.output) == (8, 40)
     # Custom provider ids reach the fast variants too.
     assert pricing.lookup("openai-anchit", "gpt-5.6-sol-fast") is not None
     # opencode-go models (MiniMax M3, GLM-5.3) come straight from models.dev.
     assert pricing.lookup("opencode-go", "minimax-m3").rates.input == 0.3
     assert pricing.lookup("opencode-go", "glm-5.3").rates.input == 1.4
+
+
+def test_audited_provider_prices_and_context_boundaries():
+    pricing = load_bundled()
+    # Verify the provider-specific rates rather than a bare-name fallback:
+    # OpenAI and Zen charge different cached-input prices for GPT-6.1 Sol.
+    cases = [
+        ("openai", "gpt-6-sol", (2, 10, 0.2, 2.5), 272000, (4, 15, 0.4, 5)),
+        ("openai", "gpt-6.1-sol", (2, 10, 0.1, 2.5), 272000, (4, 15, 0.2, 5)),
+        ("opencode", "gpt-6.1-sol", (2, 10, 0.2, 2.5), 272000, (4, 15, 0.4, 5)),
+        ("openai", "gpt-6-luna-fast", (0.2, 1, 0.02, 0.25), 272000, (0.4, 1.5, 0.04, 0.5)),
+        ("openai", "gpt-5.6-sol-fast", (8, 40, 0.8, 10), 272000, (16, 60, 1.6, 20)),
+        ("cloudflare-ai-gateway", "xai/grok-4.7", (2, 6, 0.5, 0), 200000, (4, 12, 1, 0)),
+        ("openrouter", "x-ai/grok-4.7", (2, 6, 0.5, 0), 200000, (4, 12, 1, 0)),
+    ]
+    for provider, model, short, threshold, long in cases:
+        price = pricing.lookup(provider, model)
+        assert price is not None, f"missing {provider}/{model}"
+        rates = price.rates
+        assert (rates.input, rates.output, rates.cache_read, rates.cache_write) == short
+        assert price.long_context is not None
+        boundary, rates = price.long_context
+        assert boundary == threshold
+        assert (rates.input, rates.output, rates.cache_read, rates.cache_write) == long
+        # All prompt buckets count toward the boundary, and reasoning is output.
+        at_boundary = row(provider, model, inp=threshold - 2, cr=1, cw=1, out=2, reas=3)
+        above_boundary = row(provider, model, inp=threshold - 1, cr=1, cw=1, out=2, reas=3)
+        assert pricing.estimate(at_boundary) == pytest.approx(
+            ((threshold - 2) * short[0] + short[2] + short[3] + 5 * short[1]) / 1_000_000
+        )
+        assert pricing.estimate(above_boundary) == pytest.approx(
+            ((threshold - 1) * long[0] + long[2] + long[3] + 5 * long[1]) / 1_000_000
+        )
+    mimo = pricing.lookup("opencode-go", "mimo-v2.6-flash").rates
+    assert (mimo.input, mimo.output, mimo.cache_read, mimo.cache_write) == (0.14, 0.28, 0.0028, 0)
+    glm = pricing.lookup("zai-coding-plan", "glm-5.3-flash").rates
+    assert (glm.input, glm.output, glm.cache_read, glm.cache_write) == (0.15, 0.5, 0.03, 0)
 
 
 def test_subscription_gateways_inherit_vendor_api_rates():
