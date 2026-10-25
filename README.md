@@ -15,7 +15,7 @@ first-party API list prices; subscription charges may differ.
 oc-stats          # Rich terminal report
 oc-stats mini     # same report, each model's variants merged into one row
 oc-stats --json   # machine-readable output
-oc-stats --db "C:\Users\Anchit\.local\share\opencode\opencode.db"
+oc-stats --db "C:\Users\example\.local\share\opencode\opencode.db"
 oc-stats --db PATH mini   # --db is global and must precede the subcommand
 ```
 

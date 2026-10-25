@@ -9,7 +9,7 @@ they get no estimate rather than a guess.
 
 Matching order (case-insensitive, first hit wins):
     1. exact ``(provider, model)``, with custom provider ids falling back to
-       their vendor prefix (``openai-anchit`` → ``openai``;
+       their vendor prefix (``openai-custom`` → ``openai``;
        ``zai-coding-plan-cn`` → ``zai-coding-plan`` → ``zai``)
     2. ``vendor/model`` ids — ``anthropic/claude-opus-5`` under any provider
        matches the ``anthropic`` entry ``claude-opus-5``
@@ -177,10 +177,10 @@ class Pricing:
         """Provider buckets to try, longest first.
 
         OpenCode lets users name custom providers freely, and subscriptions
-        get their own gateway ids — ``openai-anchit``, ``zai-coding-plan-cn``.
+        get their own gateway ids — ``openai-custom``, ``zai-coding-plan-cn``.
         After the exact id, progressively trim trailing hyphen segments so a
         custom id falls back to the vendor table it was derived from
-        (``openai-anchit`` → ``openai``; ``zai-coding-plan-cn`` →
+        (``openai-custom`` → ``openai``; ``zai-coding-plan-cn`` →
         ``zai-coding-plan`` → ``zai``).
         """
         parts = provider.split("-")

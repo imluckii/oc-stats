@@ -43,7 +43,7 @@ def test_bundled_file_loads_and_is_sane():
 @pytest.mark.parametrize(
     ("provider", "model", "expected"),
     [
-        # Spot-checks pinning catalog prices (refreshed 2026-09-30).
+        # Spot-checks pinning catalog prices (refreshed 2026-10-25).
         ("anthropic", "claude-sonnet-5", (2, 10, 0.2, 2.5)),
         ("anthropic", "claude-opus-4-1", (15, 75, 1.5, 18.75)),
         ("openai", "gpt-5.6-sol", (4, 20, 0.4, 5)),
@@ -55,13 +55,14 @@ def test_bundled_file_loads_and_is_sane():
         ("xai", "grok-4.6", (2, 6, 0.5, 0)),
         ("deepseek", "deepseek-v4-flash", (0.22, 0.66, 0.007, 0)),
         ("mistral", "mistral-large-latest", (0.5, 1.5, 0.05, 0)),
-        ("moonshotai", "kimi-k3", (3, 15, 0.3, 0)),
+        # cache_write = Kimi's separate 5m-TTL cache write fee (1h is $6).
+        ("moonshotai", "kimi-k3", (3, 15, 0.3, 3)),
         ("zai", "glm-5.2", (1.4, 4.4, 0.26, 0)),
         ("minimax", "minimax-m3", (0.3, 1.2, 0.06, 0)),
         ("groq", "llama-3.3-70b-versatile", (0.59, 0.79, 0, 0)),
         ("cohere", "command-r-08-2024", (0.15, 0.6, 0, 0)),
         ("perplexity", "sonar-pro", (3, 15, 0, 0)),
-        ("alibaba", "qwen3.7-plus", (0.4, 1.6, 0.04, 0.5)),
+        ("alibaba", "qwen3.7-plus", (0.4, 1.6, 0.08, 0.5)),
         ("opencode", "gpt-5.6-terra", (2, 12, 0.2, 2.5)),
     ],
 )
@@ -135,9 +136,9 @@ def test_global_ambiguity_still_refused_on_rate_conflict():
 
 
 def test_custom_provider_id_falls_back_to_vendor_prefix():
-    # OpenCode lets users rename providers ("openai-anchit"); trimming the
+    # OpenCode lets users rename providers ("openai-custom"); trimming the
     # custom suffix reaches the vendor table with full cache fidelity.
-    price = load_bundled().lookup("openai-anchit", "gpt-5.6-sol")
+    price = load_bundled().lookup("openai-custom", "gpt-5.6-sol")
     assert price is not None
     assert price.rates.input == 4
     assert price.rates.cache_write == 5
@@ -158,7 +159,7 @@ def test_new_release_models_are_priced():
     assert sol_fast is not None
     assert (sol_fast.rates.input, sol_fast.rates.output) == (8, 40)
     # Custom provider ids reach the fast variants too.
-    assert pricing.lookup("openai-anchit", "gpt-5.6-sol-fast") is not None
+    assert pricing.lookup("openai-custom", "gpt-5.6-sol-fast") is not None
     # opencode-go models (MiniMax M3, GLM-5.3) come straight from models.dev.
     assert pricing.lookup("opencode-go", "minimax-m3").rates.input == 0.3
     assert pricing.lookup("opencode-go", "glm-5.3").rates.input == 1.4
@@ -167,11 +168,12 @@ def test_new_release_models_are_priced():
 def test_audited_provider_prices_and_context_boundaries():
     pricing = load_bundled()
     # Verify the provider-specific rates rather than a bare-name fallback:
-    # OpenAI and Zen charge different cached-input prices for GPT-6.1 Sol.
+    # cached input halves for the 6.1 generation on both OpenAI and Zen
+    # (opencode.ai/docs/zen, checked 2026-10-25 — the old Zen premium is gone).
     cases = [
         ("openai", "gpt-6-sol", (2, 10, 0.2, 2.5), 272000, (4, 15, 0.4, 5)),
         ("openai", "gpt-6.1-sol", (2, 10, 0.1, 2.5), 272000, (4, 15, 0.2, 5)),
-        ("opencode", "gpt-6.1-sol", (2, 10, 0.2, 2.5), 272000, (4, 15, 0.4, 5)),
+        ("opencode", "gpt-6.1-sol", (2, 10, 0.1, 2.5), 272000, (4, 15, 0.2, 5)),
         ("openai", "gpt-6-luna-fast", (0.2, 1, 0.02, 0.25), 272000, (0.4, 1.5, 0.04, 0.5)),
         ("openai", "gpt-5.6-sol-fast", (8, 40, 0.8, 10), 272000, (16, 60, 1.6, 20)),
         ("cloudflare-ai-gateway", "xai/grok-4.7", (2, 6, 0.5, 0), 200000, (4, 12, 1, 0)),
